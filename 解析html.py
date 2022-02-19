@@ -84,6 +84,22 @@ class Dom():
                 d=__class__(内容=b)
         return b
 
+    def 转文本(s):
+        文本=''
+        for i in s:
+            if isinstance(i,Dom):
+                if i.标签=='br':
+                    文本+='\n'
+                else:
+                    文本+=i.转文本()
+            else:
+                #过滤原本的换行符
+                文本+=i.replace('\n','').replace('\r','')
+        if s.标签 in ['p','div','h1','h2','h3','h4','h5','h6','ul','ol','li','tr','td','th','label','code']:
+            文本+='\n'
+        return 文本
+
+
 
 class MyHTMLParser(HTMLParser):
 
