@@ -1,30 +1,42 @@
 from urllib import request
 import 解析html
 import time
+from flj import flj
 
 
 
-调休信息={}
-def 更新调休_单天(lti,n):
-    if lti.tm_year not in 调休信息:
-        调休年=调休信息[lti.tm_year]={}
+配置l=flj('节假日信息.json')
+配置l.设置默认值({
+    '节假日':{},
+    '更新时间':0,
+})
+节假日信息=配置l.d['节假日']
+
+def 更新节假日_单天(lti:time.struct_time,n):
+    if lti.tm_year not in 节假日信息:
+        年=节假日信息[lti.tm_year]={}
     else:
-        调休年=调休信息[lti.tm_year]
+        年=节假日信息[lti.tm_year]
 
-    if lti.tm_mon not in 调休年:
-        调休月=调休年[lti.tm_mon]={}
+    if lti.tm_mon not in 年:
+        月=年[lti.tm_mon]={}
     else:
-        调休月=调休年[lti.tm_mon]
+        月=年[lti.tm_mon]
 
-    调休月[lti.tm_mday]=n
+    月[lti.tm_mday]=n
 
+class 未找到(Exception):
+    pass
 
-def 获取调休信息(tl=None):
+def 更新节假日(tl=None,年=None):
     #tl=time.localtime(int(time.mktime((2015,1,1,0,0,0,0,0,0))))
-    if not tl:
+    if not tl and not 年:
         tl=time.localtime()
-    年=tl.tm_year
-    默认日期=[tl.tm_year,tl.tm_mon,tl.tm_mday]
+    if tl:
+        年=tl.tm_year
+        默认日期=[tl.tm_year,tl.tm_mon,tl.tm_mday]
+    elif 年:
+        默认日期=[年,1,1]
 
     html_t=request.urlopen('http://sousuo.gov.cn/s.htm?q='#不用https是很危险的
         #国务院办公厅关于xxxx年部分节假日安排的通知
@@ -45,7 +57,7 @@ def 获取调休信息(tl=None):
                 break
 
     if not 找到:
-        raise
+        raise 未找到('未找到'+str(年)+'年的节假日信息')
     html_t2=request.urlopen(超链接.属性['href']).read().decode('utf-8')
     h2=解析html.解析(html_t2)
     ucap=h2.查找(属性={'id':'UCAP-CONTENT'})[0].转文本().replace('\u3000','').split('\n')
@@ -104,9 +116,11 @@ def 获取调休信息(tl=None):
 
                     if len(日期_范围_)>1:
                         for i in range(日期_范围_[0],日期_范围_[1]+1,86400):#日期_范围_[1]+1是为了把最后一天也加进去
-                            更新调休_单天(time.localtime(i),1)
+                            更新节假日_单天(time.localtime(i),1)
                     else:
-                        更新调休_单天(time.localtime(日期_范围_[0]),1)
+                        更新节假日_单天(time.localtime(日期_范围_[0]),1)
+
+                    上i:str
 
                     if '补休'in 放假补充文本:
                         补休文本=放假补充文本.replace('补休','').split('、')
@@ -117,7 +131,7 @@ def 获取调休信息(tl=None):
                                 上i=上i[-1].split('年月日'[i2])
                                 if len(上i)>1:
                                     日期_[i2]=int(上i[0])
-                            更新调休_单天(time.localtime(int(time.mktime((*日期_,0,0,0,0,0,0)))),1)
+                            更新节假日_单天(time.localtime(int(time.mktime((*日期_,0,0,0,0,0,0)))),1)
 
 
                     上班日期=[]
@@ -131,7 +145,7 @@ def 获取调休信息(tl=None):
                                     上i=上i[-1].split('年月日'[i2])
                                     if len(上i)>1:
                                         日期_[i2]=int(上i[0])
-                                更新调休_单天(time.localtime(int(time.mktime((*日期_,0,0,0,0,0,0)))),2)
+                                更新节假日_单天(time.localtime(int(time.mktime((*日期_,0,0,0,0,0,0)))),2)
 
 
                     #print(节日名,调休情况_文本)
@@ -139,9 +153,31 @@ def 获取调休信息(tl=None):
             else:
                 if '具体安排通知如下'in i:
                     开始=True
+    配置l.写()
+
+
+def 获取节假日():
+    t=time.time()
+    if 配置l['更新时间']+86400<t:
+        配置l['更新时间']=t
+        tl=time.localtime(t)
+        if str(tl.tm_year)not in 配置l['节假日']:
+            更新节假日(tl)
+        if tl.tm_mon==12 and tl.tm_mday>18:#需要获取下一年的数据
+            try:
+                更新节假日(年=tl.tm_year+1)
+            except 未找到:
+                pass
+        配置l.写_()
+    return 配置l['节假日']
+
 
 if __name__ == '__main__':
+    '''
     for i in range(2021,2022+1):
-        获取调休信息(time.localtime(int(time.mktime((i,1,1,0,0,0,0,0,0)))))
-    print(调休信息)
+        更新节假日(time.localtime(int(time.mktime((i,1,1,0,0,0,0,0,0)))))
+    print(节假日信息)
+    '''
+    a=获取节假日()
+    input(a)
 #input(result)

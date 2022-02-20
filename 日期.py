@@ -1,5 +1,6 @@
 import sxtwl
 import time
+from 获取节假日 import 获取节假日
 
 
 天干 = ("甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸")
@@ -20,19 +21,39 @@ import time
 	"廿一", "廿二", "廿三", "廿四", "廿五", "廿六", "廿七", "廿八", "廿九", "三十", "卅一"
 )
 XiZ = ['摩羯', '水瓶', '双鱼', '白羊', '金牛', '双子', '巨蟹', '狮子', '处女', '天秤', '天蝎', '射手']
-WeekCn = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
+星期_文本=["日", "一", "二", "三", "四", "五", "六"]
 
 class 日期():
-	def __init__(s,t=None):
-		tl=time.localtime(t)
-		s.sx=sxtwl.fromSolar(tl.tm_year,tl.tm_mon,tl.tm_mday)
+	def __init__(s,年月日=None,sx=None,t=None,tl=None):
+		if 年月日:
+			年,月,日=年月日
+		elif sx:
+			s.sx=sx
+			s.更新()
+			return
+		else:
+			if t:
+				tl=time.localtime(t)
+			elif not tl:
+				tl=time.localtime()
+			年,月,日=tl.tm_year,tl.tm_mon,tl.tm_mday
+		s.sx=sxtwl.fromSolar(年,月,日)
 		s.农历_值=None
 		s.公历_值=None
 		s.更新()
 	
+	def __repr__(s):
+		公历_值=''
+		for i in s.公历_值:
+			si=str(i)
+			公历_值+='0'*(2-len(si))+si+' '
+		return '<日期: '+公历_值+星期_文本[s.星期()]+'>'
+
+	def 复制(s):
+		return __class__(sx=s.sx)
+
 	def 更新(s):
-		s.农历()
-		s.公历()
+		return (s.农历(),s.公历())
 
 
 	def 农历(s):
@@ -52,6 +73,8 @@ class 日期():
 		else:
 			return 0
 
+	def 星期(s):
+		return s.sx.getWeek()
 
 	def 后(s,n):
 		s.sx=s.sx.after(n)
@@ -64,7 +87,7 @@ class 日期():
 	def 简日(s):
 		农节=农历节日(s.sx)
 		if 农节:
-			return 农节
+			return 农节[0]
 		elif s.sx.hasJieQi():
 			return 节气[s.节气()]
 		elif s.农历_值[2]==1:#每月的第一天显示月份
@@ -160,14 +183,46 @@ def 公历节日(sx):
 				case 25:return ("圣诞节",0)
 
 	
-def 获取调休(y,m,d):
-	
-	
+
+def 星期历(rq:日期,开始=0):#获取该天所在的一个星期的七天信息. 注意, 会改变rq到下一个星期的第一天
+	'''
+开始:一个星期的第一天是星期几, 0为星期日,1为星期一,...,6为星期六
+'''
+	rq.更新()
+	星期=(rq.星期()-开始)%7
+	rq.前(星期)
+	星期历=[]
+	for i in range(7):
+		星期历.append(rq.复制())
+		#星期历.append((rq.更新(),rq.简日(),rq.星期()))
+		rq.后(1)
+	return 星期历
 
 
-sx=日期()
-sx.sx=sxtwl.fromSolar(2022,2,4)
-sx.更新()
-for i in range(20):
-	print(*sx.公历(),sx.简日())
-	sx.后(1)
+def 月历(rq:日期,开始=0):#获取该天所在的一个月的信息. 注意, 会改变rq到下一个月的第二个星期的第一天
+	rq.更新()
+	月=rq.公历_值[1]
+	rq.前(rq.公历_值[2]-1)
+	月历=[]
+	while 1:
+		月历.append(星期历(rq,开始))
+		if rq.公历_值[1]!=月:
+			break
+	return 月历
+
+if __name__=='__main__':
+	起始星期=0
+	rq=日期()
+	print(str(rq.公历_值[1])+'月:')
+	b=月历(rq,起始星期)
+	for i in range(起始星期,7+起始星期):
+		i_=星期_文本[i%7]
+		print(' '*(2-len(i_))+i_,end='')
+	print()
+
+	for i in b:
+		print(' ',end='')
+		for i2 in i:
+			si2=str(i2.公历_值[2])
+			print(' '*(2-len(si2))+si2+' ',end='')
+		print()

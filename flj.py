@@ -15,6 +15,17 @@ class 字典_(dict):
 class 列表_(list)
 '''
 
+所有打开的文件=[]
+
+def 全部关闭():
+		'''
+关闭所有打开的文件, 在主程序退出时调用
+		'''
+		for i in 所有打开的文件:
+			i.关闭()
+
+
+
 class flj():
 	'''
 适用于使用json的对象保存的数据文件
@@ -26,6 +37,7 @@ class flj():
 实例化
 fn:文件名
 '''
+		所有打开的文件.append(s)
 		s.fn=fn
 		s.d={} #数据
 		s.s=20 #写文件间隔
@@ -44,7 +56,7 @@ fn:文件名
 	def __getitem__(s,k):
 		return s.d[k]
 	
-	def __setitem__(s,k,v):
+	def __setitem__(s,k,v):#对于字典的最外层, 可以直接修改, 操作将自动保存. 若不是最外层, 需要在修改后调用 s.写() .若不希望自动保存, 可直接修改s.d .
 		s.d[k]=v
 		s.写()
 
@@ -148,6 +160,10 @@ fn:文件名
 		'''
 关闭文件
 '''
+		try:
+			所有打开的文件.remove(s)
+		except ValueError:
+			pass
 		s.写_()
 		s.fo.close()
 

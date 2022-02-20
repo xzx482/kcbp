@@ -1,5 +1,14 @@
+import os
+from PyQt6.QtWidgets import __file__ as qt6_file
+dirname = os.path.dirname(qt6_file)
+plugin_path = os.path.join(dirname, 'Qt6', 'plugins', 'platforms')
+os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
+
+
 from PyQt6.QtWidgets import QMessageBox,QApplication
 from PyQt6.QtCore import QSharedMemory
+
+
 
 '''
 import tracemalloc
@@ -53,6 +62,7 @@ if __name__ == "__main__":
 
 #'''
 
+import threading
 import _thread
 import time
 from PyQt6.QtCore import Qt,QTimer,QPropertyAnimation,QUrl,QEasingCurve,QAbstractAnimation,QThread,pyqtSignal,QObject
@@ -88,8 +98,9 @@ t_6=1639756800-86400*7*6
 
 
 
-t_f=1640908834
 '''
+t_f=1640908834-60*60*50
+
 def 获取时间():
 	global t_f
 	t_f+=60*2
@@ -107,12 +118,12 @@ def 获取时间():
 
 
 k1=[# 早读    1      2      3      4     1      2     3    
-	["外语","语文","物理","数学","生物","体育","外语","班会","自习"," ","物理","生物","物理"],
-	["语文","化学","语文","政治","外语","生物","物理","数学","自习"," ","数学","外语","英语"],
-	["外语","外语","数学","体育","美术/形体","化学","语文","历史","自习"," ","物理","历史","语文"],
-	["语文","语文","数学","外语","语文","生物","通用技术","历史","自习"," ","生物","外语","生物"],
-	["外语","外语","物理","数学","语文","化学","物理","政治","自习"," ","数学","数学","化学"],
-	["","","","","","","","",""," ","化学","语文","自习"]
+	["外语","语文","化学","数学","物理","通用技术","外语","班会","自习"," ","物理","生物","生物"],
+	["语文","数学","语文","化学","外语","通用技术","生物","物理","自习"," ","数学","外语","英语"],
+	["外语","外语","化学","语文","数学","生物","体育","物理","自习"," ","物理"," ","语文"],
+	["语文","英语","语文","外语","生物","美术/形体","数学","体育","自习"," ","生物","外语","化学"],
+	["外语","外语","数学","物理","数学","生物","化学","语文","自习"," ","数学","数学"," "],
+	["","","","","","","","",""," "," "," "," "]
 	#["","","","","","","","","","","","",""]
 ]
 k2=[
@@ -239,11 +250,6 @@ except BaseException as e:
 def 获取天(tl):
 	return tl.tm_year*10000+tl.tm_mon*100+tl.tm_mday
 
-def 获取天气():
-	#uo=request.urlopen('https://wttr.in/26.171804,118.141908?format=j1')
-	uo=request.urlopen('http://api.openweathermap.org/data/2.5/onecall?exclude=minutely&units=metric&lang=zh_cn&lat=26.171804&lon=118.141908&appid='+配置l['天气']['key'])
-	jl=json.load(uo)
-	return jl
 
 def ck(t,tl=None):
 	if not tl:
@@ -276,7 +282,7 @@ def ck(t,tl=None):
 	
 	if str(天) in 临时课程:
 		课程_=临时课程[str(天)]
-		if 课程_[0]:
+		if len(课程_)>0:
 			if isinstance(课程_[0],int):
 				if 课程_[0]<5:
 					课程=课程_[0]
@@ -289,7 +295,7 @@ def ck(t,tl=None):
 			if isinstance(课程_[0],list):
 				课程=课程_[0]
 		
-		if 课程_[1]:
+		if len(课程_)>1:
 			if isinstance(课程_[1],int):
 				if 课程_[1]==1:
 					始末时间_=始末时间
@@ -307,7 +313,7 @@ def ck(t,tl=None):
 				始末时间_=课程_[1]
 				始末时间_文本_=始末时间转文本(课程_[1])
 
-		if 课程_[2]:
+		if len(课程_)>2:
 			if isinstance(课程_[2],int):
 				if 课程_[2]==1:
 					节_=节
@@ -686,6 +692,9 @@ class 课程表组件(QWidget):
 		s.日期时间.设置内容(time.strftime("%H:%M:%S",tl),time.strftime("%Y/%m/%d",tl),'星期'+星期_tm_wday[tl.tm_wday])
 		#s.时间.setText(time.strftime("%Y-%m-%d %H:%M:%S",))
 	
+	class 更新线程(QThread):
+		pass
+	
 	'''
 	def stop(s):
 		if s.timer_id:
@@ -727,6 +736,53 @@ class 单天气组件(QVBoxLayout):
 			s.labels[i].setText(str(a[i]))
 
 
+class 天气获取t_(QThread):
+	trigger=pyqtSignal(dict)
+	def __init__(s):
+		super().__init__()
+	def run(s):
+			try:
+				uo=request.urlopen('http://api.openweathermap.org/data/2.5/onecall?exclude=minutely&units=metric&lang=zh_cn&lat='+str(配置l['天气']['纬度'])+'&lon='+str(配置l['天气']['经度'])+'&appid='+配置l['天气']['key'])
+				jl=json.load(uo)
+				s.trigger.emit(jl)
+			except BaseException as e:
+				print('更新天气失败,'+str(e))
+
+class 天气获取t(threading.Thread):
+	#trigger=pyqtSignal(dict)
+	def __init__(s,parent):
+		super().__init__()
+		s.parent:天气组件=parent
+	def 获取并发送(s):
+		s.t_=天气获取t_()
+		s.t_.trigger.connect(s.parent.gxtq)
+		s.t_.start()
+		print('更新天气')
+	
+	def run(s):
+		s.获取并发送()
+		#s.setVisible(True)
+
+		while 1:
+			a=0
+			#time.sleep(60)
+			while a<60:
+				time.sleep(1)
+				a+=1
+				显示_当前=s.parent.isVisible()
+				if s.parent.显示!=显示_当前:
+					if 显示_当前 or s.parent.当前信息_更新时间.text():
+						print('天气_'+str(s.parent.显示))
+						s.parent.setVisible(s.parent.显示)
+
+				if s.parent.预更新:
+					s.parent.预更新=False
+					s.获取并发送()
+
+			if s.parent.isVisible():
+				s.获取并发送()
+
+
 class 天气组件(QWidget):
 	def __init__(s, parent=None):
 		super().__init__(parent)
@@ -760,13 +816,10 @@ class 天气组件(QWidget):
 		s.根纵.addWidget(填空)
 		s.根纵.addLayout(s.每分钟信息hbox)
 		'''
-		填空=QLabel()
-		填空.setText(' ')
-		s.根纵.addWidget(填空)
+		s.根纵.addWidget(QLabel(' '))
 		s.根纵.addLayout(s.每小时信息hbox)
 		填空=QLabel()
-		填空.setText(' ')
-		s.根纵.addWidget(填空)
+		s.根纵.addWidget(QLabel(' '))
 		s.根纵.addLayout(s.每天信息hbox)
 
 		#(s.每分钟信息hbox,s.每分钟信息l,25,2),
@@ -871,13 +924,9 @@ class 天气组件(QWidget):
 		s.小时2=QVBoxLayout()
 		'''
 	
-	def 更新天气(s):
-		print('更新天气')
-		try:
-			天气j=获取天气()
-		except:
-			print('更新天气失败')
-			return
+	def gxtq(s,*a):
+		s.更新天气(*a)
+	def 更新天气(s,天气j):
 		当前天气_=天气j['current']
 		#每分钟天气_=天气j['minutely']
 		每小时天气_=天气j['hourly']
@@ -912,7 +961,7 @@ class 天气组件(QWidget):
 				break
 		'''	
 
-		i2=0#1
+		i2=1
 		for i in range(len(s.每小时信息l)):
 			if len(每小时天气_)>i2:
 				i3=每小时天气_[i2]
@@ -935,25 +984,9 @@ class 天气组件(QWidget):
 		#s.adjustSize()
 
 	def l(s):
-		s.更新天气()
-		#s.setVisible(True)
-
-		while 1:
-			a=0
-			#time.sleep(60)
-			while a<60:
-				time.sleep(1)
-				a+=1
-				if s.显示!=s.isVisible():
-					s.setVisible(s.显示)
-
-				if s.预更新:
-					s.预更新=False
-					s.更新天气()
-
-			if s.isVisible():
-				s.更新天气()
-			
+			s.获取t=天气获取t(s)
+			#s.获取t.trigger.connect(s.gxtq)
+			s.获取t.start()
 
 class 倒计时组件(QLabel):
 	def __init__(s,parent=None,时间=0,文本_结束='',文本_前='',文本_后=''):
@@ -1346,6 +1379,7 @@ class 主窗口(QWidget):
 		win32gui.EnumChildWindows(s.winid_桌面,lambda hwnd,param:param.append(hwnd),a)
 		if not s.winid_s in a:
 			print('重新嵌入')
+			s.update()
 			s.嵌入()
 
 	def miao(s):
@@ -1366,7 +1400,7 @@ class 主窗口(QWidget):
 				if 上课状态:
 					s.下课预更新=True
 					s.天气.显示=False
-					s.天气.setVisible(False)
+					#s.天气.setVisible(False)
 				else:
 					#s.天气.setVisible(True)
 					s.天气.显示=True
@@ -1394,7 +1428,7 @@ class 主窗口(QWidget):
 		#threading.Thread(target=lambda:()).start()
 		#新线程(0,lambda:(s.嵌入(),s.对齐桌面(),s.状态检查()))
 		
-		s.背景视频.show()
+		#s.背景视频.show()
 		#qt
 		#win32gui.ShowWindow(s.winid_背景视频,win32con.SW_HIDE)
 		#win32gui.SetWindowPos(s.winid_背景图片,win32con.HWND_TOP,0,0,0,0,win32con.SWP_NOMOVE|win32con.SWP_NOSIZE)
@@ -1404,19 +1438,28 @@ class 主窗口(QWidget):
 		#s.背景动画_入.start()
 		#s.背景.show()
 		#s.背景视频.show()
+		'''
+		s.背景视频.show()
 		s.背景视频.显示()
+		#'''
 		
 		#_thread.start_new_thread(s.player.play,())
 		#'''
-		#s.show()
-		#s.课程表.start(True)
+		s.show()
+		s.课程表.start(True)
 		#import threading
 		#t=threading.Thread(target=s.sm)
 		#t.start()
 		
 		#新线程(0,s.sm)
+		threading.Thread(target=s.sm).start()
 		#_thread.start_new_thread(s.sm,())
-		#_thread.start_new_thread(s.天气.l,())
+		#'''
+		if 配置l['天气']['key']:
+			s.天气.l()
+		else:
+			print('未配置天气')
+		#'''
 		#s.天气.更新天气()
 
 class 托盘图标(QSystemTrayIcon):
