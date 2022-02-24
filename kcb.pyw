@@ -66,7 +66,7 @@ import threading
 import _thread
 import time
 from PyQt6.QtCore import Qt,QTimer,QPropertyAnimation,QUrl,QEasingCurve,QAbstractAnimation,QThread,pyqtSignal,QObject
-from PyQt6.QtWidgets import QWidget,QLabel,QHBoxLayout,QVBoxLayout,QGraphicsOpacityEffect,QSystemTrayIcon,QMenu,QWidgetAction
+from PyQt6.QtWidgets import QWidget,QLabel,QHBoxLayout,QVBoxLayout,QGridLayout,QGraphicsOpacityEffect,QSystemTrayIcon,QMenu,QWidgetAction
 from PyQt6.QtGui import QPalette, QBrush, QPixmap,QFont,QIcon,QAction
 from PyQt6.QtMultimedia import QMediaPlayer
 from PyQt6.QtMultimediaWidgets import QVideoWidget
@@ -77,6 +77,8 @@ from d import 准备桌面窗口,桌面窗口错误
 from 线程q import 新线程
 from flj import flj
 import 获取视频
+from 获取节假日 import 获取节假日,节假日_文本
+import 日期
 import os
 
 '''
@@ -118,22 +120,18 @@ def 获取时间():
 
 
 k1=[# 早读    1      2      3      4     1      2     3    
-	["外语","语文","化学","数学","物理","通用技术","外语","班会","自习"," ","物理","生物","生物"],
+	["外语","语文","化学","数学","物理","通用技术","外语","班会","自习"," ","物理","生物","通用技术"],
 	["语文","生物","语文","化学","外语","数学","数学","物理","自习"," ","数学","外语","英语"],
 	["外语","外语","化学","语文","数学","生物","体育","物理","自习"," ","物理","语文","语文"],
-	["语文","英语","数学","外语","生物","美术/形体","语文","体育","自习"," ","生物","外语","化学"],
+	["语文","外语","数学","外语","生物","美术/形体","语文","体育","自习"," ","生物","外语","化学"],
 	["外语","外语","物理","语文","生物","通用技术","化学","数学","自习"," ","数学","数学"," "],
-	["","","","","","","","",""," "," "," "," "]
+	["","","","","","","","",""," ","化学","语文"," "]
 	#["","","","","","","","","","","","",""]
 ]
 k2=[
-	["语文","语文","化学","语文","物理","生物","外语","数学"],
-	["外语","外语","生物","外语","物理","语文","数学","化学"],
-	["外语","外语","数学","生物","语文","化学","数学","物理"],
-
-	["语文","语文","化学","语文","物理","生物","外语","数学"],
-	["外语","外语","生物","外语","物理","语文","数学","化学"],
-	["语文","外语","数学","生物","语文","化学","数学","物理"]
+	["语文","物理","语文","化学","语文","外语","数学","生物"],
+	["外语","外语","化学","外语","物理","生物","数学","语文"],
+	["语文","语文","数学","数学","化学","外语","物理","生物"]
 ]
 
 节=["早读","第一节","第二节","第三节","第四节","第一节","第二节","第三节","第四节","晚读","第一节","第二节","第三节","第四节"]
@@ -988,6 +986,110 @@ class 天气组件(QWidget):
 			#s.获取t.trigger.connect(s.gxtq)
 			s.获取t.start()
 
+class 单日期组件(QVBoxLayout):
+	def __init__(s):
+		super().__init__()
+		#s.setSpacing(3)
+		s.labels=[QLabel()for i in range(2)]
+		for i in s.labels:
+			#i.setFont(QFont("黑体",16))
+			i.setStyleSheet('color:#ffffff')
+			s.addWidget(i)
+			i.setAlignment(Qt.AlignmentFlag.AlignCenter)
+		s.labels[0].setFont(QFont("黑体",16))
+		s.labels[1].setFont(QFont("黑体",8))
+		'''
+		s.labels[2].setFont(QFont("黑体",20,QFont.Weight.Bold))
+		'''
+
+	def 设置内容(s,*a):
+		for i in range(len(a)):
+			s.labels[i].setText(str(a[i]))
+
+class 单日期组件(QWidget):
+	def __init__(s):
+		super().__init__()
+
+		s.根纵=QVBoxLayout()
+		s.setLayout(s.根纵)
+
+		s.根纵_上=QHBoxLayout()
+
+		s.左上=QLabel()
+		s.左上.setStyleSheet('line-height:0px')
+		s.左上.setFont(QFont("黑体",12))
+		s.根纵_上.addWidget(s.左上)
+
+		s.根纵_上.addStretch(1)
+
+		s.右上=QLabel()
+		s.右上.setFont(QFont("黑体",12))
+		s.根纵_上.addWidget(s.右上)
+		
+		s.根纵.addLayout(s.根纵_上)
+
+		s.根纵_中=QHBoxLayout()
+		s.根纵_中.addStretch(1)
+		s.日期=QLabel()
+		s.日期.setFont(QFont("黑体",16))
+		s.根纵_中.addWidget(s.日期)
+		s.根纵_中.addStretch(1)
+		s.根纵.addLayout(s.根纵_中)
+
+		s.底部=QLabel()
+		
+		s.底部.setAlignment(Qt.AlignmentFlag.AlignCenter)
+		s.底部.setFont(QFont("黑体",12))
+		s.根纵.addWidget(s.底部)
+
+
+	def 设置内容(s,左上,右上,日期,底部):
+		s.左上.setText(左上)
+		s.右上.setText(右上)
+		s.日期.setText(日期)
+		s.底部.setText(底部)
+
+
+class 日历组件(QWidget):
+	def __init__(s,*a):
+		super().__init__(*a)
+		s.根网=QGridLayout()
+		s.setLayout(s.根网)
+		s.日期_qws=[]
+		for i in range(7):
+			星期_顶=QLabel()
+			星期_顶.setAlignment(Qt.AlignmentFlag.AlignCenter)
+			星期_顶.setText(日期.星期_文本[i])
+			星期_顶.setFont(QFont("黑体",16))
+			s.根网.addWidget(星期_顶,0,i)
+		for x in range(1,3):
+			日期_qws1=[]
+			for y in range(7):
+				单日期=单日期组件()
+				s.根网.addWidget(单日期,x,y)
+				日期_qws1.append(单日期)
+			s.日期_qws.append(日期_qws1)
+	
+	def 更新日期(s):
+		d=日期.日期()
+		节假日=获取节假日()
+		for i in s.日期_qws:
+			星期历=日期.星期历(d)#参数 d 在调用后会被改变
+			for i2 in range(7):
+				日期_:日期.日期=星期历[i2]
+				年,月,日=日期_.公历_值
+				左上=(str(月)+'月') if 日==1 else ''
+				try:
+					右上=节假日_文本[ 节假日[str(年)][str(月)][str(日)] ]
+					
+				except KeyError:
+					右上=''
+				i[i2].设置内容(左上,右上,str(日),日期_.简日())
+
+
+
+
+
 class 倒计时组件(QLabel):
 	def __init__(s,parent=None,时间=0,文本_结束='',文本_前='',文本_后=''):
 		super().__init__(parent)
@@ -1280,6 +1382,14 @@ class 主窗口(QWidget):
 		s.纵右_课程表.addWidget(s.课程表)
 		s.根横_纵右.addLayout(s.纵右_课程表)
 
+		s.纵右_日历=QHBoxLayout()
+		s.纵右_日历.addStretch(1)
+		s.日历=日历组件()
+		s.日历.setVisible(False)
+		s.纵右_日历.addWidget(s.日历)
+		s.根横_纵右.addLayout(s.纵右_日历)
+		#s.日历.更新日期()
+
 		#a=QLabel()
 		#a.setText('123')
 		#s.根横_纵右.addWidget(a)
@@ -1564,4 +1674,9 @@ if __name__ == "__main__":
 	#'''
 
 	w.开始()
+	'''
+	日历=日历组件()
+	日历.更新日期()
+	日历.show()
+	#'''
 	sys.exit(app.exec())

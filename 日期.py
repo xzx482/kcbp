@@ -1,6 +1,6 @@
 import sxtwl
 import time
-from 获取节假日 import 获取节假日
+
 
 
 天干 = ("甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸")
@@ -91,7 +91,7 @@ class 日期():
 		elif s.sx.hasJieQi():
 			return 节气[s.节气()]
 		elif s.农历_值[2]==1:#每月的第一天显示月份
-			return [s.农历_值[1]]
+			return 农历_月[s.农历_值[1]]
 		else:
 			return 农历_日[s.农历_值[2]]
 

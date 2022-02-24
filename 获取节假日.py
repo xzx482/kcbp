@@ -3,7 +3,7 @@ import 解析html
 import time
 from flj import flj
 
-
+节假日_文本={1:'休',2:'班'}
 
 配置l=flj('节假日信息.json')
 配置l.设置默认值({
