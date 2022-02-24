@@ -333,7 +333,7 @@ def ck(t,tl=None):
 
 	return k_3
 
-上课_={0:'已下课',1:'  预备',2:'已上课'}
+上课_={0:'已下课',1:'预备',2:'已上课'}
 星期_tm_wday=['一','二','三','四','五','六','日']
 
 def dk(x_,ck_rt,仅课数=True):
@@ -405,7 +405,7 @@ def 时间转文字(t):
 class 单课程组件(QVBoxLayout):
 	def __init__(s):
 		super().__init__()
-		#s.setSpacing(3)
+		s.setSpacing(3)
 		s.labels=[QLabel()for i in range(3)]
 		#s.labels[0].setFont(QFont("宋体",12,QFont.Weight.Bold))
 		#s.labels[1].setFont(QFont("宋体",12,QFont.Weight.Bold))
@@ -426,102 +426,51 @@ class 单课程组件(QVBoxLayout):
 		s.labels[2].setText(c)
 
 
+class 日期时间组件(单课程组件):
+	def __init__(s):
+		super().__init__()
+		s.labels[0].setFont(QFont("黑体",20,QFont.Weight.Bold))
+		s.labels[1].setFont(QFont("黑体",20,QFont.Weight.Bold))
+		s.labels[2].setFont(QFont("黑体",20))
+	
+	
+	def 更新时间(s):
+		tl=time.localtime(获取时间())
+		#time.strftime("%Y年%m月%d日",tl)
+		s.设置内容(time.strftime("%H:%M:%S",tl),time.strftime("%Y/%m/%d",tl),'星期'+星期_tm_wday[tl.tm_wday])
+		#s.时间.setText(time.strftime("%Y-%m-%d %H:%M:%S",))
 
-class 课程表组件(QWidget):
+class 课程表类():
 	def __init__(s, parent=None):
-		super().__init__(parent)
 
 		#s.timer_id=0
 
 		s.状态={'上课':None,'当前课程':None,'已上课数':None}
 
-		s.父宽=0
-		s.父高=0
-		s.课程定时器=QTimer(s)
-		s.课程定时器.setTimerType(Qt.TimerType.PreciseTimer)
-		#s.课程定时器.setSingleShot(True)
-		#s.gxkc s.更新课程
-		s.课程定时器.timeout.connect(s.gxkc)
-
-
-		s.时间定时器=QTimer(s)
-		#s.gxsj s.更新时间
-		s.时间定时器.setTimerType(Qt.TimerType.PreciseTimer)
-		s.时间定时器.timeout.connect(s.gxsj)
-
-
-		
-		s.时差检查定时器=QTimer(s)
-		#s.scjc s.时差检查
-		s.时差检查定时器.timeout.connect(s.scjc)
-		s.时差检查定时器.setInterval(10000)
-		#s.时差检查定时器.start()
 		s.时差_=0
 
-
-
 		#s.wh=[0,0]
-		s.根横=QVBoxLayout()
+		s.根横=QHBoxLayout()
+		s.根横.setSpacing(20)
 
-		s.根横_纵=QHBoxLayout()
-		#s.根横_纵.addStretch(1)
-		#s.根横_纵.setSpacing(10)
 		s.课程表qbox=[]
 
 
-		s.日期时间=单课程组件()
-		s.日期时间.labels[0].setFont(QFont("黑体",20,QFont.Weight.Bold))
-		s.日期时间.labels[1].setFont(QFont("黑体",20,QFont.Weight.Bold))
-		s.日期时间.labels[2].setFont(QFont("黑体",20))
-		s.根横_纵.addLayout(s.日期时间)
-
-		填空=QLabel()
-		填空.setText('      ')
-		s.根横_纵.addWidget(填空)
-
 		for i in range(6):
 			单课程=单课程组件()
-			s.根横_纵.addLayout(单课程)
-			填空=QLabel()
-			填空.setText(' ')
-			s.根横_纵.addWidget(填空)
-			#s.根横_纵.addStretch(1)
+			s.根横.addLayout(单课程)
 			s.课程表qbox.append(单课程)
 		
-		s.根横_纵2=QHBoxLayout()
-		
-		填空=QLabel()
-		填空.setFont(QFont("黑体",8,QFont.Weight.Bold))
-		填空.setText(' ')
-		s.根横_纵2.addWidget(填空)
 		
 		s.上课状态=QLabel()
+		s.上课状态.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		s.上课状态.setFont(QFont("黑体",28,QFont.Weight.Bold))
-		s.根横_纵2.addWidget(s.上课状态)
 		
-		填空=QLabel()
-		填空.setFont(QFont("黑体",16,QFont.Weight.Bold))
-		填空.setText('  ')
-		s.根横_纵2.addWidget(填空)
 
 		s.上课状态d=QLabel()
 		s.上课状态d.setFont(QFont("黑体",24,QFont.Weight.Bold))
 		s.上课状态d.setStyleSheet('color:#ffffff')
-		s.根横_纵2.addWidget(s.上课状态d)
 
-		s.其他信息=QLabel()
-		s.其他信息.setFont(QFont("黑体",16,QFont.Weight.Bold))
-		s.其他信息.setStyleSheet('color:#ffffff')
-		#s.其他信息.setText('123456')
-		s.其他信息.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-		s.根横_纵2.addStretch(1)
-
-		s.根横.addLayout(s.根横_纵2)
-		s.根横.addLayout(s.根横_纵)
-		s.根横.addWidget(s.其他信息)
-		s.setLayout(s.根横)
-		s.setWindowTitle('课程表')
 
 
 	def start(s,初始=False):
@@ -674,33 +623,9 @@ class 课程表组件(QWidget):
 
 		return m
 
-		##需要两次
-		#s.adjustSize_()
-		
-
-		
-		#print(d[2])
-		#s.课程定时器.start(d[2]*1000)
-
-	def gxsj(s):
-		s.更新时间()
-	def 更新时间(s):
-		tl=time.localtime(获取时间())
-		#time.strftime("%Y年%m月%d日",tl)
-		s.日期时间.设置内容(time.strftime("%H:%M:%S",tl),time.strftime("%Y/%m/%d",tl),'星期'+星期_tm_wday[tl.tm_wday])
-		#s.时间.setText(time.strftime("%Y-%m-%d %H:%M:%S",))
-	
 	class 更新线程(QThread):
 		pass
-	
-	'''
-	def stop(s):
-		if s.timer_id:
-			s.killTimer(s.timer_id)
-			s.timer_id=0
 
-		'''
-	
 	def scjc(s):
 		s.时差检查()
 	def 时差检查(s):
@@ -1011,19 +936,20 @@ class 单日期组件(QWidget):
 		super().__init__()
 
 		s.根纵=QVBoxLayout()
+		s.根纵.setSpacing(0)
 		s.setLayout(s.根纵)
 
 		s.根纵_上=QHBoxLayout()
 
 		s.左上=QLabel()
-		s.左上.setStyleSheet('line-height:0px')
-		s.左上.setFont(QFont("黑体",12))
+		#s.左上.setStyleSheet('line-height:0px')
+		s.左上.setFont(QFont("黑体",16))
 		s.根纵_上.addWidget(s.左上)
 
-		s.根纵_上.addStretch(1)
+		s.根纵_上.addSpacing(24)
 
 		s.右上=QLabel()
-		s.右上.setFont(QFont("黑体",12))
+		s.右上.setFont(QFont("黑体",16))
 		s.根纵_上.addWidget(s.右上)
 		
 		s.根纵.addLayout(s.根纵_上)
@@ -1031,7 +957,7 @@ class 单日期组件(QWidget):
 		s.根纵_中=QHBoxLayout()
 		s.根纵_中.addStretch(1)
 		s.日期=QLabel()
-		s.日期.setFont(QFont("黑体",16))
+		s.日期.setFont(QFont("黑体",22))
 		s.根纵_中.addWidget(s.日期)
 		s.根纵_中.addStretch(1)
 		s.根纵.addLayout(s.根纵_中)
@@ -1039,7 +965,7 @@ class 单日期组件(QWidget):
 		s.底部=QLabel()
 		
 		s.底部.setAlignment(Qt.AlignmentFlag.AlignCenter)
-		s.底部.setFont(QFont("黑体",12))
+		s.底部.setFont(QFont("黑体",16))
 		s.根纵.addWidget(s.底部)
 
 
@@ -1053,7 +979,10 @@ class 单日期组件(QWidget):
 class 日历组件(QWidget):
 	def __init__(s,*a):
 		super().__init__(*a)
+		s.setVisible(False)
 		s.根网=QGridLayout()
+		s.根网.setVerticalSpacing(0)
+		s.根网.setHorizontalSpacing(10)
 		s.setLayout(s.根网)
 		s.日期_qws=[]
 		for i in range(7):
@@ -1352,53 +1281,51 @@ class 主窗口(QWidget):
 		s.秒定时器.timeout.connect(s.miao)
 		s.秒定时器.setInterval(1000)
 
-		s.根横=QHBoxLayout()
+		s.根纵=QVBoxLayout()
+		s.setLayout(s.根纵)
 
-		s.根横_纵左=QVBoxLayout()
-		s.根横_纵右=QVBoxLayout()
+		s.根纵_上横=QHBoxLayout()
+		s.根纵_上横.addStretch(1)
+		s.根纵.addLayout(s.根纵_上横)
 
-		s.根横.addLayout(s.根横_纵左)
-		s.根横.addStretch(1)
-		s.根横.addLayout(s.根横_纵右)
+		s.根纵.addSpacing(30)
 
-		#s.学考倒计时=倒计时组件(None,1641686400,'','学考倒计时 ')
-		#s.学考倒计时.setFont(QFont("黑体",30,QFont.Weight.Bold))
-		#s.学考倒计时.setStyleSheet('color:#ffffff')
+		s.根纵_下横=QHBoxLayout()
+		s.根纵.addLayout(s.根纵_下横)
 
-		#s.根横_纵左.addWidget(s.学考倒计时)
-		'''
-		s.消息l=[]
-		s.消息d={}
-		for i in range(5):
-			i2=单消息组件()
-			s.消息l.append(i2)
-			s.根横_纵左.addWidget(i2)
-		#'''
-		s.根横_纵左.addStretch(1)
+		s.根纵.addStretch(1)
 		
-		s.纵右_课程表=QHBoxLayout()
-		s.纵右_课程表.addStretch(1)
-		s.课程表=课程表组件()
-		s.纵右_课程表.addWidget(s.课程表)
-		s.根横_纵右.addLayout(s.纵右_课程表)
-
-		s.纵右_日历=QHBoxLayout()
-		s.纵右_日历.addStretch(1)
 		s.日历=日历组件()
-		s.日历.setVisible(False)
-		s.纵右_日历.addWidget(s.日历)
-		s.根横_纵右.addLayout(s.纵右_日历)
-		#s.日历.更新日期()
+		s.根纵_上横.addWidget(s.日历)
+		'''
+		s.日历.setVisible(True)
+		s.日历.更新日期()
+		#'''
 
-		#a=QLabel()
-		#a.setText('123')
-		#s.根横_纵右.addWidget(a)
+		s.根纵_上横.addSpacing(20)
 
+		s.上横_纵=QVBoxLayout()
+		s.上横_网=QGridLayout()
+		s.上横_网.setHorizontalSpacing(20)
+		s.上横_纵.addLayout(s.上横_网)
+		s.上横_纵.addStretch(1)
+		s.根纵_上横.addLayout(s.上横_纵)
+		
+		s.课程表=课程表类()
+		s.上横_网.addWidget(s.课程表.上课状态,1,0)
+		s.上横_网.addWidget(s.课程表.上课状态d,1,1)
+		s.上横_网.addLayout(s.课程表.根横,2,1)
+
+		s.日期时间=日期时间组件()
+		s.上横_网.addLayout(s.日期时间,2,0)
+
+
+
+		s.根纵_下横.addStretch(1)
 		s.天气=天气组件()
-		s.根横_纵右.addWidget(s.天气)
+		s.根纵_下横.addWidget(s.天气)
 
-		s.根横_纵右.addStretch(1)
-		s.win.setLayout(s.根横)
+
 
 	def 添加消息(s,xid=None):
 		if not xid:
@@ -1497,7 +1424,7 @@ class 主窗口(QWidget):
 
 	def sm(s):
 		while 1:
-			s.课程表.更新时间()
+			s.日期时间.更新时间()
 			#s.学考倒计时.更新()
 			if 多延迟:
 				time.sleep(1-(时差+time.time())%1)
