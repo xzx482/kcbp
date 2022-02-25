@@ -659,32 +659,51 @@ class 单天气组件(QVBoxLayout):
 			s.labels[i].setText(str(a[i]))
 
 
-class 天气获取t(QThread):
+class 天气获取t_(QThread):
 	trigger=pyqtSignal(dict)
+	def __init__(s):
+		super().__init__()
+	def run(s):
+			try:
+				uo=request.urlopen('http://api.openweathermap.org/data/2.5/onecall?exclude=minutely&units=metric&lang=zh_cn&lat='+str(配置l['天气']['纬度'])+'&lon='+str(配置l['天气']['经度'])+'&appid='+配置l['天气']['key'])
+				jl=json.load(uo)
+				s.trigger.emit(jl)
+			except BaseException as e:
+				print('更新天气失败,'+str(e))
+
+class 天气获取t(threading.Thread):
+	#trigger=pyqtSignal(dict)
 	def __init__(s,parent):
 		super().__init__()
 		s.parent:天气组件=parent
 	def 获取并发送(s):
-		print('获取天气')
-		try:
-			uo=request.urlopen('http://api.openweathermap.org/data/2.5/onecall?exclude=minutely&units=metric&lang=zh_cn&lat='+str(配置l['天气']['纬度'])+'&lon='+str(配置l['天气']['经度'])+'&appid='+配置l['天气']['key'])
-			jl=json.load(uo)
-			s.parent.初次=1
-			s.trigger.emit(jl)
-		except BaseException as e:
-			print('更新天气失败,'+str(e))
+		s.t_=天气获取t_()
+		s.t_.trigger.connect(s.parent.gxtq)
+		s.t_.start()
+		print('更新天气')
+	
 	def run(s):
+		s.获取并发送()
+		#s.setVisible(True)
+
 		while 1:
 			a=0
+			#time.sleep(60)
 			while a<60:
+				time.sleep(1)
 				a+=1
-				if s.parent.预更新 or s.parent.初次==0:
+				显示_当前=s.parent.isVisible()
+				if s.parent.显示!=显示_当前:
+					if 显示_当前 or s.parent.当前信息_更新时间.text():
+						print('天气_'+str(s.parent.显示))
+						s.parent.setVisible(s.parent.显示)
+
+				if s.parent.预更新:
 					s.parent.预更新=False
 					s.获取并发送()
-				
+
 			if s.parent.isVisible():
 				s.获取并发送()
-			time.sleep(1)
 
 
 class 天气组件(QWidget):
@@ -693,7 +712,6 @@ class 天气组件(QWidget):
 
 		s.预更新=False
 		s.显示=False
-		s.初次=0
 		s.setVisible(False)
 
 		s.setFont(QFont("黑体",18,QFont.Weight.Bold))
@@ -890,9 +908,7 @@ class 天气组件(QWidget):
 
 	def l(s):
 			s.获取t=天气获取t(s)
-			s.获取t.trigger.connect(s.gxtq)
-			#s.获取t.run()
-			#s.获取t.获取并发送()
+			#s.获取t.trigger.connect(s.gxtq)
 			s.获取t.start()
 
 class 单日期组件(QVBoxLayout):
@@ -1220,43 +1236,6 @@ class 背景组件():
 		s.视频.setGeometry(0,0,*s.宽高)
 
 
-class 主窗口_线程(QThread):
-	gxkc=pyqtSignal()
-	gxsj=pyqtSignal()
-	gxrq=pyqtSignal()
-	def __init__(s,parent):
-		super().__init__()
-		s.parent=parent
-		s.sm_t=0
-
-	def run(s):
-		计数_秒=0
-		日期_=None
-		while True:
-			tl=time.localtime()
-			日期=(tl.tm_year,tl.tm_mon,tl.tm_mday)
-			if 日期_!=日期:
-				日期_=日期
-				s.gxrq.emit()
-
-			s.gxsj.emit()
-			if 多延迟:
-				time.sleep(1-(时差+time.time())%1)
-
-			s.gxkc.emit()
-
-			st=time.time()
-			if st-s.sm_t>20:
-				print(2)
-			time.sleep(1-st%1)
-			s.sm_t=st
-
-			if 计数_秒>=59:
-				计数_秒=0
-			else:
-				计数_秒+=1
-
-
 
 
 class 主窗口(QWidget):
@@ -1287,6 +1266,7 @@ class 主窗口(QWidget):
 		s.宽=0
 		s.高=0
 
+		s.sm_t=0
 		s.上课状态=None
 		s.下课预更新=None
 
@@ -1442,30 +1422,41 @@ class 主窗口(QWidget):
 	def miao(s):
 		pass
 
-	def 更新课程(s):
+	def sm(s):
+		while 1:
+			s.日期时间.更新时间()
+			#s.学考倒计时.更新()
+			if 多延迟:
+				time.sleep(1-(时差+time.time())%1)
 			倒计时_=s.课程表.更新课程()
-			
+			#if (not 上课)or 当前课程 in('历史','政治','自习')or '学考'in 当前课程:
+			#	pass
 			上课状态=s.课程表.状态['上课']
 			if 上课状态!=s.上课状态:
 				s.上课状态=上课状态
-				print(上课状态)
 				if 上课状态:
 					s.下课预更新=True
-					s.天气.setVisible(False)
-					s.日历.setVisible(False)
+					s.天气.显示=False
+					#s.天气.setVisible(False)
 				else:
-					if(s.天气.当前信息_更新时间.text()or s.天气.初次==1):
-						s.天气.初次=2
-						s.天气.setVisible(True)
-					#s.日历.setVisible(True)
+					#s.天气.setVisible(True)
+					s.天气.显示=True
 			
 			if 上课状态==2 and s.下课预更新 and 倒计时_ and 倒计时_<20:
 				print('预更新',上课状态,s.下课预更新,倒计时_)
 				s.下课预更新=False
 				s.天气.预更新=True
+			st=time.time()
+			if st-s.sm_t>20:
+				print(2)
+			time.sleep(1-st%1)
+			s.sm_t=st
+		#s.秒定时器.setInterval(1000)
+		#s.秒定时器.start()
 
 	
 	def 开始(s):
+		#s.学考倒计时.开始()
 		s.嵌入()
 		s.对齐桌面()
 		#s.设置背景()
@@ -1497,11 +1488,9 @@ class 主窗口(QWidget):
 		#t=threading.Thread(target=s.sm)
 		#t.start()
 		
-		s.线程=主窗口_线程(s)
-		s.线程.gxkc.connect(lambda:s.更新课程())
-		s.线程.gxsj.connect(lambda:s.日期时间.更新时间())
-		s.线程.gxrq.connect(lambda:s.日历.更新日期())
-		s.线程.start()
+		#新线程(0,s.sm)
+		threading.Thread(target=s.sm).start()
+		#_thread.start_new_thread(s.sm,())
 		#'''
 		if 配置l['天气']['key']:
 			s.天气.l()
@@ -1597,7 +1586,7 @@ if __name__ == "__main__":
 
 	w=主窗口()
 
-	#ti=QSystemTrayIcon(w)
+	ti=QSystemTrayIcon(w)
 
 	#'''
 	'''
