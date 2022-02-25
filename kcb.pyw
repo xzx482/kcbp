@@ -661,30 +661,34 @@ class 单天气组件(QVBoxLayout):
 
 class 天气获取t(QThread):
 	trigger=pyqtSignal(dict)
+	sxym=pyqtSignal()
 	def __init__(s,parent):
 		super().__init__()
 		s.parent:天气组件=parent
 	def 获取并发送(s):
-		print('获取天气')
+		print('获取天气'+time.strftime('%H:%M:%S'))
 		try:
 			uo=request.urlopen('http://api.openweathermap.org/data/2.5/onecall?exclude=minutely&units=metric&lang=zh_cn&lat='+str(配置l['天气']['纬度'])+'&lon='+str(配置l['天气']['经度'])+'&appid='+配置l['天气']['key'])
 			jl=json.load(uo)
-			s.parent.初次=1
 			s.trigger.emit(jl)
+			return True
 		except BaseException as e:
 			print('更新天气失败,'+str(e))
+			return False
 	def run(s):
 		while 1:
-			a=0
-			while a<60:
-				a+=1
-				if s.parent.预更新 or s.parent.初次==0:
+			if s.获取并发送():
+				break
+			else:
+				time.sleep(10)
+		s.sxym.emit()
+		while 1:
+			if s.parent.预更新 or s.parent.isVisible():
+				if s.parent.预更新:
 					s.parent.预更新=False
-					s.获取并发送()
-				
-			if s.parent.isVisible():
 				s.获取并发送()
-			time.sleep(1)
+				time.sleep(30)
+			time.sleep(30)
 
 
 class 天气组件(QWidget):
@@ -693,8 +697,10 @@ class 天气组件(QWidget):
 
 		s.预更新=False
 		s.显示=False
-		s.初次=0
 		s.setVisible(False)
+
+		s.获取t=天气获取t(s)
+		s.获取t.trigger.connect(s.gxtq)
 
 		s.setFont(QFont("黑体",18,QFont.Weight.Bold))
 
@@ -889,8 +895,6 @@ class 天气组件(QWidget):
 		#s.adjustSize()
 
 	def l(s):
-			s.获取t=天气获取t(s)
-			s.获取t.trigger.connect(s.gxtq)
 			#s.获取t.run()
 			#s.获取t.获取并发送()
 			s.获取t.start()
@@ -985,6 +989,7 @@ class 日历组件(QWidget):
 	
 	def 更新日期(s):
 		d=日期.日期()
+		d.公历_值[0
 		节假日=获取节假日()
 		for i in s.日期_qws:
 			星期历=日期.星期历(d)#参数 d 在调用后会被改变
@@ -1317,7 +1322,7 @@ class 主窗口(QWidget):
 		
 		s.日历=日历组件()
 		s.根纵_上横.addWidget(s.日历)
-		'''
+		#'''
 		s.日历.setVisible(True)
 		s.日历.更新日期()
 		#'''
@@ -1442,24 +1447,29 @@ class 主窗口(QWidget):
 	def miao(s):
 		pass
 
+	def sx(s):
+		s.刷新()
+	def 刷新(s):
+		if s.上课状态:
+			s.下课预更新=True
+			s.天气.setVisible(False)
+			s.日历.setVisible(False)
+		else:
+			if(s.天气.当前信息_更新时间.text()):
+				s.天气.setVisible(True)
+			#s.日历.setVisible(True)
+
+
 	def 更新课程(s):
 			倒计时_=s.课程表.更新课程()
 			
 			上课状态=s.课程表.状态['上课']
 			if 上课状态!=s.上课状态:
 				s.上课状态=上课状态
-				print(上课状态)
-				if 上课状态:
-					s.下课预更新=True
-					s.天气.setVisible(False)
-					s.日历.setVisible(False)
-				else:
-					if(s.天气.当前信息_更新时间.text()or s.天气.初次==1):
-						s.天气.初次=2
-						s.天气.setVisible(True)
-					#s.日历.setVisible(True)
+				#print(上课状态)
+				s.刷新()
 			
-			if 上课状态==2 and s.下课预更新 and 倒计时_ and 倒计时_<20:
+			if 上课状态==2 and s.下课预更新 and 倒计时_ and 倒计时_<50:
 				print('预更新',上课状态,s.下课预更新,倒计时_)
 				s.下课预更新=False
 				s.天气.预更新=True
@@ -1502,6 +1512,8 @@ class 主窗口(QWidget):
 		s.线程.gxsj.connect(lambda:s.日期时间.更新时间())
 		s.线程.gxrq.connect(lambda:s.日历.更新日期())
 		s.线程.start()
+
+		s.天气.获取t.sxym.connect(s.sx)
 		#'''
 		if 配置l['天气']['key']:
 			s.天气.l()
