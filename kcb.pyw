@@ -989,7 +989,8 @@ class 日历组件(QWidget):
 	
 	def 更新日期(s):
 		d=日期.日期()
-		d.公历_值[0
+		#raise
+		今天=d.公历_数字
 		节假日=获取节假日()
 		for i in s.日期_qws:
 			星期历=日期.星期历(d)#参数 d 在调用后会被改变
@@ -1003,6 +1004,8 @@ class 日历组件(QWidget):
 				except KeyError:
 					右上=''
 				i[i2].设置内容(左上,右上,str(日),日期_.简日())
+				if 今天==d.公历_数字:
+					#
 
 
 
@@ -1322,7 +1325,7 @@ class 主窗口(QWidget):
 		
 		s.日历=日历组件()
 		s.根纵_上横.addWidget(s.日历)
-		#'''
+		'''
 		s.日历.setVisible(True)
 		s.日历.更新日期()
 		#'''

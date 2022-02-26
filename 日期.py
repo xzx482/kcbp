@@ -40,6 +40,7 @@ class 日期():
 		s.sx=sxtwl.fromSolar(年,月,日)
 		s.农历_值=None
 		s.公历_值=None
+		s.公历_数字=None
 		s.更新()
 	
 	def __repr__(s):
@@ -64,6 +65,7 @@ class 日期():
 	def 公历(s):
 		d=(s.sx.getSolarYear(),s.sx.getSolarMonth(),s.sx.getSolarDay())
 		s.公历_值=d
+		s.公历_数字=d[0]*10000+d[1]*100+d[2]
 		return d
 
 	def 节气(s):
@@ -72,6 +74,7 @@ class 日期():
 			return (a-2)%24
 		else:
 			return 0
+
 
 	def 星期(s):
 		return s.sx.getWeek()
