@@ -413,6 +413,7 @@ class 单课程组件(QVBoxLayout):
 		for i in s.labels:
 			#i.setFont(QFont("黑体",20,QFont.Weight.Bold))
 			i.setStyleSheet('color:#ffffff')
+		s.labels[0].setMinimumWidth(160)
 		s.labels[0].setFont(QFont("黑体",18,QFont.Weight.Bold))
 		s.labels[1].setFont(QFont("黑体",20))
 		s.labels[2].setFont(QFont("黑体",20,QFont.Weight.Bold))
@@ -451,7 +452,7 @@ class 课程表类():
 
 		#s.wh=[0,0]
 		s.根横=QHBoxLayout()
-		s.根横.setSpacing(20)
+		#s.根横.setSpacing(20)
 
 		s.课程表qbox=[]
 
@@ -899,25 +900,6 @@ class 天气组件(QWidget):
 			#s.获取t.获取并发送()
 			s.获取t.start()
 
-class 单日期组件(QVBoxLayout):
-	def __init__(s):
-		super().__init__()
-		#s.setSpacing(3)
-		s.labels=[QLabel()for i in range(2)]
-		for i in s.labels:
-			#i.setFont(QFont("黑体",16))
-			i.setStyleSheet('color:#ffffff')
-			s.addWidget(i)
-			i.setAlignment(Qt.AlignmentFlag.AlignCenter)
-		s.labels[0].setFont(QFont("黑体",16))
-		s.labels[1].setFont(QFont("黑体",8))
-		'''
-		s.labels[2].setFont(QFont("黑体",20,QFont.Weight.Bold))
-		'''
-
-	def 设置内容(s,*a):
-		for i in range(len(a)):
-			s.labels[i].setText(str(a[i]))
 
 class 单日期组件(QWidget):
 	def __init__(s):
@@ -1004,8 +986,13 @@ class 日历组件(QWidget):
 				except KeyError:
 					右上=''
 				i[i2].设置内容(左上,右上,str(日),日期_.简日())
-				if 今天==d.公历_数字:
-					#
+				if 今天==日期_.公历_数字:#当前的日期外加边框
+					i[i2].日期.setStyleSheet('border:2px solid #fff')
+				elif 今天>日期_.公历_数字:#之前的日期变灰
+					i[i2].setStyleSheet('color:#aaffffff')
+				else:
+					i[i2].日期.setStyleSheet('')
+					i[i2].setStyleSheet('')
 
 
 
@@ -1353,6 +1340,13 @@ class 主窗口(QWidget):
 		s.天气=天气组件()
 		s.根纵_下横.addWidget(s.天气)
 
+		
+		s.线程=主窗口_线程(s)
+		s.线程.gxkc.connect(lambda:s.更新课程())
+		s.线程.gxsj.connect(lambda:s.日期时间.更新时间())
+		s.线程.gxrq.connect(lambda:s.日历.更新日期())
+		s.天气.获取t.sxym.connect(s.sx)
+
 
 
 	def 添加消息(s,xid=None):
@@ -1460,7 +1454,7 @@ class 主窗口(QWidget):
 		else:
 			if(s.天气.当前信息_更新时间.text()):
 				s.天气.setVisible(True)
-			#s.日历.setVisible(True)
+			s.日历.setVisible(True)
 
 
 	def 更新课程(s):
@@ -1509,14 +1503,9 @@ class 主窗口(QWidget):
 		#import threading
 		#t=threading.Thread(target=s.sm)
 		#t.start()
-		
-		s.线程=主窗口_线程(s)
-		s.线程.gxkc.connect(lambda:s.更新课程())
-		s.线程.gxsj.connect(lambda:s.日期时间.更新时间())
-		s.线程.gxrq.connect(lambda:s.日历.更新日期())
+
 		s.线程.start()
 
-		s.天气.获取t.sxym.connect(s.sx)
 		#'''
 		if 配置l['天气']['key']:
 			s.天气.l()
