@@ -246,7 +246,7 @@ except BaseException as e:
 
 
 def 获取天(tl):
-	return tl.tm_year*10000+tl.tm_mon*100+tl.tm_mday
+	return (tl.tm_year*10000+tl.tm_mon*100+tl.tm_mday)*10+tl.tm_wday
 
 
 def ck(t,tl=None):
@@ -278,8 +278,9 @@ def ck(t,tl=None):
 	
 	节_=节
 	
-	if str(天) in 临时课程:
-		课程_=临时课程[str(天)]
+	天_=str(天)[:-1]
+	if 天_ in 临时课程:
+		课程_=临时课程[天_]
 		if len(课程_)>0:
 			if isinstance(课程_[0],int):
 				if 课程_[0]<5:
@@ -287,7 +288,7 @@ def ck(t,tl=None):
 				else:
 					ks=课程_[0]-5
 					if ks>=len(k2):
-						raise ValueError('临时课程的 "'+str(天)+'" 的 "'+str(课程_[0])+'"不在范围(<='+str(len(k2)-1)+')内')
+						raise ValueError('临时课程的 "'+天_+'" 的 "'+str(课程_[0])+'"不在范围(<='+str(len(k2)-1)+')内')
 					课程=k2[ks]
 
 			if isinstance(课程_[0],list):
@@ -305,7 +306,7 @@ def ck(t,tl=None):
 					始末时间_=始末时间_长假
 					始末时间_文本_=始末时间长假_文本
 				else:
-					raise ValueError('临时课程的 "'+str(天)+'" 的 "'+str(课程_[1])+'"不在范围(<=3)内')
+					raise ValueError('临时课程的 "'+天_+'" 的 "'+str(课程_[1])+'"不在范围(<=3)内')
 
 			if isinstance(课程_[1],list):
 				始末时间_=课程_[1]
@@ -316,7 +317,7 @@ def ck(t,tl=None):
 				if 课程_[2]==1:
 					节_=节
 				else:
-					raise ValueError('临时课程的 "'+str(天)+'" 的 "'+str(课程_[2])+'"不在范围(<=3)内')
+					raise ValueError('临时课程的 "'+天_+'" 的 "'+str(课程_[2])+'"不在范围(<=3)内')
 
 			if isinstance(课程_[2],list):
 				节_=课程_[2]
@@ -413,10 +414,10 @@ class 单课程组件(QVBoxLayout):
 		for i in s.labels:
 			#i.setFont(QFont("黑体",20,QFont.Weight.Bold))
 			i.setStyleSheet('color:#ffffff')
-		s.labels[0].setMinimumWidth(160)
-		s.labels[0].setFont(QFont("黑体",18,QFont.Weight.Bold))
+		s.labels[0].setMinimumWidth(155)
+		s.labels[0].setFont(QFont("黑体",18))
 		s.labels[1].setFont(QFont("黑体",20))
-		s.labels[2].setFont(QFont("黑体",20,QFont.Weight.Bold))
+		s.labels[2].setFont(QFont("黑体",20))
 		for i in s.labels:
 			s.addWidget(i)
 			i.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -430,8 +431,8 @@ class 单课程组件(QVBoxLayout):
 class 日期时间组件(单课程组件):
 	def __init__(s):
 		super().__init__()
-		s.labels[0].setFont(QFont("黑体",20,QFont.Weight.Bold))
-		s.labels[1].setFont(QFont("黑体",20,QFont.Weight.Bold))
+		s.labels[0].setFont(QFont("黑体",20))
+		s.labels[1].setFont(QFont("黑体",20))
 		s.labels[2].setFont(QFont("黑体",20))
 	
 	
@@ -583,14 +584,16 @@ class 课程表类():
 					else:
 						if s.将上课程[课程天_[课程天_k]]:
 							课程天_k_=课程天_k
-							年,月=divmod(课程天_[课程天_k],10000)
+							年,星期=divmod(课程天_[课程天_k],10)
+							年,月=divmod(年,10000)
 							月,日=divmod(月,100)
 							日期_s=str(日)+'日'
 							if 日==1:
 								日期_s=str(月)+'月'+日期_s
 								if 月==1:
 									日期_s=str(年)+'年'+日期_s
-							cki=[['',''],日期_s,'']
+							
+							cki=[['',''],日期_s,'星期'+星期_tm_wday[星期]]
 						else:
 							continue
 					s.课程表qbox[i].设置内容(cki[0][1],cki[1],cki[2])
