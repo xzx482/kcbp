@@ -938,7 +938,7 @@ class 单日期组件(QWidget):
 		s.底部=QLabel()
 		
 		s.底部.setAlignment(Qt.AlignmentFlag.AlignCenter)
-		s.底部.setFont(QFont("黑体",16))
+		s.底部.setFont(QFont("黑体",14))
 		s.根纵.addWidget(s.底部)
 
 
