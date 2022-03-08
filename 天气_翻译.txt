@@ -1,0 +1,204 @@
+with
+
+light 小
+heavy 大
+ragged
+
+thunderstorm 雷
+rain 雨
+drizzle 细雨
+
+intensity 强度
+
+
+Weather condition codes
+Group 2xx: Thunderstorm
+ID	Main	Description	Icon
+200	Thunderstorm	thunderstorm with light rain	 11d
+201	Thunderstorm	thunderstorm with rain	 11d
+202	Thunderstorm	thunderstorm with heavy rain	 11d
+210	Thunderstorm	light thunderstorm	 11d
+211	Thunderstorm	thunderstorm	 11d
+212	Thunderstorm	heavy thunderstorm	 11d
+221	Thunderstorm	ragged thunderstorm	 11d
+230	Thunderstorm	thunderstorm with light drizzle	 11d
+231	Thunderstorm	thunderstorm with drizzle	 11d
+232	Thunderstorm	thunderstorm with heavy drizzle	 11d
+Group 3xx: Drizzle
+ID	Main	Description	Icon
+300	Drizzle	light intensity drizzle	 09d
+301	Drizzle	drizzle	 09d
+302	Drizzle	heavy intensity drizzle	 09d
+310	Drizzle	light intensity drizzle rain	 09d
+311	Drizzle	drizzle rain	 09d
+312	Drizzle	heavy intensity drizzle rain	 09d
+313	Drizzle	shower rain and drizzle	 09d
+314	Drizzle	heavy shower rain and drizzle	 09d
+321	Drizzle	shower drizzle	 09d
+Group 5xx: Rain
+ID	Main	Description	Icon
+500	Rain	light rain	 10d
+501	Rain	moderate rain	 10d
+502	Rain	heavy intensity rain	 10d
+503	Rain	very heavy rain	 10d
+504	Rain	extreme rain	 10d
+511	Rain	freezing rain	 13d
+520	Rain	light intensity shower rain	 09d
+521	Rain	shower rain	 09d
+522	Rain	heavy intensity shower rain	 09d
+531	Rain	ragged shower rain	 09d
+Group 6xx: Snow
+ID	Main	Description	Icon
+600	Snow	light snow	 13d
+601	Snow	Snow	 13d
+602	Snow	Heavy snow	 13d
+611	Snow	Sleet	 13d
+612	Snow	Light shower sleet	 13d
+613	Snow	Shower sleet	 13d
+615	Snow	Light rain and snow	 13d
+616	Snow	Rain and snow	 13d
+620	Snow	Light shower snow	 13d
+621	Snow	Shower snow	 13d
+622	Snow	Heavy shower snow	 13d
+Group 7xx: Atmosphere
+ID	Main	Description	Icon
+701	Mist	mist	 50d
+711	Smoke	Smoke	 50d
+721	Haze	Haze	 50d
+731	Dust	sand/ dust whirls	 50d
+741	Fog	fog	 50d
+751	Sand	sand	 50d
+761	Dust	dust	 50d
+762	Ash	volcanic ash	 50d
+771	Squall	squalls	 50d
+781	Tornado	tornado	 50d
+Group 800: Clear
+ID	Main	Description	Icon
+800	Clear	clear sky	 01d
+ 01n
+Group 80x: Clouds
+ID	Main	Description	Icon
+801	Clouds	few clouds: 11-25%	 02d
+ 02n
+802	Clouds	scattered clouds: 25-50%	 03d
+ 03n
+803	Clouds	broken clouds: 51-84%	 04d
+ 04n
+804	Clouds	overcast clouds: 85-100%	 04d
+ 04n
+
+
+weather={
+    200: "thunderstorm with light rain",
+    201: "thunderstorm with rain",
+    202: "thunderstorm with heavy rain",
+    210: "light thunderstorm",
+    211: "thunderstorm",
+    212: "heavy thunderstorm",
+    221: "ragged thunderstorm",
+    230: "thunderstorm with light drizzle",
+    231: "thunderstorm with drizzle",
+    232: "thunderstorm with heavy drizzle",
+    300: "light intensity drizzle",
+    301: "drizzle",
+    302: "heavy intensity drizzle",
+    310: "light intensity drizzle rain",
+    311: "drizzle rain",
+    312: "heavy intensity drizzle rain",
+    313: "shower rain and drizzle",
+    314: "heavy shower rain and drizzle",
+    321: "shower drizzle",
+    500: "light rain",
+    501: "moderate rain",
+    502: "heavy intensity rain",
+    503: "very heavy rain",
+    504: "extreme rain",
+    511: "freezing rain",
+    520: "light intensity shower rain",
+    521: "shower rain",
+    522: "heavy intensity shower rain",
+    531: "ragged shower rain",
+    600: "light snow",
+    601: "snow",
+    602: "heavy snow",
+    611: "sleet",
+    612: "light shower sleet",
+    613: "shower sleet",
+    615: "light rain and snow",
+    616: "rain and snow",
+    620: "light shower snow",
+    621: "shower snow",
+    622: "heavy shower snow",
+    701: "mist",
+    711: "smoke",
+    721: "haze",
+    731: "sand/ dust whirls",
+    741: "fog",
+    751: "sand",
+    761: "dust",
+    762: "volcanic ash",
+    771: "squall",
+    781: "tornado",
+    800: "clear sky",
+    801: "few clouds",
+    802: "scattered clouds",
+    803: "broken clouds",
+    804: "overcast clouds"
+
+}
+
+天气={
+    200:"小雨伴雷",
+    201:"中雨伴雷",
+    202:"大雨伴雷",
+    210:"小雷",
+    211:"雷",
+    212:"大雷",
+    221:"雷暴",
+    230:"毛雨伴雷",
+    231:"细雨伴雷",
+    232:"雨伴雷",
+
+
+
+    500:"小雨",
+    501:"中雨",
+    502:"大雨",
+    503:"暴雨",
+    504:"大暴雨",
+    511:"冻雨",
+    520:"小阵雨",
+    521:"阵雨",
+    522:"大阵雨",
+    531:"强阵雨",
+
+    600:"小雪",
+    601:"中雪",
+    602:"大雪",
+    611:"冻雨",
+    612:"小阵冻雨",   
+    613:"阵冻雨",
+    615:"小雨夹雪",
+    616:"雨夹雪",
+    620:"小阵雪",
+    621:"阵雪",
+    622:"大阵雪",
+
+    701:"雾",
+    711:"烟",
+    721:"霾",
+    731:"沙尘",
+    741:"雾",
+    751:"沙",
+    761:"尘",
+    762:"火山灰",
+    771:"风暴",
+    781:"龙卷风",
+
+    800:"晴",
+    801:"少云",
+    802:"多云",
+    803:"多云",
+    804:"阴"
+
+}

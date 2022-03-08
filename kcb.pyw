@@ -183,7 +183,7 @@ k2=[
 for i in range(len(k1)):
 	#k1[i]=k1[i][:5]+['政治'if i!=5 else '']+k1[i][5:]#   111
 	#if i!=5:
-	k1[i].append("自习")
+	k1[i].append(" ")
 
 #for i in range(len(k2)):
 #	k2[i]=k2[i][:5]+[' ']+k2[i][5:]#   111

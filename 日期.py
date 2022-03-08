@@ -89,6 +89,9 @@ class 日期():
 
 	def 简日(s):
 		农节=农历节日(s.sx)
+		公节=公历节日(s.sx)
+		if 公节:
+			return 公节[0]
 		if 农节:
 			return 农节[0]
 		elif s.sx.hasJieQi():
