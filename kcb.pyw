@@ -694,6 +694,13 @@ class 天气获取t(QThread):
 				time.sleep(30)
 			time.sleep(30)
 
+天气cl=flj('天气c.json')
+
+def 天气_c(w):
+	for i in w:
+		i_=str(i['id'])
+		if i_ not in 天气cl.d:
+			天气cl[i_]=i['description']
 
 class 天气组件(QWidget):
 	def __init__(s, parent=None):
@@ -846,8 +853,16 @@ class 天气组件(QWidget):
 		#每分钟天气_=天气j['minutely']
 		每小时天气_=天气j['hourly']
 		每天天气_=天气j['daily']
+
+		天气_c(当前天气_['weather'])
+		for i in 每小时天气_:
+			天气_c(i['weather'])
+		for i in 每天天气_:
+			天气_c(i['weather'])
+
 		s.当前信息_更新时间.setText(time.strftime("%H:%M:%S",time.localtime(当前天气_['dt'])))
-		s.当前信息_天气.setText(当前天气_['weather'][0]['description'])
+		#s.当前信息_天气.setText(当前天气_['weather'][0]['description'])
+		s.当前信息_天气.setText( 天气cl[ str(当前天气_['weather'][0]['id']) ] )
 		s.当前信息_温度.setText(str(当前天气_['temp']))
 		s.当前信息_湿度.setText(str(当前天气_['humidity']))
 		风速_=''
@@ -880,7 +895,7 @@ class 天气组件(QWidget):
 		for i in range(len(s.每小时信息l)):
 			if len(每小时天气_)>i2:
 				i3=每小时天气_[i2]
-				s.每小时信息l[i].设置内容(time.strftime("%H",time.localtime(i3['dt'])),i3['weather'][0]["description"],str(round(i3['pop']*100)),i3['temp'])
+				s.每小时信息l[i].设置内容(time.strftime("%H",time.localtime(i3['dt'])), 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['pop']*100)),i3['temp'])
 				i2+=2
 			else:
 				break
@@ -891,7 +906,7 @@ class 天气组件(QWidget):
 			if len(每天天气_)>i2:
 				i3=每天天气_[i2]
 				温度=i3['temp']
-				s.每天信息l[i].设置内容(time.strftime("%d",time.localtime(i3['dt'])),i3['weather'][0]["description"],str(round(i3['pop']*100)),str(温度['min'])+'/'+str(温度['max']))
+				s.每天信息l[i].设置内容(time.strftime("%d",time.localtime(i3['dt'])), 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['pop']*100)),str(温度['min'])+'/'+str(温度['max']))
 				i2+=1
 			else:
 				break

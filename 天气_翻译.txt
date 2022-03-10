@@ -6,7 +6,7 @@ ragged
 
 thunderstorm 雷
 rain 雨
-drizzle 细雨
+drizzle 阵雨
 
 intensity 强度
 
