@@ -95,7 +95,7 @@ if 时差%1==0:
 else:
 	多延迟=True
 
-t_6=1639756800-86400*7*6
+t_6=1639756800-86400*7*5
 
 
 
@@ -746,12 +746,9 @@ class 天气组件(QWidget):
 
 		#(s.每分钟信息hbox,s.每分钟信息l,25,2),
 		for i in ((s.每小时信息hbox,s.每小时信息l,12,4),(s.每天信息hbox,s.每天信息l,7,4)):
+			i[0].setSpacing(10)
 			for i2 in range(i[2]+1):
 				i_=单天气组件(i[3])
-					
-				填空=QLabel()
-				填空.setText(' ')
-				i[0].addWidget(填空)
 
 				i[0].addLayout(i_)
 				i[1].append(i_)
