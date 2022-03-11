@@ -645,7 +645,8 @@ class 课程表类():
 class 单天气组件(QVBoxLayout):
 	def __init__(s,数量=3):
 		super().__init__()
-		#s.setSpacing(3)
+		s.setSpacing(3)
+
 		s.labels=[QLabel()for i in range(数量)]
 		for i in s.labels:
 			i.setFont(QFont("黑体",16))
@@ -657,6 +658,7 @@ class 单天气组件(QVBoxLayout):
 		s.labels[1].setFont(QFont("黑体",20))
 		s.labels[2].setFont(QFont("黑体",20,QFont.Weight.Bold))
 		'''
+		s.labels[0].setMinimumWidth(50)
 
 	def 设置内容(s,*a):
 		for i in range(len(a)):
@@ -716,37 +718,33 @@ class 天气组件(QWidget):
 		s.setFont(QFont("黑体",18,QFont.Weight.Bold))
 
 		s.根纵=QVBoxLayout()
+		s.根纵.setSpacing(30)
 		s.setLayout(s.根纵)
 
 
 		s.当前信息=QHBoxLayout()
+		s.当前信息.setSpacing(5)
 
 		#s.每分钟信息hbox=QHBoxLayout()
 		#s.每分钟信息l=[]
 
-		s.每小时信息hbox=QHBoxLayout()
-		s.每小时信息l=[]
+		s.每小时信息hbox1=QHBoxLayout()
+		s.每小时信息hbox2=QHBoxLayout()
+		s.每小时信息l1=[]
+		s.每小时信息l2=[]
 		
 		s.每天信息hbox=QHBoxLayout()
 		s.每天信息l=[]
 
 		
 		s.根纵.addLayout(s.当前信息)
-		'''
-		填空=QLabel()
-		填空.setText(' ')
-		s.根纵.addWidget(填空)
-		s.根纵.addLayout(s.每分钟信息hbox)
-		'''
-		s.根纵.addWidget(QLabel(' '))
-		s.根纵.addLayout(s.每小时信息hbox)
-		填空=QLabel()
-		s.根纵.addWidget(QLabel(' '))
+		s.根纵.addLayout(s.每小时信息hbox1)
+		s.根纵.addLayout(s.每小时信息hbox2)
 		s.根纵.addLayout(s.每天信息hbox)
 
 		#(s.每分钟信息hbox,s.每分钟信息l,25,2),
-		for i in ((s.每小时信息hbox,s.每小时信息l,12,4),(s.每天信息hbox,s.每天信息l,7,4)):
-			i[0].setSpacing(10)
+		for i in ((s.每小时信息hbox1,s.每小时信息l1,12,4),(s.每小时信息hbox2,s.每小时信息l2,12,4),(s.每天信息hbox,s.每天信息l,7,5)):
+			i[0].setSpacing(16)
 			for i2 in range(i[2]+1):
 				i_=单天气组件(i[3])
 
@@ -754,8 +752,10 @@ class 天气组件(QWidget):
 				i[1].append(i_)
 
 		#s.每分钟信息l.pop(0).设置内容('时间(分)','降水量(毫米)')
-		s.每小时信息l.pop(0).设置内容('时间(时)','天气','降水概率(%)','温度(°C)')
-		s.每天信息l.pop(0).设置内容('时间(天)','天气','降水概率(%)','最值温度(°C)')
+		s.每小时信息l1.pop(0).设置内容('时间(时)','天气','降水概率(%)','温度(°C)')
+		s.每小时信息l2.pop(0).设置内容('时间(时)','天气','降水概率(%)','温度(°C)')
+		s.每小时信息l=s.每小时信息l1+s.每小时信息l2
+		s.每天信息l.pop(0).设置内容('时间(天)','天气','降水概率(%)','最高温度(°C)','最低温度(°C)')
 
 		当前信息_更新时间0=QLabel()
 		当前信息_更新时间0.setText('更新时间:')
@@ -825,7 +825,8 @@ class 天气组件(QWidget):
 
 		s.当前信息.addStretch(1)
 		#s.每分钟信息hbox.addStretch(1)
-		s.每小时信息hbox.addStretch(1)
+		s.每小时信息hbox1.addStretch(1)
+		s.每小时信息hbox2.addStretch(1)
 		s.每天信息hbox.addStretch(1)
 
 		'''
@@ -888,22 +889,22 @@ class 天气组件(QWidget):
 				break
 		'''	
 
-		i2=1
+		i2=0
 		for i in range(len(s.每小时信息l)):
 			if len(每小时天气_)>i2:
 				i3=每小时天气_[i2]
 				s.每小时信息l[i].设置内容(time.strftime("%H",time.localtime(i3['dt'])), 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['pop']*100)),i3['temp'])
-				i2+=2
+				i2+=1
 			else:
 				break
 				
 
-		i2=1
+		i2=0
 		for i in range(len(s.每天信息l)):
 			if len(每天天气_)>i2:
 				i3=每天天气_[i2]
 				温度=i3['temp']
-				s.每天信息l[i].设置内容(time.strftime("%d",time.localtime(i3['dt'])), 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['pop']*100)),str(温度['min'])+'/'+str(温度['max']))
+				s.每天信息l[i].设置内容(time.strftime("%d",time.localtime(i3['dt'])), 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['pop']*100)),str(温度['min']),str(温度['max']))
 				i2+=1
 			else:
 				break
