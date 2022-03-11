@@ -95,7 +95,7 @@ if 时差%1==0:
 else:
 	多延迟=True
 
-t_6=1639756800-86400*7*5
+t_6=1639756800-86400*7*6
 
 
 
@@ -743,7 +743,7 @@ class 天气组件(QWidget):
 		s.根纵.addLayout(s.每天信息hbox)
 
 		#(s.每分钟信息hbox,s.每分钟信息l,25,2),
-		for i in ((s.每小时信息hbox1,s.每小时信息l1,12,4),(s.每小时信息hbox2,s.每小时信息l2,12,4),(s.每天信息hbox,s.每天信息l,7,5)):
+		for i in ((s.每小时信息hbox1,s.每小时信息l1,12,4),(s.每小时信息hbox2,s.每小时信息l2,12,4),(s.每天信息hbox,s.每天信息l,8,5)):
 			i[0].setSpacing(16)
 			for i2 in range(i[2]+1):
 				i_=单天气组件(i[3])
@@ -904,7 +904,7 @@ class 天气组件(QWidget):
 			if len(每天天气_)>i2:
 				i3=每天天气_[i2]
 				温度=i3['temp']
-				s.每天信息l[i].设置内容(time.strftime("%d",time.localtime(i3['dt'])), 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['pop']*100)),str(温度['min']),str(温度['max']))
+				s.每天信息l[i].设置内容(time.strftime("%d",time.localtime(i3['dt'])), 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['pop']*100)),str(温度['max']),str(温度['min']))
 				i2+=1
 			else:
 				break
