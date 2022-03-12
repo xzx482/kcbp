@@ -1453,7 +1453,6 @@ class 主窗口(QWidget):
 		a=[]
 		win32gui.EnumChildWindows(s.winid_桌面,lambda hwnd,param:param.append(hwnd),a)
 		if not s.winid_s in a:
-			time.sleep(2)
 			print('重新嵌入')
 			s.update()
 			s.嵌入()
