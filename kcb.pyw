@@ -1454,8 +1454,11 @@ class 主窗口(QWidget):
 		win32gui.EnumChildWindows(s.winid_桌面,lambda hwnd,param:param.append(hwnd),a)
 		if not s.winid_s in a:
 			print('重新嵌入')
-			s.update()
 			s.嵌入()
+			s.update()
+			s.setVisible(False)
+			s.setVisible(True)
+
 
 	def miao(s):
 		pass
@@ -1487,7 +1490,15 @@ class 主窗口(QWidget):
 				s.下课预更新=False
 				s.天气.预更新=True
 
-	
+
+	def 截图(s):
+		screen=QApplication.primaryScreen()
+		pix=screen.grabWindow(s.winid_桌面)
+		raise
+		palette=QPalette()
+		palette.setBrush(QPalette.Background,QBrush(pix))
+		s.setPalette(palette)
+
 	def 开始(s):
 		s.嵌入()
 		s.对齐桌面()
