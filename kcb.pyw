@@ -67,7 +67,7 @@ import _thread
 import time
 from PyQt6.QtCore import Qt,QTimer,QPropertyAnimation,QUrl,QEasingCurve,QAbstractAnimation,QThread,pyqtSignal,QObject
 from PyQt6.QtWidgets import QWidget,QLabel,QHBoxLayout,QVBoxLayout,QGridLayout,QGraphicsOpacityEffect,QSystemTrayIcon,QMenu,QWidgetAction
-from PyQt6.QtGui import QPalette, QBrush, QPixmap,QFont,QIcon,QAction
+from PyQt6.QtGui import QPainter, QPalette, QBrush, QPixmap,QFont,QIcon,QAction
 from PyQt6.QtMultimedia import QMediaPlayer
 from PyQt6.QtMultimediaWidgets import QVideoWidget
 import win32gui,win32con
@@ -1269,11 +1269,26 @@ class 主窗口_线程(QThread):
 
 
 
+class 全屏窗口(QWidget):
+	def __init__(s,par=None):
+		super().__init__()
+		s.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint)
+
+		s.主窗口:主窗口=par
+		
+	#'''
+	def paintEvent(s,e):
+		painter=QPainter(s)
+		painter.drawPixmap(0,0,QApplication.primaryScreen().grabWindow(s.主窗口.winid_桌面))
+		s.主窗口.render(painter)
+		painter.end()
+	#'''
+
 
 class 主窗口(QWidget):
 	def __init__(s, parent=None):
 		super().__init__(parent)
-		s.托盘=托盘图标(s)
+		#s.托盘=托盘图标(s)
 		s.win=QWidget(s)
 		s.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)#透明背景
 		s.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint)
@@ -1294,6 +1309,7 @@ class 主窗口(QWidget):
 		s.winid_win=int(s.win.winId())
 		s.winid_背景视频=int(s.背景视频.winId())
 
+		s.全屏=全屏窗口(s)
 
 		s.宽=0
 		s.高=0
@@ -1358,6 +1374,10 @@ class 主窗口(QWidget):
 
 		
 		s.线程=主窗口_线程(s)
+		'''
+		s.线程.gxkc.connect(lambda:(s.更新课程(),s.更新_()))
+		s.线程.gxsj.connect(lambda:(s.日期时间.更新时间(),s.更新_()))
+		'''
 		s.线程.gxkc.connect(lambda:s.更新课程())
 		s.线程.gxsj.connect(lambda:s.日期时间.更新时间())
 		s.线程.gxrq.connect(lambda:s.日历.更新日期())
@@ -1385,6 +1405,7 @@ class 主窗口(QWidget):
 		#s.move(0,0)
 		s.setGeometry(0,0,宽,高)
 		s.win.setGeometry(0,0,宽,高)
+		#s.全屏.setGeometry(0,0,宽,高)
 		#s.背景.resize(宽,高)
 			
 		if (not s.套背景)or not s.背景视频.背景_入:
@@ -1490,14 +1511,8 @@ class 主窗口(QWidget):
 				s.下课预更新=False
 				s.天气.预更新=True
 
-
-	def 截图(s):
-		screen=QApplication.primaryScreen()
-		pix=screen.grabWindow(s.winid_桌面)
-		raise
-		palette=QPalette()
-		palette.setBrush(QPalette.Background,QBrush(pix))
-		s.setPalette(palette)
+	def 更新_(s):
+		s.全屏.update()
 
 	def 开始(s):
 		s.嵌入()
@@ -1508,16 +1523,6 @@ class 主窗口(QWidget):
 		#threading.Thread(target=lambda:()).start()
 		#新线程(0,lambda:(s.嵌入(),s.对齐桌面(),s.状态检查()))
 		
-		#s.背景视频.show()
-		#qt
-		#win32gui.ShowWindow(s.winid_背景视频,win32con.SW_HIDE)
-		#win32gui.SetWindowPos(s.winid_背景图片,win32con.HWND_TOP,0,0,0,0,win32con.SWP_NOMOVE|win32con.SWP_NOSIZE)
-		#win32gui.SetWindowPos(s.winid_背景视频,win32con.HWND_BOTTOM,0,0,0,0,win32con.SWP_NOMOVE|win32con.SWP_NOSIZE)
-		#s.show()
-		#'''
-		#s.背景动画_入.start()
-		#s.背景.show()
-		#s.背景视频.show()
 		'''
 		s.背景视频.show()
 		s.背景视频.显示()
@@ -1532,6 +1537,8 @@ class 主窗口(QWidget):
 		#t.start()
 
 		s.线程.start()
+
+		#s.全屏.show()
 
 		#'''
 		if 配置l['天气']['key']:

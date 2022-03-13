@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QApplication,QWidget,QLabel,QLineEdit,QCheckBox,QPushButton,QVBoxLayout,QHBoxLayout
-from PyQt5 import QtCore
+from PyQt6.QtWidgets import QApplication,QWidget,QLabel,QLineEdit,QCheckBox,QPushButton,QVBoxLayout,QHBoxLayout
+from PyQt6 import QtCore
 import sys
 from flj import flj
 
@@ -109,7 +109,7 @@ class 欢迎(QWidget):
 		s.setWindowTitle('欢迎')
 		s.vl=QVBoxLayout()
 		s.标题=QLabel('<h1>欢迎</h1>')
-		s.标题.setAlignment(QtCore.Qt.AlignCenter)
+		s.标题.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 		s.vl.addWidget(s.标题)
 		s.vl.addStretch(1)
 		s.setLayout(s.vl)
@@ -120,7 +120,7 @@ class 设置课程表(QWidget):
 		super().__init__()
 		s.vl=QVBoxLayout()
 		s.标题=QLabel('<h1>设置课程表</h1>')
-		s.标题.setAlignment(QtCore.Qt.AlignCenter)
+		s.标题.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 		s.vl.addWidget(s.标题)
 		s.提示=QLabel(
 			'将在所有时间显示, 包括时间和课程'
@@ -140,7 +140,7 @@ class 设置天气(QWidget):
 		super().__init__()
 		s.vl=QVBoxLayout()
 		s.标题=QLabel('<h1>设置天气</h1>')
-		s.标题.setAlignment(QtCore.Qt.AlignCenter)
+		s.标题.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 		s.vl.addWidget(s.标题)
 		s.提示=QLabel(
 			'仅在下课时启用, 在桌面背景右侧显示天气<br/>'
@@ -176,8 +176,8 @@ class 设置天气(QWidget):
 			'这是免费的, 只是过程有一些复杂'
 			'</p>'
 		)
-		提示.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse|QtCore.Qt.LinksAccessibleByMouse)
-		#提示.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse)
+		提示.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse|QtCore.Qt.TextInteractionFlag.LinksAccessibleByMouse)
+		#提示.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.LinksAccessibleByMouse)
 		提示.setOpenExternalLinks(True)
 		s.vl.addWidget(提示)
 		s.id_文本框=QLineEdit()
@@ -199,7 +199,7 @@ class 设置背景(QWidget):
 		super().__init__()
 		s.vl=QVBoxLayout()
 		s.标题=QLabel('<h1>设置花哨的背景</h1>')
-		s.标题.setAlignment(QtCore.Qt.AlignCenter)
+		s.标题.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 		s.vl.addWidget(s.标题)
 		s.提示=QLabel(
 			'仅在下课时启用, 让桌面背景更加与众不同, 背景一般都是景观<br/>'
@@ -220,7 +220,7 @@ class 完成(QWidget):
 		super().__init__()
 		s.vl=QVBoxLayout()
 		s.标题=QLabel('<h1>已就绪</h1>')
-		s.标题.setAlignment(QtCore.Qt.AlignCenter)
+		s.标题.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 		s.vl.addWidget(s.标题)
 		提示=QLabel(
 			'设置完成, 再次打开主程序即可使用'
@@ -242,7 +242,7 @@ def 欢迎窗口():
 	w.设置流程(l=[欢迎,设置课程表,设置天气,设置背景,完成])
 	w.show()
 	
-	sys.exit(app.exec_())
+	sys.exit(app.exec())
 
 if __name__=='__main__':
 	欢迎窗口()

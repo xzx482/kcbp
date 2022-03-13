@@ -171,29 +171,6 @@ fn:文件名
 	#可将其作为一个字典使用
 	#使用以下方法将字典操作重定向到 s.d
 
-	def __eq__(s,v):
-		s.d.__eq__(s,v)
-
-	def __ge__(s,v):
-		s.d.__ge__(s,v)
-
-	def __gt__(s,v):
-		s.d.__gt__(s,v)
-
-	def __ior__(s,v):
-		s.d.__ior__(s,v)
-
-	def __le__(s,v):
-		s.d.__le__(s,v)
-
-	def __lt__(s,v):
-		s.d.__lt__(s,v)
-
-	def __ne__(s,v):
-		s.d.__ne__(s,v)
-
-	def __or__(s,v):
-		s.d.__or__(s,v)
 
 	def __iter__(s):
 		iter(s.d)
