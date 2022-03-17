@@ -645,7 +645,7 @@ class 课程表类():
 class 单天气组件(QVBoxLayout):
 	def __init__(s,数量=3):
 		super().__init__()
-		s.setSpacing(3)
+		s.setSpacing(1)
 
 		s.labels=[QLabel()for i in range(数量)]
 		for i in s.labels:
@@ -658,7 +658,7 @@ class 单天气组件(QVBoxLayout):
 		s.labels[1].setFont(QFont("黑体",20))
 		s.labels[2].setFont(QFont("黑体",20,QFont.Weight.Bold))
 		'''
-		s.labels[0].setMinimumWidth(50)
+		s.labels[0].setMinimumWidth(80)
 
 	def 设置内容(s,*a):
 		for i in range(len(a)):
@@ -719,7 +719,7 @@ class 天气组件(QWidget):
 		s.setFont(QFont("黑体",18,QFont.Weight.Bold))
 
 		s.根纵=QVBoxLayout()
-		s.根纵.setSpacing(30)
+		s.根纵.setSpacing(12)
 		s.setLayout(s.根纵)
 
 
@@ -733,25 +733,39 @@ class 天气组件(QWidget):
 
 		s.每小时信息hbox1=QHBoxLayout()
 		s.每小时信息hbox2=QHBoxLayout()
+		s.每小时信息hbox3=QHBoxLayout()
 		s.每小时信息l1=[]
 		s.每小时信息l2=[]
+		s.每小时信息l3=[]
 		
 		s.每天信息hbox=QHBoxLayout()
 		s.每天信息l=[]
 
 		
 		s.根纵.addLayout(s.当前信息)
+		s.根纵.addSpacing(10)
+		s.根纵.addLayout(s.每天信息hbox)
+		s.根纵.addSpacing(10)
 		s.根纵.addLayout(s.每分钟信息hbox1)
 		s.根纵.addLayout(s.每分钟信息hbox2)
+		s.根纵.addSpacing(10)
 		s.根纵.addLayout(s.每小时信息hbox1)
 		s.根纵.addLayout(s.每小时信息hbox2)
-		s.根纵.addLayout(s.每天信息hbox)
+		s.根纵.addLayout(s.每小时信息hbox3)
+
 
 		#(s.每分钟信息hbox,s.每分钟信息l,25,2),
-		for i in ((s.每分钟信息hbox1,s.每分钟信息l1,15,2),(s.每分钟信息hbox2,s.每分钟信息l2,15,2),(s.每小时信息hbox1,s.每小时信息l1,13,5),(s.每小时信息hbox2,s.每小时信息l2,13,5),(s.每天信息hbox,s.每天信息l,8,6)):
-			i[0].setSpacing(16)
+		for i in (\
+			(s.每分钟信息hbox1,s.每分钟信息l1,15,2),(s.每分钟信息hbox2,s.每分钟信息l2,15,2),\
+			(s.每小时信息hbox1,s.每小时信息l1,8,5),(s.每小时信息hbox2,s.每小时信息l2,8,5),(s.每小时信息hbox3,s.每小时信息l3,8,5),\
+			(s.每天信息hbox,s.每天信息l,8,6)
+		):
+			i[0].setSpacing(12)
 			for i2 in range(i[2]+1):
 				i_=单天气组件(i[3])
+
+				if i[3]==2:
+					i_.labels[0].setMinimumWidth(40)
 
 				i[0].addLayout(i_)
 				i[1].append(i_)
@@ -761,7 +775,8 @@ class 天气组件(QWidget):
 		s.每分钟信息l=s.每分钟信息l1+s.每分钟信息l2
 		s.每小时信息l1.pop(0).设置内容('时间(时)','天气','云量(%) 降水概率(%)','湿度(%)','温度(°C)')
 		s.每小时信息l2.pop(0).设置内容('时间(时)','天气','云量(%) 降水概率(%)','湿度(%)','温度(°C)')
-		s.每小时信息l=s.每小时信息l1+s.每小时信息l2
+		s.每小时信息l3.pop(0).设置内容('时间(时)','天气','云量(%) 降水概率(%)','湿度(%)','温度(°C)')
+		s.每小时信息l=s.每小时信息l1+s.每小时信息l2+s.每小时信息l3
 		s.每天信息l.pop(0).设置内容('时间(天)','天气','云量(%) 降水概率(%)','湿度(%)','最值温度(°C)')
 
 		当前信息_更新时间0=QLabel()
@@ -835,6 +850,7 @@ class 天气组件(QWidget):
 		s.每分钟信息hbox2.addStretch(1)
 		s.每小时信息hbox1.addStretch(1)
 		s.每小时信息hbox2.addStretch(1)
+		s.每小时信息hbox3.addStretch(1)
 		s.每天信息hbox.addStretch(1)
 
 		'''
@@ -859,6 +875,9 @@ class 天气组件(QWidget):
 		每分钟天气_=天气j['minutely']
 		每小时天气_=天气j['hourly']
 		每天天气_=天气j['daily']
+
+		if 'alerts' in 天气j:
+			print('alerts '+天气j['alerts'])
 
 		天气_c(当前天气_['weather'])
 		for i in 每小时天气_:
@@ -891,7 +910,7 @@ class 天气组件(QWidget):
 		for i in range(len(s.每分钟信息l)):
 			if len(每分钟天气_)>i2:
 				i3=每分钟天气_[i2]
-				s.每分钟信息l[i].设置内容(time.strftime("%M",time.localtime(i3['dt'])),round(i3['precipitation'],2))
+				s.每分钟信息l[i].设置内容(time.localtime(i3['dt']).tm_min,round(i3['precipitation'],1))
 				i2+=2
 			else:
 				break
@@ -901,7 +920,7 @@ class 天气组件(QWidget):
 		for i in range(len(s.每小时信息l)):
 			if len(每小时天气_)>i2:
 				i3=每小时天气_[i2]
-				s.每小时信息l[i].设置内容(time.strftime("%H",time.localtime(i3['dt'])), 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['clouds']))+' '+str(round(i3['pop']*100)),str(round(i3['humidity'])),i3['temp'])
+				s.每小时信息l[i].设置内容(time.localtime(i3['dt']).tm_hour, 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['clouds']))+' '+str(round(i3['pop']*100)),str(round(i3['humidity'])),i3['temp'])
 				i2+=1
 			else:
 				break
@@ -912,7 +931,7 @@ class 天气组件(QWidget):
 			if len(每天天气_)>i2:
 				i3=每天天气_[i2]
 				温度=i3['temp']
-				s.每天信息l[i].设置内容(time.strftime("%d",time.localtime(i3['dt'])), 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['clouds']))+' '+str(round(i3['pop']*100)),str(round(i3['humidity'])),str(round(温度['max']))+'/'+str(round(温度['min'])))
+				s.每天信息l[i].设置内容(time.localtime(i3['dt']).tm_mday, 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['clouds']))+' '+str(round(i3['pop']*100)),str(round(i3['humidity'])),str(round(温度['max']))+'/'+str(round(温度['min'])))
 				i2+=1
 			else:
 				break
@@ -1607,14 +1626,27 @@ class 托盘图标(QSystemTrayIcon):
 		app.exit()
 		#sys.exit()
 
+记录时间_=['0','1']
 def 记录时间():
-	tl=time.localtime()
-	with open('t/'+time.strftime(''),'w') as f:
-		f.write(str(tl))
+	if not os.path.isdir('t'):
+		os.mkdir('t')
+	while 1:
+		for i in range(2):
+			tl=time.localtime()
+			if (tl.tm_hour==11 and tl.tm_min>53)or(tl.tm_hour==12 and tl.tm_min<20)or(tl.tm_hour==17 and tl.tm_min>45)or(tl.tm_hour==18 and tl.tm_min<5)or(tl.tm_hour==22 and tl.tm_min>35)or(tl.tm_hour>=23):
+				with open('t/'+记录时间_[i]+'_'+time.strftime('%Y%m%d_%H',tl)+'.txt','w') as f:
+					f.seek(0)
+					f.truncate(0)
+					f.write(time.strftime('%Y%m%d_%H%M%S',tl))
+					f.flush()
+			time.sleep(30)
+			
 
 if __name__ == "__main__":
 
 	配置l=flj('配置.json')
+
+	_thread.start_new_thread(记录时间,())
 
 	if not 配置l.d:
 		配置l.关闭()
