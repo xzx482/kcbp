@@ -674,7 +674,7 @@ class 天气获取t(QThread):
 	def 获取并发送(s):
 		print('获取天气'+time.strftime('%H:%M:%S'))
 		try:
-			uo=request.urlopen('https://api.openweathermap.org/data/2.5/onecall?exclude=minutely&units=metric&lang=zh_cn&lat='+str(配置l['天气']['纬度'])+'&lon='+str(配置l['天气']['经度'])+'&appid='+配置l['天气']['key'])
+			uo=request.urlopen('https://api.openweathermap.org/data/2.5/onecall?units=metric&lang=zh_cn&lat='+str(配置l['天气']['纬度'])+'&lon='+str(配置l['天气']['经度'])+'&appid='+配置l['天气']['key'])
 			jl=json.load(uo)
 			s.trigger.emit(jl)
 			return True
@@ -726,8 +726,10 @@ class 天气组件(QWidget):
 		s.当前信息=QHBoxLayout()
 		s.当前信息.setSpacing(5)
 
-		#s.每分钟信息hbox=QHBoxLayout()
-		#s.每分钟信息l=[]
+		s.每分钟信息hbox1=QHBoxLayout()
+		s.每分钟信息hbox2=QHBoxLayout()
+		s.每分钟信息l1=[]
+		s.每分钟信息l2=[]
 
 		s.每小时信息hbox1=QHBoxLayout()
 		s.每小时信息hbox2=QHBoxLayout()
@@ -739,12 +741,14 @@ class 天气组件(QWidget):
 
 		
 		s.根纵.addLayout(s.当前信息)
+		s.根纵.addLayout(s.每分钟信息hbox1)
+		s.根纵.addLayout(s.每分钟信息hbox2)
 		s.根纵.addLayout(s.每小时信息hbox1)
 		s.根纵.addLayout(s.每小时信息hbox2)
 		s.根纵.addLayout(s.每天信息hbox)
 
 		#(s.每分钟信息hbox,s.每分钟信息l,25,2),
-		for i in ((s.每小时信息hbox1,s.每小时信息l1,13,5),(s.每小时信息hbox2,s.每小时信息l2,13,5),(s.每天信息hbox,s.每天信息l,8,6)):
+		for i in ((s.每分钟信息hbox1,s.每分钟信息l1,15,2),(s.每分钟信息hbox2,s.每分钟信息l2,15,2),(s.每小时信息hbox1,s.每小时信息l1,13,5),(s.每小时信息hbox2,s.每小时信息l2,13,5),(s.每天信息hbox,s.每天信息l,8,6)):
 			i[0].setSpacing(16)
 			for i2 in range(i[2]+1):
 				i_=单天气组件(i[3])
@@ -752,7 +756,9 @@ class 天气组件(QWidget):
 				i[0].addLayout(i_)
 				i[1].append(i_)
 
-		#s.每分钟信息l.pop(0).设置内容('时间(分)','降水量(毫米)')
+		s.每分钟信息l1.pop(0).设置内容('时间(分)','降水量(毫米)')
+		s.每分钟信息l2.pop(0).设置内容('时间(分)','降水量(毫米)')
+		s.每分钟信息l=s.每分钟信息l1+s.每分钟信息l2
 		s.每小时信息l1.pop(0).设置内容('时间(时)','天气','云量(%) 降水概率(%)','湿度(%)','温度(°C)')
 		s.每小时信息l2.pop(0).设置内容('时间(时)','天气','云量(%) 降水概率(%)','湿度(%)','温度(°C)')
 		s.每小时信息l=s.每小时信息l1+s.每小时信息l2
@@ -825,7 +831,8 @@ class 天气组件(QWidget):
 			#'''
 
 		s.当前信息.addStretch(1)
-		#s.每分钟信息hbox.addStretch(1)
+		s.每分钟信息hbox1.addStretch(1)
+		s.每分钟信息hbox2.addStretch(1)
 		s.每小时信息hbox1.addStretch(1)
 		s.每小时信息hbox2.addStretch(1)
 		s.每天信息hbox.addStretch(1)
@@ -849,7 +856,7 @@ class 天气组件(QWidget):
 		s.更新天气(*a)
 	def 更新天气(s,天气j):
 		当前天气_=天气j['current']
-		#每分钟天气_=天气j['minutely']
+		每分钟天气_=天气j['minutely']
 		每小时天气_=天气j['hourly']
 		每天天气_=天气j['daily']
 
@@ -879,16 +886,16 @@ class 天气组件(QWidget):
 		风速_+='风 '+str(当前天气_['wind_speed'])+'米/秒'
 		s.当前信息_风速.setText(风速_)
 
-		'''
-		i2=1
+		#'''
+		i2=0
 		for i in range(len(s.每分钟信息l)):
 			if len(每分钟天气_)>i2:
 				i3=每分钟天气_[i2]
-				s.每分钟信息l[i].设置内容(time.strftime("%M",time.localtime(i3['dt'])),i3['precipitation'])
-				i2+=3
+				s.每分钟信息l[i].设置内容(time.strftime("%M",time.localtime(i3['dt'])),round(i3['precipitation'],2))
+				i2+=2
 			else:
 				break
-		'''	
+		#'''	
 
 		i2=0
 		for i in range(len(s.每小时信息l)):
@@ -1600,6 +1607,10 @@ class 托盘图标(QSystemTrayIcon):
 		app.exit()
 		#sys.exit()
 
+def 记录时间():
+	tl=time.localtime()
+	with open('t/'+time.strftime(''),'w') as f:
+		f.write(str(tl))
 
 if __name__ == "__main__":
 
@@ -1635,6 +1646,8 @@ if __name__ == "__main__":
 	#t_6=配置l['周六时间']
 
 	w=主窗口()
+
+	#a1
 
 	#ti=QSystemTrayIcon(w)
 
