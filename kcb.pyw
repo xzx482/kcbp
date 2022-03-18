@@ -719,45 +719,66 @@ class 天气组件(QWidget):
 		s.setFont(QFont("黑体",18,QFont.Weight.Bold))
 
 		s.根纵=QVBoxLayout()
-		s.根纵.setSpacing(12)
+		s.根纵.setSpacing(0)
 		s.setLayout(s.根纵)
 
 
 		s.当前信息=QHBoxLayout()
 		s.当前信息.setSpacing(5)
 
+		s.每分钟信息widget=QWidget()
+		s.每分钟信息vbox=QVBoxLayout()
+		s.每分钟信息vbox.setSpacing(12)
+		s.每分钟信息vbox.addSpacing(24)
 		s.每分钟信息hbox1=QHBoxLayout()
 		s.每分钟信息hbox2=QHBoxLayout()
+		s.每分钟信息vbox.addLayout(s.每分钟信息hbox1)
+		s.每分钟信息vbox.addLayout(s.每分钟信息hbox2)
+		s.每分钟信息widget.setLayout(s.每分钟信息vbox)
+		s.每分钟信息hbox1.setSpacing(1)
+		s.每分钟信息hbox2.setSpacing(1)
 		s.每分钟信息l1=[]
 		s.每分钟信息l2=[]
 
+		s.每小时信息widget=QWidget()
+		s.每小时信息vbox=QVBoxLayout()
+		s.每小时信息vbox.setSpacing(12)
+		s.每小时信息vbox.addSpacing(24)
 		s.每小时信息hbox1=QHBoxLayout()
 		s.每小时信息hbox2=QHBoxLayout()
 		s.每小时信息hbox3=QHBoxLayout()
+		s.每小时信息vbox.addLayout(s.每小时信息hbox1)
+		s.每小时信息vbox.addLayout(s.每小时信息hbox2)
+		s.每小时信息vbox.addLayout(s.每小时信息hbox3)
+		s.每小时信息widget.setLayout(s.每小时信息vbox)
+		#s.每小时信息hbox1.setSpacing(4)
+		#s.每小时信息hbox2.setSpacing(4)
+		#s.每小时信息hbox3.setSpacing(4)
 		s.每小时信息l1=[]
 		s.每小时信息l2=[]
 		s.每小时信息l3=[]
 		
+		s.每天信息widget=QWidget()
+		s.每天信息vbox=QVBoxLayout()
+		s.每天信息vbox.setSpacing(12)
+		s.每天信息vbox.addSpacing(24)
 		s.每天信息hbox=QHBoxLayout()
+		s.每天信息vbox.addLayout(s.每天信息hbox)
+		s.每天信息widget.setLayout(s.每天信息vbox)
+		#s.每天信息hbox.setSpacing(4)
 		s.每天信息l=[]
 
 		
 		s.根纵.addLayout(s.当前信息)
-		s.根纵.addSpacing(10)
-		s.根纵.addLayout(s.每天信息hbox)
-		s.根纵.addSpacing(10)
-		s.根纵.addLayout(s.每分钟信息hbox1)
-		s.根纵.addLayout(s.每分钟信息hbox2)
-		s.根纵.addSpacing(10)
-		s.根纵.addLayout(s.每小时信息hbox1)
-		s.根纵.addLayout(s.每小时信息hbox2)
-		s.根纵.addLayout(s.每小时信息hbox3)
+		s.根纵.addWidget(s.每天信息widget)
+		s.根纵.addWidget(s.每分钟信息widget)
+		s.根纵.addWidget(s.每小时信息widget)
 
 
 		#(s.每分钟信息hbox,s.每分钟信息l,25,2),
-		for i in (\
-			(s.每分钟信息hbox1,s.每分钟信息l1,15,2),(s.每分钟信息hbox2,s.每分钟信息l2,15,2),\
-			(s.每小时信息hbox1,s.每小时信息l1,8,5),(s.每小时信息hbox2,s.每小时信息l2,8,5),(s.每小时信息hbox3,s.每小时信息l3,8,5),\
+		for i in (
+			(s.每分钟信息hbox1,s.每分钟信息l1,15,2),(s.每分钟信息hbox2,s.每分钟信息l2,15,2),
+			(s.每小时信息hbox1,s.每小时信息l1,8,5),(s.每小时信息hbox2,s.每小时信息l2,8,5),(s.每小时信息hbox3,s.每小时信息l3,8,5),
 			(s.每天信息hbox,s.每天信息l,8,6)
 		):
 			i[0].setSpacing(12)
@@ -872,18 +893,11 @@ class 天气组件(QWidget):
 		s.更新天气(*a)
 	def 更新天气(s,天气j):
 		当前天气_=天气j['current']
-		每分钟天气_=天气j['minutely']
-		每小时天气_=天气j['hourly']
-		每天天气_=天气j['daily']
 
 		if 'alerts' in 天气j:
 			print('alerts '+天气j['alerts'])
 
 		天气_c(当前天气_['weather'])
-		for i in 每小时天气_:
-			天气_c(i['weather'])
-		for i in 每天天气_:
-			天气_c(i['weather'])
 
 		s.当前信息_更新时间.setText(time.strftime("%H:%M:%S",time.localtime(当前天气_['dt'])))
 		#s.当前信息_天气.setText(当前天气_['weather'][0]['description'])
@@ -906,35 +920,56 @@ class 天气组件(QWidget):
 		s.当前信息_风速.setText(风速_)
 
 		#'''
-		i2=0
-		for i in range(len(s.每分钟信息l)):
-			if len(每分钟天气_)>i2:
-				i3=每分钟天气_[i2]
-				s.每分钟信息l[i].设置内容(time.localtime(i3['dt']).tm_min,round(i3['precipitation'],1))
-				i2+=2
-			else:
-				break
+		if 'minutely' in 天气j:
+			每分钟天气_=天气j['minutely']
+			i2=0
+			for i in range(len(s.每分钟信息l)):
+				if len(每分钟天气_)>i2:
+					i3=每分钟天气_[i2]
+					s.每分钟信息l[i].设置内容(str(time.localtime(i3['dt']).tm_min)+'分',round(i3['precipitation'],1))
+					i2+=2
+				else:
+					break
+			
+			s.每分钟信息widget.setVisible(True)
+		else:
+			s.每分钟信息widget.setVisible(False)
+
 		#'''	
-
-		i2=0
-		for i in range(len(s.每小时信息l)):
-			if len(每小时天气_)>i2:
-				i3=每小时天气_[i2]
-				s.每小时信息l[i].设置内容(time.localtime(i3['dt']).tm_hour, 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['clouds']))+' '+str(round(i3['pop']*100)),str(round(i3['humidity'])),i3['temp'])
-				i2+=1
-			else:
-				break
+		if 'hourly' in 天气j:
+			每小时天气_=天气j['hourly']
+			for i in 每小时天气_:
+				天气_c(i['weather'])
+			i2=0
+			for i in range(len(s.每小时信息l)):
+				if len(每小时天气_)>i2:
+					i3=每小时天气_[i2]
+					s.每小时信息l[i].设置内容(str(time.localtime(i3['dt']).tm_hour)+'时', 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['clouds']))+' '+str(round(i3['pop']*100)),str(round(i3['humidity'])),i3['temp'])
+					i2+=1
+				else:
+					break
 				
+			s.每小时信息widget.setVisible(True)
+		else:
+			s.每小时信息widget.setVisible(False)
 
-		i2=0
-		for i in range(len(s.每天信息l)):
-			if len(每天天气_)>i2:
-				i3=每天天气_[i2]
-				温度=i3['temp']
-				s.每天信息l[i].设置内容(time.localtime(i3['dt']).tm_mday, 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['clouds']))+' '+str(round(i3['pop']*100)),str(round(i3['humidity'])),str(round(温度['max']))+'/'+str(round(温度['min'])))
-				i2+=1
-			else:
-				break
+		if 'daily' in 天气j:
+			每天天气_=天气j['daily']
+			for i in 每天天气_:
+				天气_c(i['weather'])
+			i2=0
+			for i in range(len(s.每天信息l)):
+				if len(每天天气_)>i2:
+					i3=每天天气_[i2]
+					温度=i3['temp']
+					s.每天信息l[i].设置内容(str(time.localtime(i3['dt']).tm_mday)+'日', 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['clouds']))+' '+str(round(i3['pop']*100)),str(round(i3['humidity'])),str(round(温度['max']))+'/'+str(round(温度['min'])))
+					i2+=1
+				else:
+					break
+
+			s.每天信息widget.setVisible(True)
+		else:
+			s.每天信息widget.setVisible()
 				
 		#s.adjustSize()
 
