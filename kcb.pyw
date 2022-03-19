@@ -283,9 +283,9 @@ def ck(t,tl=None):
 		课程_=临时课程[天_]
 		if len(课程_)>0:
 			if isinstance(课程_[0],int):
-				if 课程_[0]<5:
+				if 课程_[0]<5:#周一到周五
 					课程=课程_[0]
-				else:
+				else:#周六
 					ks=课程_[0]-5
 					if ks>=len(k2):
 						raise ValueError('临时课程的 "'+天_+'" 的 "'+str(课程_[0])+'"不在范围(<='+str(len(k2)-1)+')内')
@@ -751,9 +751,9 @@ class 天气组件(QWidget):
 		s.每小时信息vbox.addLayout(s.每小时信息hbox2)
 		s.每小时信息vbox.addLayout(s.每小时信息hbox3)
 		s.每小时信息widget.setLayout(s.每小时信息vbox)
-		#s.每小时信息hbox1.setSpacing(4)
-		#s.每小时信息hbox2.setSpacing(4)
-		#s.每小时信息hbox3.setSpacing(4)
+		s.每小时信息hbox1.setSpacing(4)
+		s.每小时信息hbox2.setSpacing(4)
+		s.每小时信息hbox3.setSpacing(4)
 		s.每小时信息l1=[]
 		s.每小时信息l2=[]
 		s.每小时信息l3=[]
@@ -765,7 +765,7 @@ class 天气组件(QWidget):
 		s.每天信息hbox=QHBoxLayout()
 		s.每天信息vbox.addLayout(s.每天信息hbox)
 		s.每天信息widget.setLayout(s.每天信息vbox)
-		#s.每天信息hbox.setSpacing(4)
+		s.每天信息hbox.setSpacing(4)
 		s.每天信息l=[]
 
 		
@@ -926,7 +926,7 @@ class 天气组件(QWidget):
 			for i in range(len(s.每分钟信息l)):
 				if len(每分钟天气_)>i2:
 					i3=每分钟天气_[i2]
-					s.每分钟信息l[i].设置内容(str(time.localtime(i3['dt']).tm_min)+'分',round(i3['precipitation'],1))
+					s.每分钟信息l[i].设置内容(time.strftime('%M',time.localtime(i3['dt']))+'分',round(i3['precipitation'],1))
 					i2+=2
 				else:
 					break
