@@ -1,5 +1,6 @@
 import os
 from PyQt6.QtWidgets import __file__ as qt6_file
+from PyQt6.sip import T
 dirname = os.path.dirname(qt6_file)
 plugin_path = os.path.join(dirname, 'Qt6', 'plugins', 'platforms')
 os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
@@ -674,7 +675,7 @@ class 天气获取t(QThread):
 	def 获取并发送(s):
 		print('获取天气'+time.strftime('%H:%M:%S'))
 		try:
-			uo=request.urlopen('https://api.openweathermap.org/data/2.5/onecall?units=metric&lang=zh_cn&lat='+str(配置l['天气']['纬度'])+'&lon='+str(配置l['天气']['经度'])+'&appid='+配置l['天气']['key'],timeout=20)
+			uo=request.urlopen('https://api.openweathermap.org/data/2.5/onecall?units=metric&lang=zh_cn&lat='+str(配置l['天气']['纬度'])+'&lon='+str(配置l['天气']['经度'])+'&appid='+配置l['天气']['key'],timeout=60)
 			jl=json.load(uo)
 			s.trigger.emit(jl)
 			return True
@@ -923,15 +924,21 @@ class 天气组件(QWidget):
 		if 'minutely' in 天气j:
 			每分钟天气_=天气j['minutely']
 			i2=0
+			有信息=False
 			for i in range(len(s.每分钟信息l)):
 				if len(每分钟天气_)>i2:
 					i3=每分钟天气_[i2]
 					s.每分钟信息l[i].设置内容(time.strftime('%M',time.localtime(i3['dt']))+'分',round(i3['precipitation'],1))
+					if i3['precipitation']:
+						有信息=True
 					i2+=2
 				else:
 					break
 			
-			s.每分钟信息widget.setVisible(True)
+			if 有信息:
+				s.每分钟信息widget.setVisible(True)
+			else:
+				s.每分钟信息widget.setVisible(False)
 		else:
 			s.每分钟信息widget.setVisible(False)
 
@@ -1293,6 +1300,63 @@ class 背景组件():
 		s.视频.setGeometry(0,0,*s.宽高)
 
 
+class 消息_主窗口(QWidget):
+	def __init__(s,*args,**kwargs):
+		super().__init__(*args,**kwargs)
+		s.重要消息l=[]
+		s.普通消息l=[]
+		s.根纵=QVBoxLayout()
+		s.重要消息widget=QWidget()
+		s.普通消息widget=QWidget()
+		s.重要消息vbox=QVBoxLayout()
+		s.普通消息vbox=QVBoxLayout()
+		s.重要消息widget.setLayout(s.重要消息vbox)
+		s.普通消息widget.setLayout(s.普通消息vbox)
+		s.根纵.addWidget(s.重要消息)
+		s.根纵.addWidget(s.普通消息)
+		s.setLayout(s.根纵)
+
+	def 刷新(s):
+		pass
+
+	def 添加消息(s,消息:单消息):
+		if 消息.类型==1:#普通
+			s.普通消息l.append(消息)
+		elif 消息.类型==1:#重要
+			s.重要消息l.append(消息)
+
+
+消息_主=消息_主窗口()
+
+class 单消息():
+	def __init__(s,标题,内容,类型,持续时间=None,始末时间=None):
+		s.标题=标题
+		s.内容=内容
+		s.类型=类型
+		s.开始时间=None
+		s.结束时间=None
+		s.持续时间=持续时间
+		if 始末时间:
+			s.开始时间,s.结束时间=始末时间
+
+	def 显示(s,持续时间=None,结束时间=None):
+		t=time.time()
+		if 持续时间:
+			s.结束时间=t+持续时间
+		elif 结束时间:
+			s.结束时间=结束时间
+		else:
+			if s.持续时间:
+				s.结束时间=t+s.持续时间
+			if s.开始时间:
+				if not s.结束时间:
+					s.结束时间=max(t,s.开始时间)+10
+			else:
+				s.开始时间=t
+				s.结束时间=t+10
+
+				
+
 class 主窗口_线程(QThread):
 	gxkc=pyqtSignal()
 	gxsj=pyqtSignal()
@@ -1447,14 +1511,6 @@ class 主窗口(QWidget):
 
 
 
-	def 添加消息(s,xid=None):
-		if not xid:
-			xid=int(time.time()*1024)
-		elif xid in s.消息d:
-			i=s.消息d[xid]
-		s.消息d
-		s.消息l
-
 	def 对齐桌面(s):
 		d=QApplication.primaryScreen().geometry()
 		宽,高=d.width(),d.height()
@@ -1603,10 +1659,11 @@ class 主窗口(QWidget):
 		#s.全屏.show()
 
 		#'''
-		if 配置l['天气']['key']:
-			s.天气.l()
-		else:
-			print('未配置天气')
+		if 配置l['天气']['启用']:
+			if 配置l['天气']['key']:
+				s.天气.l()
+			else:
+				print('未配置天气')
 		#'''
 		#s.天气.更新天气()
 
