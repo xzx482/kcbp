@@ -1,6 +1,5 @@
 import os
 from PyQt6.QtWidgets import __file__ as qt6_file
-from PyQt6.sip import T
 dirname = os.path.dirname(qt6_file)
 plugin_path = os.path.join(dirname, 'Qt6', 'plugins', 'platforms')
 os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
@@ -995,13 +994,14 @@ class 单日期组件(QWidget):
 		s.setLayout(s.根纵)
 
 		s.根纵_上=QHBoxLayout()
+		s.根纵_上.setSpacing(0)
 
 		s.左上=QLabel()
 		#s.左上.setStyleSheet('line-height:0px')
 		s.左上.setFont(QFont("黑体",16))
 		s.根纵_上.addWidget(s.左上)
 
-		s.根纵_上.addSpacing(24)
+		s.根纵_上.addSpacing(2)
 
 		s.右上=QLabel()
 		s.右上.setFont(QFont("黑体",16))
@@ -1018,7 +1018,7 @@ class 单日期组件(QWidget):
 		s.根纵.addLayout(s.根纵_中)
 
 		s.底部=QLabel()
-		
+		s.底部.setMinimumWidth(50)
 		s.底部.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		s.底部.setFont(QFont("黑体",14))
 		s.根纵.addWidget(s.底部)
@@ -1299,6 +1299,30 @@ class 背景组件():
 		s.视频.背景_入=None
 		s.视频.setGeometry(0,0,*s.宽高)
 
+		
+
+
+class 单消息组件(QWidget):
+	def __init__(s,开始时间,结束时间,显示=False):
+		super().__init__()
+
+		s.开始时间=开始时间
+		s.结束时间=结束时间
+		s.显示=显示
+		
+		s.标题label=QLabel()
+		s.标题label.setFont(QFont("黑体",24))
+		s.内容label=QLabel()
+		s.内容label.setFont(QFont("黑体",16))
+		s.纵根=QVBoxLayout()
+		s.纵根.addWidget(s.标题label)
+		s.纵根.addWidget(s.内容label)
+		s.setLayout(s.纵根)
+
+		s.setVisible(False)
+
+
+
 
 class 消息_主窗口(QWidget):
 	def __init__(s,*args,**kwargs):
@@ -1306,56 +1330,51 @@ class 消息_主窗口(QWidget):
 		s.重要消息l=[]
 		s.普通消息l=[]
 		s.根纵=QVBoxLayout()
+		"""
+		s.重要消息label=QLabel()
+		s.普通消息label=QLabel()
+		s.根纵.addWidget(s.重要消息label)
+		s.根纵.addWidget(s.普通消息label)
+		'''
+		"""
 		s.重要消息widget=QWidget()
 		s.普通消息widget=QWidget()
 		s.重要消息vbox=QVBoxLayout()
 		s.普通消息vbox=QVBoxLayout()
 		s.重要消息widget.setLayout(s.重要消息vbox)
 		s.普通消息widget.setLayout(s.普通消息vbox)
-		s.根纵.addWidget(s.重要消息)
-		s.根纵.addWidget(s.普通消息)
+		s.根纵.addWidget(s.重要消息widget)
+		s.根纵.addWidget(s.普通消息widget)
+
+
+		#'''
 		s.setLayout(s.根纵)
 
 	def 刷新(s):
-		pass
+		for i in ((s.重要消息l,s.重要消息vbox),(s.普通消息l,s.普通消息vbox)):
+			l,layout=i
+			t=time.time()
+			for x in l:
+				x:单消息组件
+				if x.显示 and x.开始时间<=t<=x.结束时间:
+					x.setVisible(True)
+				else:
+					x.setVisible(False)
 
-	def 添加消息(s,消息:单消息):
-		if 消息.类型==1:#普通
+	def 添加消息(s,类型,*args,**kwargs):
+		消息=单消息组件(*args,**kwargs)
+		if 类型==1:#普通
 			s.普通消息l.append(消息)
-		elif 消息.类型==1:#重要
+			s.普通消息vbox.addWidget(消息)
+		elif 类型==2:#重要
 			s.重要消息l.append(消息)
+			s.重要消息vbox.addWidget(消息)
+
+		return 消息
 
 
 消息_主=消息_主窗口()
 
-class 单消息():
-	def __init__(s,标题,内容,类型,持续时间=None,始末时间=None):
-		s.标题=标题
-		s.内容=内容
-		s.类型=类型
-		s.开始时间=None
-		s.结束时间=None
-		s.持续时间=持续时间
-		if 始末时间:
-			s.开始时间,s.结束时间=始末时间
-
-	def 显示(s,持续时间=None,结束时间=None):
-		t=time.time()
-		if 持续时间:
-			s.结束时间=t+持续时间
-		elif 结束时间:
-			s.结束时间=结束时间
-		else:
-			if s.持续时间:
-				s.结束时间=t+s.持续时间
-			if s.开始时间:
-				if not s.结束时间:
-					s.结束时间=max(t,s.开始时间)+10
-			else:
-				s.开始时间=t
-				s.结束时间=t+10
-
-				
 
 class 主窗口_线程(QThread):
 	gxkc=pyqtSignal()
