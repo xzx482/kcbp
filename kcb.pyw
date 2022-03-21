@@ -1119,15 +1119,6 @@ class 倒计时组件(QLabel):
 		time.sleep(1.001-(时差+time.time())%1)
 		s.定时器.start()
 
-class 单消息组件(QLabel):
-	def __init__(s,parent=None,标题=None,内容=None):
-		super().__init__(parent)
-		s.setWordWrap(True)
-		s.修改(内容,标题)
-	
-	def 修改(s,内容=None,标题=None):
-		s.setText(('<h3>'+str(标题)+'</h3>' if 标题 else '')+('<p>'+str(内容)+'</p>' if 内容 else ''))
-
 class 视频获取(QThread):
 	trigger=pyqtSignal(tuple)
 	def __init__(s,宽,高,args,parent=None):
@@ -1302,24 +1293,54 @@ class 背景组件():
 		
 
 
+class 全屏窗口(QWidget):
+	def __init__(s,par=None):
+		super().__init__()
+		s.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint)
+
+		s.主窗口:主窗口=par
+		
+	#'''
+	def paintEvent(s,e):
+		painter=QPainter(s)
+		painter.drawPixmap(0,0,QApplication.primaryScreen().grabWindow(s.主窗口.winid_桌面))
+		s.主窗口.render(painter)
+		painter.end()
+	#'''
+
+
+
 class 单消息组件(QWidget):
-	def __init__(s,开始时间,结束时间,显示=False):
+	def __init__(s):
 		super().__init__()
 
-		s.开始时间=开始时间
-		s.结束时间=结束时间
-		s.显示=显示
+		s.开始时间=None
+		s.结束时间=None
+		s.显示=None
 		
 		s.标题label=QLabel()
-		s.标题label.setFont(QFont("黑体",24))
-		s.内容label=QLabel()
-		s.内容label.setFont(QFont("黑体",16))
+		s.标题label.setFont(QFont("黑体",20))
+		s.正文label=QLabel()
+		s.正文label.setFont(QFont("黑体",16))
 		s.纵根=QVBoxLayout()
 		s.纵根.addWidget(s.标题label)
-		s.纵根.addWidget(s.内容label)
+		s.纵根.addWidget(s.正文label)
 		s.setLayout(s.纵根)
 
 		s.setVisible(False)
+
+	def 设置(s,标题=None,正文=None,显示=None,开始时间=None,结束时间=None):
+		if 标题 is not None:
+			s.标题label.setText(标题)
+		if 正文 is not None:
+			s.正文label.setText(正文)
+		if 开始时间 is not None:
+			s.开始时间=开始时间
+		if 结束时间 is not None:
+			s.结束时间=结束时间
+		if 显示 is not None:
+			s.显示=显示
+		
 
 
 
@@ -1345,20 +1366,29 @@ class 消息_主窗口(QWidget):
 		s.普通消息widget.setLayout(s.普通消息vbox)
 		s.根纵.addWidget(s.重要消息widget)
 		s.根纵.addWidget(s.普通消息widget)
+		s.根纵.addStretch(1)
 
 
 		#'''
 		s.setLayout(s.根纵)
 
+		s.timer=QTimer(s)
+		s.timer.timeout.connect(s.t_gxxs)
+
+
+	def t_gxxs(s):
+		s.刷新()
 	def 刷新(s):
 		for i in ((s.重要消息l,s.重要消息vbox),(s.普通消息l,s.普通消息vbox)):
 			l,layout=i
 			t=time.time()
 			for x in l:
 				x:单消息组件
-				if x.显示 and x.开始时间<=t<=x.结束时间:
+				if x.显示 and x.开始时间 and x.结束时间 and x.开始时间<=t<=x.结束时间:
 					x.setVisible(True)
 				else:
+					if x.显示:
+						x.显示=False
 					x.setVisible(False)
 
 	def 添加消息(s,类型,*args,**kwargs):
@@ -1371,9 +1401,6 @@ class 消息_主窗口(QWidget):
 			s.重要消息vbox.addWidget(消息)
 
 		return 消息
-
-
-消息_主=消息_主窗口()
 
 
 class 主窗口_线程(QThread):
@@ -1414,22 +1441,6 @@ class 主窗口_线程(QThread):
 
 
 
-class 全屏窗口(QWidget):
-	def __init__(s,par=None):
-		super().__init__()
-		s.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint)
-
-		s.主窗口:主窗口=par
-		
-	#'''
-	def paintEvent(s,e):
-		painter=QPainter(s)
-		painter.drawPixmap(0,0,QApplication.primaryScreen().grabWindow(s.主窗口.winid_桌面))
-		s.主窗口.render(painter)
-		painter.end()
-	#'''
-
-
 class 主窗口(QWidget):
 	def __init__(s, parent=None):
 		super().__init__(parent)
@@ -1468,10 +1479,6 @@ class 主窗口(QWidget):
 		s.状态检查定时器.timeout.connect(s.ztjc)
 		s.状态检查定时器.setInterval(1000)
 
-		s.秒定时器=QTimer(s)
-		s.秒定时器.setTimerType(Qt.TimerType.PreciseTimer)
-		s.秒定时器.timeout.connect(s.miao)
-		s.秒定时器.setInterval(1000)
 
 		s.根纵=QVBoxLayout()
 		s.setLayout(s.根纵)
@@ -1512,7 +1519,11 @@ class 主窗口(QWidget):
 		s.上横_网.addLayout(s.日期时间,2,0)
 
 
-
+		s.主消息=消息_主窗口()
+		
+		s.主消息.timer.start(1000)
+		s.根纵_下横.addWidget(s.主消息)
+		#s.主消息.添加消息(1).设置('123','456',True,time.time(),time.time()+10)
 		s.根纵_下横.addStretch(1)
 		s.天气=天气组件()
 		s.根纵_下横.addWidget(s.天气)
@@ -1618,9 +1629,6 @@ class 主窗口(QWidget):
 			s.setVisible(True)
 
 
-	def miao(s):
-		pass
-
 	def sx(s):
 		s.刷新()
 	def 刷新(s):
@@ -1628,10 +1636,12 @@ class 主窗口(QWidget):
 			s.下课预更新=True
 			s.天气.setVisible(False)
 			s.日历.setVisible(False)
+			s.主消息.普通消息widget.setVisible(False)
 		else:
 			if(s.天气.当前信息_更新时间.text()):
 				s.天气.setVisible(True)
 			s.日历.setVisible(True)
+			s.主消息.普通消息widget.setVisible(True)
 
 
 	def 更新课程(s):
