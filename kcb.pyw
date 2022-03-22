@@ -1146,13 +1146,15 @@ class 日历组件(QWidget):
 	def 更新日期(s):
 		t=time.time()
 		tl=time.localtime(t)
-		日期j={'t':t}
 		d=日期.日期(tl=tl)
+		
+		日期j={'t':t,'今天':d.复制(),'星期':[]}
 		#raise
 		今天=d.公历_数字
 		节假日=获取节假日()
 		for i in s.日期_qws:
 			星期历=日期.星期历(d)#参数 d 在调用后会被改变
+			日期j['星期'].append(星期历)
 			for i2 in range(7):
 				日期_:日期.日期=星期历[i2]
 				年,月,日=日期_.公历_值
@@ -1171,6 +1173,8 @@ class 日历组件(QWidget):
 					i[i2].日期.setStyleSheet('')
 					i[i2].setStyleSheet('')
 
+		s.日期j=日期j
+		s.gxrq_signal.emit(日期j)
 
 
 
