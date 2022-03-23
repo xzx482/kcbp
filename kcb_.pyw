@@ -67,7 +67,7 @@ import _thread
 import time
 from PyQt6.QtCore import Qt,QTimer,QPropertyAnimation,QUrl,QEasingCurve,QAbstractAnimation,QThread,pyqtSignal,QObject
 from PyQt6.QtWidgets import QWidget,QLabel,QHBoxLayout,QVBoxLayout,QGridLayout,QGraphicsOpacityEffect,QSystemTrayIcon,QMenu,QWidgetAction
-from PyQt6.QtGui import QPalette, QBrush, QPixmap,QFont,QIcon,QAction
+from PyQt6.QtGui import QPainter, QPalette, QBrush, QPixmap,QFont,QIcon,QAction
 from PyQt6.QtMultimedia import QMediaPlayer
 from PyQt6.QtMultimediaWidgets import QVideoWidget
 import win32gui,win32con
@@ -95,7 +95,7 @@ if 时差%1==0:
 else:
 	多延迟=True
 
-t_6=1639756800-86400*7*5
+t_6=1639756800-86400*7*6
 
 
 
@@ -118,13 +118,15 @@ def 获取时间():
 #时差检查未完成
 '''
 
+#'''
+#原始 开始
 
 k1=[# 早读    1      2      3      4     1      2     3    
-	["外语","语文","化学","物理","数学","通用技术","外语","班会","自习","语文诵读","物理","生物","通用技术"],
-	["语文","生物","语文","化学","外语","数学","数学","物理","自习","外语听力","数学","外语","英语"],
-	["外语","外语","化学","语文","数学","生物","体育","物理","自习","语文诵读","物理","语文","语文"],
-	["语文","外语","数学","外语","生物","美术/形体","语文","体育","自习","外语听力","生物","外语","化学"],
-	["外语","外语","物理","语文","生物","通用技术","化学","数学","自习","语文诵读","数学","数学"," "],
+	["外语","语文","化学","物理","数学","通用技术","外语","班会"," ","语文诵读","物理","生物","通用技术"],
+	["语文","生物","语文","化学","外语","数学","数学","物理"," ","外语听力","数学","外语","英语"],
+	["外语","外语","化学","语文","数学","生物","体育","物理"," ","语文诵读","物理","语文","语文"],
+	["语文","外语","数学","外语","生物","美术/形体","语文","体育"," ","外语听力","生物","外语","化学"],
+	["外语","外语","物理","语文","生物","通用技术","化学","数学"," ","语文诵读","数学","数学"," "],
 	["","","","","","","","","","新闻周刊","化学","语文"," "]
 	#["","","","","","","","","","","","",""]
 ]
@@ -133,6 +135,7 @@ k2=[
 	["外语","外语","化学","外语","物理","生物","数学","语文"],
 	["语文","语文","数学","数学","化学","外语","物理","生物"]
 ]
+
 
 节=["早读","第一节","第二节","第三节","第四节","第一节","第二节","第三节","第四节","晚读","第一节","第二节","第三节","第四节"]
 始末时间=[
@@ -180,10 +183,89 @@ k2=[
 	(13*60+50,14*60+30)
 ]
 
+
 for i in range(len(k1)):
 	#k1[i]=k1[i][:5]+['政治'if i!=5 else '']+k1[i][5:]#   111
 	#if i!=5:
 	k1[i].append(" ")
+
+#原始 结束
+"""
+'''
+
+
+#修改 开始
+k1=[#   1      2      3      4     1      2     3    
+	["语文","化学","物理","数学"," ","通用技术","外语","班会","语文诵读","物理","生物","通用技术"],
+	["生物","语文","化学","外语"," ","数学","数学","物理","外语听力","数学","外语","英语"],
+	["外语","化学","语文","数学"," ","生物","体育","物理","语文诵读","物理","语文","语文"],
+	["外语","数学","外语","生物"," ","美术/形体","语文","体育","外语听力","生物","外语","化学"],
+	["外语","物理","语文","生物"," ","通用技术","化学","数学","语文诵读","数学","数学"," "],
+	["","","","","","","","","新闻周刊","化学","语文"," "]
+	#["","","","","","","","","","","","",""]
+]
+k2=[
+	["物理","语文","化学","语文"," ","外语","数学","生物"],
+	["外语","化学","外语","物理"," ","生物","数学","语文"],
+	["语文","数学","数学","化学"," ","外语","物理","生物"]
+]
+
+
+
+for i in range(len(k1)):
+	#k1[i]=k1[i][:5]+['政治'if i!=5 else '']+k1[i][5:]#   111
+	#if i!=5:
+	k1[i].append(" ")
+
+
+节=["第一节","第二节","第三节","第四节","第五节","第一节","第二节","第三节","晚读","第一节","第二节","第三节","第四节"]
+始末时间=[
+	(8*60+0,8*60+40),
+	(8*60+50,9*60+30),
+	(9*60+40,10*60+20),
+	(10*60+30,11*60+10),
+	(11*60+20,12*60+0),
+
+	(14*60+20,15*60+0),
+	(15*60+10,15*60+50),
+	(16*60+0,16*60+40),
+	
+	(18*60+30,18*60+50),
+	(19*60+0,19*60+45),
+	(20*60+0,20*60+45),
+	(20*60+55,21*60+40),
+	(21*60+50,22*60+35)
+]
+始末时间_6=[
+	(8*60+0,8*60+40),
+	(8*60+50,9*60+30),
+	(9*60+40,10*60+20),
+	(10*60+30,11*60+10),
+	(11*60+20,12*60+0),
+
+	(14*60+20,15*60+0),
+	(15*60+10,15*60+50),
+	(16*60+0,16*60+40),
+	
+	(18*60+30,18*60+50),
+	(19*60+0,19*60+45),
+	(20*60+0,20*60+45),
+	(20*60+55,21*60+40),
+	(21*60+50,22*60+35)
+]
+
+始末时间_长假=[
+	(7*60+20,7*60+50),
+	(8*60+0,8*60+45),
+	(8*60+55,9*60+40),
+	(10*60+10,10*60+55),
+	(11*60+5,11*60+50),
+	(13*60+0,13*60+40),
+	(13*60+50,14*60+30)
+]
+#修改 结束
+#"""
+
 
 #for i in range(len(k2)):
 #	k2[i]=k2[i][:5]+[' ']+k2[i][5:]#   111
@@ -248,6 +330,91 @@ except BaseException as e:
 def 获取天(tl):
 	return (tl.tm_year*10000+tl.tm_mon*100+tl.tm_mday)*10+tl.tm_wday
 
+
+def ck(t,tl=None):
+	if not tl:
+		x_=time.localtime(t)
+	else:
+		x_=tl
+	星期=x_.tm_wday # 0为星期一, 5为星期六
+	#分=x_.tm_hour*60+x_.tm_min
+	天=获取天(x_)
+	#print(星期)
+	始末时间_=始末时间
+	始末时间_文本_=始末时间_文本
+
+	if 星期==5:
+		周六_=(t-t_6)//86400//7%6
+		print(周六_)
+		周六_=divmod(周六_,3)
+		课程=k2[int(周六_[1])]
+		#if 周六_[1]==2:
+		#	课程[0]=课程[0][int(周六_[0])]
+		#return 课程
+		始末时间_=始末时间_6
+		始末时间_文本_=始末时间6_文本
+	elif 星期<5:
+		课程=k1[星期]
+	elif 星期==6:
+		课程=k1[5]
+	
+	节_=节
+	
+	天_=str(天)[:-1]
+	if 天_ in 临时课程:
+		课程_=临时课程[天_]
+		if len(课程_)>0:
+			if isinstance(课程_[0],int):
+				if 课程_[0]<5:#周一到周五
+					课程=课程_[0]
+				else:#周六
+					ks=课程_[0]-5
+					if ks>=len(k2):
+						raise ValueError('临时课程的 "'+天_+'" 的 "'+str(课程_[0])+'"不在范围(<='+str(len(k2)-1)+')内')
+					课程=k2[ks]
+
+			if isinstance(课程_[0],list):
+				课程=课程_[0]
+		
+		if len(课程_)>1:
+			if isinstance(课程_[1],int):
+				if 课程_[1]==1:
+					始末时间_=始末时间
+					始末时间_文本_=始末时间_文本
+				elif 课程_[1]==2:
+					始末时间_=始末时间_6
+					始末时间_文本_=始末时间6_文本
+				elif 课程_[1]==3:
+					始末时间_=始末时间_长假
+					始末时间_文本_=始末时间长假_文本
+				else:
+					raise ValueError('临时课程的 "'+天_+'" 的 "'+str(课程_[1])+'"不在范围(<=3)内')
+
+			if isinstance(课程_[1],list):
+				始末时间_=课程_[1]
+				始末时间_文本_=始末时间转文本(课程_[1])
+
+		if len(课程_)>2:
+			if isinstance(课程_[2],int):
+				if 课程_[2]==1:
+					节_=节
+				else:
+					raise ValueError('临时课程的 "'+天_+'" 的 "'+str(课程_[2])+'"不在范围(<=3)内')
+
+			if isinstance(课程_[2],list):
+				节_=课程_[2]
+			
+			
+
+	
+	k_3=[]
+	for i in range(len(课程)):
+		if i>=len(始末时间_):
+			break
+		if 课程[i]:
+			k_3.append(((始末时间_[i],始末时间_文本_[i]),节_[i],课程[i]))
+
+	return k_3
 
 上课_={0:'已下课',1:'预备',2:'已上课'}
 星期_tm_wday=['一','二','三','四','五','六','日']
@@ -356,108 +523,6 @@ class 日期时间组件(单课程组件):
 		#time.strftime("%Y年%m月%d日",tl)
 		s.设置内容(time.strftime("%H:%M:%S",tl),time.strftime("%Y/%m/%d",tl),'星期'+星期_tm_wday[tl.tm_wday])
 		#s.时间.setText(time.strftime("%Y-%m-%d %H:%M:%S",))
-
-class 课程():
-	def __init__(s,天数=2):
-		s.k={}
-		s.天数=天数
-
-	def 添加天(s,天=None):
-		if not tl:
-			tl=time.localtime(t)
-		if not 天:
-			天=获取天(tl)
-
-		#计算星期
-		
-
-		星期=x_.tm_wday # 0为星期一, 5为星期六
-		#分=x_.tm_hour*60+x_.tm_min
-		天=获取天(x_)
-		#print(星期)
-		始末时间_=始末时间
-		始末时间_文本_=始末时间_文本
-
-		if 星期==5:
-			周六_=(t-t_6)//86400//7%6
-			print(周六_)
-			周六_=divmod(周六_,3)
-			课程=k2[int(周六_[1])]
-			#if 周六_[1]==2:
-			#	课程[0]=课程[0][int(周六_[0])]
-			#return 课程
-			始末时间_=始末时间_6
-			始末时间_文本_=始末时间6_文本
-		elif 星期<5:
-			课程=k1[星期]
-		elif 星期==6:
-			课程=k1[5]
-		
-		节_=节
-		
-		天_=str(天)[:-1]
-		if 天_ in 临时课程:
-			课程_=临时课程[天_]
-			if len(课程_)>0:
-				if isinstance(课程_[0],int):
-					if 课程_[0]<5:
-						课程=课程_[0]
-					else:
-						ks=课程_[0]-5
-						if ks>=len(k2):
-							raise ValueError('临时课程的 "'+天_+'" 的 "'+str(课程_[0])+'"不在范围(<='+str(len(k2)-1)+')内')
-						课程=k2[ks]
-
-				if isinstance(课程_[0],list):
-					课程=课程_[0]
-			
-			if len(课程_)>1:
-				if isinstance(课程_[1],int):
-					if 课程_[1]==1:
-						始末时间_=始末时间
-						始末时间_文本_=始末时间_文本
-					elif 课程_[1]==2:
-						始末时间_=始末时间_6
-						始末时间_文本_=始末时间6_文本
-					elif 课程_[1]==3:
-						始末时间_=始末时间_长假
-						始末时间_文本_=始末时间长假_文本
-					else:
-						raise ValueError('临时课程的 "'+天_+'" 的 "'+str(课程_[1])+'"不在范围(<=3)内')
-
-				if isinstance(课程_[1],list):
-					始末时间_=课程_[1]
-					始末时间_文本_=始末时间转文本(课程_[1])
-
-			if len(课程_)>2:
-				if isinstance(课程_[2],int):
-					if 课程_[2]==1:
-						节_=节
-					else:
-						raise ValueError('临时课程的 "'+天_+'" 的 "'+str(课程_[2])+'"不在范围(<=3)内')
-
-				if isinstance(课程_[2],list):
-					节_=课程_[2]
-				
-		k_3=[]
-		for i in range(len(课程)):
-			if i>=len(始末时间_):
-				break
-			if 课程[i]:
-				k_3.append(((始末时间_[i],始末时间_文本_[i]),节_[i],课程[i]))
-
-		s.k[天]=k_3
-
-		
-		ki=s.k.keys()
-		for i in ki:
-			if i<=天:
-				del(s.k[i])
-
-	def __getitem__(s,k):
-		if k not in s.k:
-			s.添加天(k)
-		return k
 
 class 课程表类():
 	def __init__(s, parent=None):
@@ -662,7 +727,8 @@ class 课程表类():
 class 单天气组件(QVBoxLayout):
 	def __init__(s,数量=3):
 		super().__init__()
-		#s.setSpacing(3)
+		s.setSpacing(1)
+
 		s.labels=[QLabel()for i in range(数量)]
 		for i in s.labels:
 			i.setFont(QFont("黑体",16))
@@ -674,6 +740,7 @@ class 单天气组件(QVBoxLayout):
 		s.labels[1].setFont(QFont("黑体",20))
 		s.labels[2].setFont(QFont("黑体",20,QFont.Weight.Bold))
 		'''
+		s.labels[0].setMinimumWidth(80)
 
 	def 设置内容(s,*a):
 		for i in range(len(a)):
@@ -689,7 +756,7 @@ class 天气获取t(QThread):
 	def 获取并发送(s):
 		print('获取天气'+time.strftime('%H:%M:%S'))
 		try:
-			uo=request.urlopen('http://api.openweathermap.org/data/2.5/onecall?exclude=minutely&units=metric&lang=zh_cn&lat='+str(配置l['天气']['纬度'])+'&lon='+str(配置l['天气']['经度'])+'&appid='+配置l['天气']['key'])
+			uo=request.urlopen('https://api.openweathermap.org/data/2.5/onecall?units=metric&lang=zh_cn&lat='+str(配置l['天气']['纬度'])+'&lon='+str(配置l['天气']['经度'])+'&appid='+配置l['天气']['key'],timeout=60)
 			jl=json.load(uo)
 			s.trigger.emit(jl)
 			return True
@@ -708,8 +775,9 @@ class 天气获取t(QThread):
 				if s.parent.预更新:
 					s.parent.预更新=False
 				s.获取并发送()
+				time.sleep(120)
+			else:
 				time.sleep(30)
-			time.sleep(30)
 
 天气cl=flj('天气c.json')
 
@@ -720,8 +788,11 @@ def 天气_c(w):
 			天气cl[i_]=i['description']
 
 class 天气组件(QWidget):
+	gxtq_signal=pyqtSignal(dict)
 	def __init__(s, parent=None):
 		super().__init__(parent)
+
+		s.天气j={}
 
 		s.预更新=False
 		s.显示=False
@@ -733,46 +804,86 @@ class 天气组件(QWidget):
 		s.setFont(QFont("黑体",18,QFont.Weight.Bold))
 
 		s.根纵=QVBoxLayout()
+		s.根纵.setSpacing(0)
 		s.setLayout(s.根纵)
 
 
 		s.当前信息=QHBoxLayout()
+		s.当前信息.setSpacing(5)
 
-		#s.每分钟信息hbox=QHBoxLayout()
-		#s.每分钟信息l=[]
+		s.每分钟信息widget=QWidget()
+		s.每分钟信息vbox=QVBoxLayout()
+		s.每分钟信息vbox.setSpacing(12)
+		s.每分钟信息vbox.addSpacing(24)
+		s.每分钟信息hbox1=QHBoxLayout()
+		s.每分钟信息hbox2=QHBoxLayout()
+		s.每分钟信息vbox.addLayout(s.每分钟信息hbox1)
+		s.每分钟信息vbox.addLayout(s.每分钟信息hbox2)
+		s.每分钟信息widget.setLayout(s.每分钟信息vbox)
+		s.每分钟信息hbox1.setSpacing(1)
+		s.每分钟信息hbox2.setSpacing(1)
+		s.每分钟信息l1=[]
+		s.每分钟信息l2=[]
 
-		s.每小时信息hbox=QHBoxLayout()
-		s.每小时信息l=[]
+		s.每小时信息widget=QWidget()
+		s.每小时信息vbox=QVBoxLayout()
+		s.每小时信息vbox.setSpacing(12)
+		s.每小时信息vbox.addSpacing(24)
+		s.每小时信息hbox1=QHBoxLayout()
+		s.每小时信息hbox2=QHBoxLayout()
+		s.每小时信息hbox3=QHBoxLayout()
+		s.每小时信息vbox.addLayout(s.每小时信息hbox1)
+		s.每小时信息vbox.addLayout(s.每小时信息hbox2)
+		s.每小时信息vbox.addLayout(s.每小时信息hbox3)
+		s.每小时信息widget.setLayout(s.每小时信息vbox)
+		s.每小时信息hbox1.setSpacing(4)
+		s.每小时信息hbox2.setSpacing(4)
+		s.每小时信息hbox3.setSpacing(4)
+		s.每小时信息l1=[]
+		s.每小时信息l2=[]
+		s.每小时信息l3=[]
 		
+		s.每天信息widget=QWidget()
+		s.每天信息vbox=QVBoxLayout()
+		s.每天信息vbox.setSpacing(12)
+		s.每天信息vbox.addSpacing(24)
 		s.每天信息hbox=QHBoxLayout()
+		s.每天信息vbox.addLayout(s.每天信息hbox)
+		s.每天信息widget.setLayout(s.每天信息vbox)
+		s.每天信息hbox.setSpacing(4)
 		s.每天信息l=[]
 
 		
 		s.根纵.addLayout(s.当前信息)
-		'''
-		填空=QLabel()
-		填空.setText(' ')
-		s.根纵.addWidget(填空)
-		s.根纵.addLayout(s.每分钟信息hbox)
-		'''
-		s.根纵.addWidget(QLabel(' '))
-		s.根纵.addLayout(s.每小时信息hbox)
-		填空=QLabel()
-		s.根纵.addWidget(QLabel(' '))
-		s.根纵.addLayout(s.每天信息hbox)
+		s.根纵.addWidget(s.每天信息widget)
+		s.根纵.addWidget(s.每分钟信息widget)
+		s.根纵.addWidget(s.每小时信息widget)
+
 
 		#(s.每分钟信息hbox,s.每分钟信息l,25,2),
-		for i in ((s.每小时信息hbox,s.每小时信息l,12,4),(s.每天信息hbox,s.每天信息l,7,4)):
-			i[0].setSpacing(10)
+		for i in (
+			(s.每分钟信息hbox1,s.每分钟信息l1,15,2),(s.每分钟信息hbox2,s.每分钟信息l2,15,2),
+			(s.每小时信息hbox1,s.每小时信息l1,8,5),(s.每小时信息hbox2,s.每小时信息l2,8,5),(s.每小时信息hbox3,s.每小时信息l3,8,5),
+			(s.每天信息hbox,s.每天信息l,8,6)
+		):
+			i[0].setSpacing(12)
 			for i2 in range(i[2]+1):
 				i_=单天气组件(i[3])
+
+				if i[3]==2:
+					i_.labels[0].setMinimumWidth(40)
 
 				i[0].addLayout(i_)
 				i[1].append(i_)
 
-		#s.每分钟信息l.pop(0).设置内容('时间(分)','降水量(毫米)')
-		s.每小时信息l.pop(0).设置内容('时间(时)','天气','降水概率(%)','温度(°C)')
-		s.每天信息l.pop(0).设置内容('时间(天)','天气','降水概率(%)','最值温度(°C)')
+		s.每分钟信息l1.pop(0).设置内容('时间(分)','降水量(毫米)')
+		s.每分钟信息l2.pop(0).设置内容('时间(分)','降水量(毫米)')
+		s.每分钟信息l=s.每分钟信息l1+s.每分钟信息l2
+		s.每小时信息l1.pop(0).设置内容('时间(时)','天气','云量(%) 降水概率(%)','湿度(%)','温度(°C)')
+		s.每小时信息l2.pop(0).设置内容('时间(时)','天气','云量(%) 降水概率(%)','湿度(%)','温度(°C)')
+		s.每小时信息l3.pop(0).设置内容('时间(时)','天气','云量(%) 降水概率(%)','湿度(%)','温度(°C)')
+		s.每小时信息l=s.每小时信息l1+s.每小时信息l2+s.每小时信息l3
+		s.每天信息l.pop(0).设置内容('时间(天)','天气','云量(%) 降水概率(%)','湿度(%)','最值温度(°C)')
 
 		当前信息_更新时间0=QLabel()
 		当前信息_更新时间0.setText('更新时间:')
@@ -841,8 +952,11 @@ class 天气组件(QWidget):
 			#'''
 
 		s.当前信息.addStretch(1)
-		#s.每分钟信息hbox.addStretch(1)
-		s.每小时信息hbox.addStretch(1)
+		s.每分钟信息hbox1.addStretch(1)
+		s.每分钟信息hbox2.addStretch(1)
+		s.每小时信息hbox1.addStretch(1)
+		s.每小时信息hbox2.addStretch(1)
+		s.每小时信息hbox3.addStretch(1)
 		s.每天信息hbox.addStretch(1)
 
 		'''
@@ -863,16 +977,15 @@ class 天气组件(QWidget):
 	def gxtq(s,*a):
 		s.更新天气(*a)
 	def 更新天气(s,天气j):
+		s.天气j=天气j
+		s.gxtq_signal.emit(s.天气j)
+
 		当前天气_=天气j['current']
-		#每分钟天气_=天气j['minutely']
-		每小时天气_=天气j['hourly']
-		每天天气_=天气j['daily']
+
+		if 'alerts' in 天气j:
+			print('alerts '+天气j['alerts'])
 
 		天气_c(当前天气_['weather'])
-		for i in 每小时天气_:
-			天气_c(i['weather'])
-		for i in 每天天气_:
-			天气_c(i['weather'])
 
 		s.当前信息_更新时间.setText(time.strftime("%H:%M:%S",time.localtime(当前天气_['dt'])))
 		#s.当前信息_天气.setText(当前天气_['weather'][0]['description'])
@@ -894,36 +1007,63 @@ class 天气组件(QWidget):
 		风速_+='风 '+str(当前天气_['wind_speed'])+'米/秒'
 		s.当前信息_风速.setText(风速_)
 
-		'''
-		i2=1
-		for i in range(len(s.每分钟信息l)):
-			if len(每分钟天气_)>i2:
-				i3=每分钟天气_[i2]
-				s.每分钟信息l[i].设置内容(time.strftime("%M",time.localtime(i3['dt'])),i3['precipitation'])
-				i2+=3
+		#'''
+		if 'minutely' in 天气j:
+			每分钟天气_=天气j['minutely']
+			i2=0
+			有信息=False
+			for i in range(len(s.每分钟信息l)):
+				if len(每分钟天气_)>i2:
+					i3=每分钟天气_[i2]
+					s.每分钟信息l[i].设置内容(time.strftime('%M',time.localtime(i3['dt']))+'分',round(i3['precipitation'],1))
+					if i3['precipitation']:
+						有信息=True
+					i2+=2
+				else:
+					break
+			
+			if 有信息:
+				s.每分钟信息widget.setVisible(True)
 			else:
-				break
-		'''	
+				s.每分钟信息widget.setVisible(False)
+		else:
+			s.每分钟信息widget.setVisible(False)
 
-		i2=1
-		for i in range(len(s.每小时信息l)):
-			if len(每小时天气_)>i2:
-				i3=每小时天气_[i2]
-				s.每小时信息l[i].设置内容(time.strftime("%H",time.localtime(i3['dt'])), 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['pop']*100)),i3['temp'])
-				i2+=2
-			else:
-				break
+		#'''	
+		if 'hourly' in 天气j:
+			每小时天气_=天气j['hourly']
+			for i in 每小时天气_:
+				天气_c(i['weather'])
+			i2=1
+			for i in range(len(s.每小时信息l)):
+				if len(每小时天气_)>i2:
+					i3=每小时天气_[i2]
+					s.每小时信息l[i].设置内容(str(time.localtime(i3['dt']).tm_hour)+'时', 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['clouds']))+' '+str(round(i3['pop']*100)),str(round(i3['humidity'])),i3['temp'])
+					i2+=1
+				else:
+					break
 				
+			s.每小时信息widget.setVisible(True)
+		else:
+			s.每小时信息widget.setVisible(False)
 
-		i2=1
-		for i in range(len(s.每天信息l)):
-			if len(每天天气_)>i2:
-				i3=每天天气_[i2]
-				温度=i3['temp']
-				s.每天信息l[i].设置内容(time.strftime("%d",time.localtime(i3['dt'])), 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['pop']*100)),str(温度['min'])+'/'+str(温度['max']))
-				i2+=1
-			else:
-				break
+		if 'daily' in 天气j:
+			每天天气_=天气j['daily']
+			for i in 每天天气_:
+				天气_c(i['weather'])
+			i2=0
+			for i in range(len(s.每天信息l)):
+				if len(每天天气_)>i2:
+					i3=每天天气_[i2]
+					温度=i3['temp']
+					s.每天信息l[i].设置内容(str(time.localtime(i3['dt']).tm_mday)+'日', 天气cl[ str(i3['weather'][0]['id']) ] ,str(round(i3['clouds']))+' '+str(round(i3['pop']*100)),str(round(i3['humidity'])),str(round(温度['min']))+'/'+str(round(温度['max'])))
+					i2+=1
+				else:
+					break
+
+			s.每天信息widget.setVisible(True)
+		else:
+			s.每天信息widget.setVisible()
 				
 		#s.adjustSize()
 
@@ -942,13 +1082,14 @@ class 单日期组件(QWidget):
 		s.setLayout(s.根纵)
 
 		s.根纵_上=QHBoxLayout()
+		s.根纵_上.setSpacing(0)
 
 		s.左上=QLabel()
 		#s.左上.setStyleSheet('line-height:0px')
 		s.左上.setFont(QFont("黑体",16))
 		s.根纵_上.addWidget(s.左上)
 
-		s.根纵_上.addSpacing(24)
+		s.根纵_上.addSpacing(2)
 
 		s.右上=QLabel()
 		s.右上.setFont(QFont("黑体",16))
@@ -965,7 +1106,7 @@ class 单日期组件(QWidget):
 		s.根纵.addLayout(s.根纵_中)
 
 		s.底部=QLabel()
-		
+		s.底部.setMinimumWidth(50)
 		s.底部.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		s.底部.setFont(QFont("黑体",14))
 		s.根纵.addWidget(s.底部)
@@ -979,6 +1120,7 @@ class 单日期组件(QWidget):
 
 
 class 日历组件(QWidget):
+	gxrq_signal=pyqtSignal(dict)
 	def __init__(s,*a):
 		super().__init__(*a)
 		s.setVisible(False)
@@ -986,6 +1128,7 @@ class 日历组件(QWidget):
 		s.根网.setVerticalSpacing(0)
 		s.根网.setHorizontalSpacing(10)
 		s.setLayout(s.根网)
+		s.日期j={}
 		s.日期_qws=[]
 		for i in range(7):
 			星期_顶=QLabel()
@@ -1002,12 +1145,17 @@ class 日历组件(QWidget):
 			s.日期_qws.append(日期_qws1)
 	
 	def 更新日期(s):
-		d=日期.日期()
+		t=time.time()
+		tl=time.localtime(t)
+		d=日期.日期(tl=tl)
+		
+		日期j={'t':t,'今天':d.复制(),'星期':[]}
 		#raise
 		今天=d.公历_数字
 		节假日=获取节假日()
 		for i in s.日期_qws:
 			星期历=日期.星期历(d)#参数 d 在调用后会被改变
+			日期j['星期'].append(星期历)
 			for i2 in range(7):
 				日期_:日期.日期=星期历[i2]
 				年,月,日=日期_.公历_值
@@ -1026,6 +1174,8 @@ class 日历组件(QWidget):
 					i[i2].日期.setStyleSheet('')
 					i[i2].setStyleSheet('')
 
+		s.日期j=日期j
+		s.gxrq_signal.emit(日期j)
 
 
 
@@ -1065,15 +1215,6 @@ class 倒计时组件(QLabel):
 	def 开始(s):
 		time.sleep(1.001-(时差+time.time())%1)
 		s.定时器.start()
-
-class 单消息组件(QLabel):
-	def __init__(s,parent=None,标题=None,内容=None):
-		super().__init__(parent)
-		s.setWordWrap(True)
-		s.修改(内容,标题)
-	
-	def 修改(s,内容=None,标题=None):
-		s.setText(('<h3>'+str(标题)+'</h3>' if 标题 else '')+('<p>'+str(内容)+'</p>' if 内容 else ''))
 
 class 视频获取(QThread):
 	trigger=pyqtSignal(tuple)
@@ -1246,6 +1387,118 @@ class 背景组件():
 		s.视频.背景_入=None
 		s.视频.setGeometry(0,0,*s.宽高)
 
+		
+
+
+class 全屏窗口(QWidget):
+	def __init__(s,par=None):
+		super().__init__()
+		s.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint)
+
+		s.主窗口:主窗口=par
+		
+	#'''
+	def paintEvent(s,e):
+		painter=QPainter(s)
+		painter.drawPixmap(0,0,QApplication.primaryScreen().grabWindow(s.主窗口.winid_桌面))
+		s.主窗口.render(painter)
+		painter.end()
+	#'''
+
+
+
+class 单消息组件(QWidget):
+	def __init__(s):
+		super().__init__()
+
+		s.开始时间=None
+		s.结束时间=None
+		s.显示=None
+		
+		s.标题label=QLabel()
+		s.标题label.setFont(QFont("黑体",20))
+		s.正文label=QLabel()
+		s.正文label.setFont(QFont("黑体",16))
+		s.纵根=QVBoxLayout()
+		s.纵根.addWidget(s.标题label)
+		s.纵根.addWidget(s.正文label)
+		s.setLayout(s.纵根)
+
+		s.setVisible(False)
+
+	def 设置(s,标题=None,正文=None,显示=None,开始时间=None,结束时间=None):
+		if 标题 is not None:
+			s.标题label.setText(标题)
+		if 正文 is not None:
+			s.正文label.setText(正文)
+		if 开始时间 is not None:
+			s.开始时间=开始时间
+		if 结束时间 is not None:
+			s.结束时间=结束时间
+		if 显示 is not None:
+			s.显示=显示
+		
+
+
+
+
+class 消息_主窗口(QWidget):
+	def __init__(s,*args,**kwargs):
+		super().__init__(*args,**kwargs)
+		s.重要消息l=[]
+		s.普通消息l=[]
+		s.根纵=QVBoxLayout()
+		"""
+		s.重要消息label=QLabel()
+		s.普通消息label=QLabel()
+		s.根纵.addWidget(s.重要消息label)
+		s.根纵.addWidget(s.普通消息label)
+		'''
+		"""
+		s.重要消息widget=QWidget()
+		s.普通消息widget=QWidget()
+		s.重要消息vbox=QVBoxLayout()
+		s.普通消息vbox=QVBoxLayout()
+		s.重要消息widget.setLayout(s.重要消息vbox)
+		s.普通消息widget.setLayout(s.普通消息vbox)
+		s.根纵.addWidget(s.重要消息widget)
+		s.根纵.addWidget(s.普通消息widget)
+		s.根纵.addStretch(1)
+
+
+		#'''
+		s.setLayout(s.根纵)
+
+		s.timer=QTimer(s)
+		s.timer.timeout.connect(s.t_gxxs)
+
+
+	def t_gxxs(s):
+		s.刷新()
+	def 刷新(s):
+		for i in ((s.重要消息l,s.重要消息vbox),(s.普通消息l,s.普通消息vbox)):
+			l,layout=i
+			t=time.time()
+			for x in l:
+				x:单消息组件
+				if x.显示 and x.开始时间 and x.结束时间 and x.开始时间<=t<=x.结束时间:
+					x.setVisible(True)
+				else:
+					if x.显示:
+						x.显示=False
+					x.setVisible(False)
+
+	def 添加消息(s,类型,*args,**kwargs):
+		消息=单消息组件(*args,**kwargs)
+		if 类型==1:#普通
+			s.普通消息l.append(消息)
+			s.普通消息vbox.addWidget(消息)
+		elif 类型==2:#重要
+			s.重要消息l.append(消息)
+			s.重要消息vbox.addWidget(消息)
+
+		return 消息
+
 
 class 主窗口_线程(QThread):
 	gxkc=pyqtSignal()
@@ -1285,11 +1538,10 @@ class 主窗口_线程(QThread):
 
 
 
-
 class 主窗口(QWidget):
 	def __init__(s, parent=None):
 		super().__init__(parent)
-		s.托盘=托盘图标(s)
+		#s.托盘=托盘图标(s)
 		s.win=QWidget(s)
 		s.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)#透明背景
 		s.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint)
@@ -1310,6 +1562,7 @@ class 主窗口(QWidget):
 		s.winid_win=int(s.win.winId())
 		s.winid_背景视频=int(s.背景视频.winId())
 
+		s.全屏=全屏窗口(s)
 
 		s.宽=0
 		s.高=0
@@ -1323,10 +1576,6 @@ class 主窗口(QWidget):
 		s.状态检查定时器.timeout.connect(s.ztjc)
 		s.状态检查定时器.setInterval(1000)
 
-		s.秒定时器=QTimer(s)
-		s.秒定时器.setTimerType(Qt.TimerType.PreciseTimer)
-		s.秒定时器.timeout.connect(s.miao)
-		s.秒定时器.setInterval(1000)
 
 		s.根纵=QVBoxLayout()
 		s.setLayout(s.根纵)
@@ -1367,27 +1616,28 @@ class 主窗口(QWidget):
 		s.上横_网.addLayout(s.日期时间,2,0)
 
 
-
+		s.主消息=消息_主窗口()
+		
+		s.主消息.timer.start(1000)
+		s.根纵_下横.addSpacing(60)
+		s.根纵_下横.addWidget(s.主消息)
+		#s.主消息.添加消息(1).设置('123','456',True,time.time(),time.time()+10)
 		s.根纵_下横.addStretch(1)
 		s.天气=天气组件()
 		s.根纵_下横.addWidget(s.天气)
 
 		
 		s.线程=主窗口_线程(s)
+		'''
+		s.线程.gxkc.connect(lambda:(s.更新课程(),s.更新_()))
+		s.线程.gxsj.connect(lambda:(s.日期时间.更新时间(),s.更新_()))
+		'''
 		s.线程.gxkc.connect(lambda:s.更新课程())
 		s.线程.gxsj.connect(lambda:s.日期时间.更新时间())
 		s.线程.gxrq.connect(lambda:s.日历.更新日期())
 		s.天气.获取t.sxym.connect(s.sx)
 
 
-
-	def 添加消息(s,xid=None):
-		if not xid:
-			xid=int(time.time()*1024)
-		elif xid in s.消息d:
-			i=s.消息d[xid]
-		s.消息d
-		s.消息l
 
 	def 对齐桌面(s):
 		d=QApplication.primaryScreen().geometry()
@@ -1401,6 +1651,7 @@ class 主窗口(QWidget):
 		#s.move(0,0)
 		s.setGeometry(0,0,宽,高)
 		s.win.setGeometry(0,0,宽,高)
+		#s.全屏.setGeometry(0,0,宽,高)
 		#s.背景.resize(宽,高)
 			
 		if (not s.套背景)or not s.背景视频.背景_入:
@@ -1470,11 +1721,11 @@ class 主窗口(QWidget):
 		win32gui.EnumChildWindows(s.winid_桌面,lambda hwnd,param:param.append(hwnd),a)
 		if not s.winid_s in a:
 			print('重新嵌入')
-			s.update()
 			s.嵌入()
+			s.update()
+			s.setVisible(False)
+			s.setVisible(True)
 
-	def miao(s):
-		pass
 
 	def sx(s):
 		s.刷新()
@@ -1483,10 +1734,12 @@ class 主窗口(QWidget):
 			s.下课预更新=True
 			s.天气.setVisible(False)
 			s.日历.setVisible(False)
+			s.主消息.普通消息widget.setVisible(False)
 		else:
 			if(s.天气.当前信息_更新时间.text()):
 				s.天气.setVisible(True)
 			s.日历.setVisible(True)
+			s.主消息.普通消息widget.setVisible(True)
 
 
 	def 更新课程(s):
@@ -1503,7 +1756,9 @@ class 主窗口(QWidget):
 				s.下课预更新=False
 				s.天气.预更新=True
 
-	
+	def 更新_(s):
+		s.全屏.update()
+
 	def 开始(s):
 		s.嵌入()
 		s.对齐桌面()
@@ -1513,16 +1768,6 @@ class 主窗口(QWidget):
 		#threading.Thread(target=lambda:()).start()
 		#新线程(0,lambda:(s.嵌入(),s.对齐桌面(),s.状态检查()))
 		
-		#s.背景视频.show()
-		#qt
-		#win32gui.ShowWindow(s.winid_背景视频,win32con.SW_HIDE)
-		#win32gui.SetWindowPos(s.winid_背景图片,win32con.HWND_TOP,0,0,0,0,win32con.SWP_NOMOVE|win32con.SWP_NOSIZE)
-		#win32gui.SetWindowPos(s.winid_背景视频,win32con.HWND_BOTTOM,0,0,0,0,win32con.SWP_NOMOVE|win32con.SWP_NOSIZE)
-		#s.show()
-		#'''
-		#s.背景动画_入.start()
-		#s.背景.show()
-		#s.背景视频.show()
 		'''
 		s.背景视频.show()
 		s.背景视频.显示()
@@ -1538,11 +1783,14 @@ class 主窗口(QWidget):
 
 		s.线程.start()
 
+		#s.全屏.show()
+
 		#'''
-		if 配置l['天气']['key']:
-			s.天气.l()
-		else:
-			print('未配置天气')
+		if 配置l['天气']['启用']:
+			if 配置l['天气']['key']:
+				s.天气.l()
+			else:
+				print('未配置天气')
 		#'''
 		#s.天气.更新天气()
 
@@ -1597,10 +1845,12 @@ class 托盘图标(QSystemTrayIcon):
 		app.exit()
 		#sys.exit()
 
+			
 
 if __name__ == "__main__":
 
 	配置l=flj('配置.json')
+
 
 	if not 配置l.d:
 		配置l.关闭()
@@ -1632,6 +1882,8 @@ if __name__ == "__main__":
 	#t_6=配置l['周六时间']
 
 	w=主窗口()
+
+	#a1
 
 	#ti=QSystemTrayIcon(w)
 
