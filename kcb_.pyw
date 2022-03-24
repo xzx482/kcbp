@@ -101,11 +101,11 @@ t_6=1639756800-86400*7*6
 
 
 '''
-t_f=1640908834-60*60*50
+t_f=1640908834#-60*60*50
 
 def 获取时间():
 	global t_f
-	t_f+=60*2
+	t_f+=60*4
 	return t_f
 """
 #'''
@@ -524,6 +524,78 @@ class 日期时间组件(单课程组件):
 		s.设置内容(time.strftime("%H:%M:%S",tl),time.strftime("%Y/%m/%d",tl),'星期'+星期_tm_wday[tl.tm_wday])
 		#s.时间.setText(time.strftime("%Y-%m-%d %H:%M:%S",))
 
+
+class 将上课程():
+	def __init__(s):
+		s.d={}
+	
+	def __len__(s):
+		return len(s.d)
+
+	def __getitem__(s,ti):#t为当前时间,i为之后i天
+		if isinstance(ti,(int,float)):
+			t=ti
+			i=0
+		elif isinstance(ti,tuple):
+			t,i=ti
+		else:
+			raise
+		if i<0:
+			raise ValueError('!>=0')
+		ti=t+i*86400
+		天=获取天(time.localtime(ti))
+		今天=获取天(time.localtime(t))
+		for i in list(s.d.keys()):#删除今天之前的课程. 直接遍历字典, 删除时会报错
+			if i<今天:
+				del s.d[i]
+
+		try:
+			return s.d[天]
+		except KeyError:
+			rt=ck(ti)
+			s.d[天]=rt
+			return rt
+		
+	def dk(s,tl,仅课数=True):
+		分=tl.tm_hour*60+tl.tm_min
+		秒=分*60+tl.tm_sec
+		暂停=0
+		上课=0
+		倒计时_=0
+		找到课数=False
+		课数=0
+		for 课数 in range(len(s)):
+			课程时间=s[课数][0][0]
+			'''
+			if not 暂停:
+				for i in 课程时间:
+					t=i-分
+					if t>0:
+						暂停=t
+			'''
+			if 课程时间[1]>分:
+				找到课数=True
+				if 仅课数:
+					break
+				上课=0
+				倒计时_=(课程时间[0])*60
+				暂停=倒计时_-120
+				if 课程时间[0]<=分:
+					上课=2
+					倒计时_=(课程时间[1])*60
+					暂停=倒计时_
+				elif 课程时间[0]-2<=分:
+					上课=1
+					暂停=倒计时_#-120
+					#倒计时_=课程时间[0]*60-秒
+				break
+		if not 找到课数:
+			课数+=1
+			倒计时_=None
+			暂停=秒+10
+		return [课数,上课,倒计时_,暂停]
+
+
 class 课程表类():
 	def __init__(s, parent=None):
 
@@ -532,6 +604,7 @@ class 课程表类():
 		s.状态={'上课':None,'当前课程':None,'已上课数':None}
 
 		s.时差_=0
+		s.将上课程=将上课程()
 
 		#s.wh=[0,0]
 		s.根横=QHBoxLayout()
@@ -557,172 +630,70 @@ class 课程表类():
 
 
 
-	def start(s,初始=False):
+	def 开始(s):
 		
-		#s.状态检查定时器.setInterval(1000)
-		#s.状态检查定时器.start()
-
-		s.将上课程={}
 		s.暂停=0
-		'''
-		while 1:
-			tl=time.localtime(t)
-			天=获取天(tl)
-			s.将上课程[天]=ck(t)
-			总数=sum([len(s.将上课程[i]) for i in s.将上课程])
-			t+=86400
-			已上课数=dk(今天_tl,s.将上课程[今天_天])[0]
-			if 总数-已上课数<len(s.课程表qbox):
-				continue
-			else:
-				break
-		'''
-		
-		#s.更新课程()
-		if 初始:
 
-			'''
-			time.sleep(1.001-time.time()%1)
-			s.时间定时器.setInterval(1000)
-			s.时间定时器.start()
-			'''
+		for i in range(2):
+			s.更新课程()
 
-			time.sleep(1.001-(时差+time.time())%1)
-			#s.课程定时器.setInterval(1000)
-			#s.课程定时器.start()
-			##time.sleep(1)
-			for i in range(2):
-				s.更新课程()
-	
-	def gxkc(s):
-		s.更新课程()
 	def 更新课程(s,t=None):
 		if t is None:
 			t=获取时间()+时差
 
-
 		tl=time.localtime(t)
-		天=获取天(tl)
-		需要更新=False
-		if 天 in s.将上课程:
-			已上课数=dk(tl,s.将上课程[天])[0]
-		else:
-			已上课数=0
-			需要更新=True
 
-		上课=None
-		当前课程=''
-	
-		x_=tl
-		分=x_.tm_hour*60+x_.tm_min
-		秒=分*60+x_.tm_sec
+		分=tl.tm_hour*60+tl.tm_min
+		秒=分*60+tl.tm_sec
 
-		#s.暂停-秒<=0 or s.暂停-秒>3600
-		#not(0<s.暂停-秒<=3600)
-		if not(0<s.暂停-秒<=3600):
-			#上课=None
-			if not 需要更新:
-				已上课数_,上课,s.倒计时_,暂停=dk(tl,s.将上课程[天],False)
-				s.暂停=暂停
-			课程天_=tuple(s.将上课程.keys())
-			for i in 课程天_:
-				if i<天:
-					s.将上课程.pop(i,'')
-			课程天_=tuple(s.将上课程.keys())
-
-			课程天_k=0
-			课程天_k_=课程天_k
-			#课程天_[课程天_k]
-			课程天_数量=0
-			i_=0
-			for i in range(len(s.课程表qbox)):
-				循环_=True
-				while 循环_:
-					if 需要更新 or not len(s.将上课程[课程天_[课程天_k]])>i_+已上课数-课程天_数量:
-						if 课程天_:
-							课程天_数量+=len(s.将上课程[课程天_[课程天_k]])
-
-							课程天_k+=1
-						if  not len(课程天_)>课程天_k:
-
-							while 1:
-								t_=t+课程天_k*86400
-								tl=time.localtime(t_)
-								天=获取天(tl)
-								s.将上课程[天]=ck(t_,tl)
-								课程天_=tuple(s.将上课程.keys())
-								#s.课程天_=课程天_
-								if len(s.将上课程[课程天_[课程天_k]])>=课程天_k:
-									课程天_k+=1
-									continue
-								break
-
-
-					if 课程天_k_==课程天_k:
-						cki=s.将上课程[课程天_[课程天_k]][i_+已上课数-课程天_数量]
-						i_+=1
-						if not 当前课程:
-							当前课程=cki[2]
+		if not(0<s.暂停-秒<=3600):#到达设定的时间后才会更新
+			
+			一天课程=s.将上课程[t]
+			一天课程数=len(一天课程)
+			已上课数_,上课,s.倒计时_,s.暂停=dk(tl,一天课程,False)
+			已用课数=已上课数_
+			天数=0
+			天数_旧=0
+			for i in range(len(s.课程表qbox)):#遍历 单课程组件 ; 需要的课程数量 会小于或等于 单课程组件的数量, 因为每天都有一个日期占用一个单课程组件
+				while 1:
+					if 一天课程数<=已用课数:
+						已用课数=0
+						天数+=1
+						一天课程=s.将上课程[t,天数]
+						一天课程数=len(一天课程)
 					else:
-						if s.将上课程[课程天_[课程天_k]]:
-							课程天_k_=课程天_k
-							年,星期=divmod(课程天_[课程天_k],10)
-							年,月=divmod(年,10000)
-							月,日=divmod(月,100)
-							日期_s=str(日)+'日'
-							if 日==1:
-								日期_s=str(月)+'月'+日期_s
-								if 月==1:
-									日期_s=str(年)+'年'+日期_s
-							
-							cki=[['',''],日期_s,'星期'+星期_tm_wday[星期]]
-						else:
-							continue
-					s.课程表qbox[i].设置内容(cki[0][1],cki[1],cki[2])
-					break
+						break
+				if 天数==天数_旧:
+					cki=一天课程[已用课数]
+					已用课数+=1
+				else:
+					天数_旧=天数
+					tln=time.localtime(t+天数*86400)
 
-			#总数=sum([len(s.将上课程[i]) for i in s.将上课程])
-			#if 总数-已上课数<len(s.课程表qbox):
-			#	s.start()
-				#return
-
-			if 需要更新:
-				if not 天 in s.将上课程:
-					input()
-				已上课数_,上课,s.倒计时_,暂停=dk(tl,s.将上课程[天],False)
-				s.状态['已上课数']=已上课数_
-				s.状态['当前课程']=当前课程
-
-				#s.暂停=暂停
-
+					年,月,日,星期=tln.tm_year,tln.tm_mon,tln.tm_mday,tln.tm_wday
+					日期_s=str(日)+'日'
+					if 日==1:
+						日期_s=str(月)+'月'+日期_s
+						if 月==1:
+							日期_s=str(年)+'年'+日期_s
+					
+					cki=[['',''],日期_s,'星期'+星期_tm_wday[星期]]
+				s.课程表qbox[i].设置内容(cki[0][1],cki[1],cki[2])
+			
 			s.状态['上课']=上课
-		
 			s.上课状态.setText(上课_[上课])
 			s.上课状态.setStyleSheet('color:'+('#00ff00','#ffff00','#ff0000')[上课])
-			
-			#s.adjustSize_()
+
 		if s.倒计时_ is not None:
 			m=s.倒计时_-秒
 		else:
 			m=0
+		
 		s.上课状态d.setText(时间转文字(m)if m else '')
 
 		return m
 
-	class 更新线程(QThread):
-		pass
 
-	def scjc(s):
-		s.时差检查()
-	def 时差检查(s):
-		t=time.time()
-		if t - s.时差_>50:
-			s.start(True)
-		s.时差_=t
-
-	def s(s):
-		s.时差检查()
-		s.时差检查定时器.start()
 
 class 单天气组件(QVBoxLayout):
 	def __init__(s,数量=3):
@@ -1529,6 +1500,7 @@ class 主窗口_线程(QThread):
 			if st-s.sm_t>20:
 				print(2)
 			time.sleep(1-st%1)
+			#time.sleep(0.1)
 			s.sm_t=st
 
 			if 计数_秒>=59:
@@ -1776,7 +1748,7 @@ class 主窗口(QWidget):
 		#_thread.start_new_thread(s.player.play,())
 		#'''
 		s.show()
-		s.课程表.start(True)
+		s.课程表.开始()
 		#import threading
 		#t=threading.Thread(target=s.sm)
 		#t.start()
