@@ -328,7 +328,7 @@ except BaseException as e:
 
 
 def 获取天(tl):
-	return (tl.tm_year*10000+tl.tm_mon*100+tl.tm_mday)*10+tl.tm_wday
+	return (tl.tm_year*10000+tl.tm_mon*100+tl.tm_mday)#*10+tl.tm_wday
 
 
 def ck(t,tl=None):
@@ -360,9 +360,9 @@ def ck(t,tl=None):
 	
 	节_=节
 	
-	天_=str(天)[:-1]
-	if 天_ in 临时课程:
-		课程_=临时课程[天_]
+	天=str(天)
+	if 天 in 临时课程:
+		课程_=临时课程[天]
 		if len(课程_)>0:
 			if isinstance(课程_[0],int):
 				if 课程_[0]<5:#周一到周五
@@ -370,7 +370,7 @@ def ck(t,tl=None):
 				else:#周六
 					ks=课程_[0]-5
 					if ks>=len(k2):
-						raise ValueError('临时课程的 "'+天_+'" 的 "'+str(课程_[0])+'"不在范围(<='+str(len(k2)-1)+')内')
+						raise ValueError('临时课程的 "'+天+'" 的 "'+str(课程_[0])+'"不在范围(<='+str(len(k2)-1)+')内')
 					课程=k2[ks]
 
 			if isinstance(课程_[0],list):
@@ -388,7 +388,7 @@ def ck(t,tl=None):
 					始末时间_=始末时间_长假
 					始末时间_文本_=始末时间长假_文本
 				else:
-					raise ValueError('临时课程的 "'+天_+'" 的 "'+str(课程_[1])+'"不在范围(<=3)内')
+					raise ValueError('临时课程的 "'+天+'" 的 "'+str(课程_[1])+'"不在范围(<=3)内')
 
 			if isinstance(课程_[1],list):
 				始末时间_=课程_[1]
@@ -399,7 +399,7 @@ def ck(t,tl=None):
 				if 课程_[2]==1:
 					节_=节
 				else:
-					raise ValueError('临时课程的 "'+天_+'" 的 "'+str(课程_[2])+'"不在范围(<=3)内')
+					raise ValueError('临时课程的 "'+天+'" 的 "'+str(课程_[2])+'"不在范围(<=3)内')
 
 			if isinstance(课程_[2],list):
 				节_=课程_[2]
@@ -556,44 +556,6 @@ class 将上课程():
 			s.d[天]=rt
 			return rt
 		
-	def dk(s,tl,仅课数=True):
-		分=tl.tm_hour*60+tl.tm_min
-		秒=分*60+tl.tm_sec
-		暂停=0
-		上课=0
-		倒计时_=0
-		找到课数=False
-		课数=0
-		for 课数 in range(len(s)):
-			课程时间=s[课数][0][0]
-			'''
-			if not 暂停:
-				for i in 课程时间:
-					t=i-分
-					if t>0:
-						暂停=t
-			'''
-			if 课程时间[1]>分:
-				找到课数=True
-				if 仅课数:
-					break
-				上课=0
-				倒计时_=(课程时间[0])*60
-				暂停=倒计时_-120
-				if 课程时间[0]<=分:
-					上课=2
-					倒计时_=(课程时间[1])*60
-					暂停=倒计时_
-				elif 课程时间[0]-2<=分:
-					上课=1
-					暂停=倒计时_#-120
-					#倒计时_=课程时间[0]*60-秒
-				break
-		if not 找到课数:
-			课数+=1
-			倒计时_=None
-			暂停=秒+10
-		return [课数,上课,倒计时_,暂停]
 
 
 class 课程表类():
@@ -633,9 +595,8 @@ class 课程表类():
 	def 开始(s):
 		
 		s.暂停=0
+		s.天=0
 
-		for i in range(2):
-			s.更新课程()
 
 	def 更新课程(s,t=None):
 		if t is None:
@@ -643,14 +604,17 @@ class 课程表类():
 
 		tl=time.localtime(t)
 
+		天=获取天(tl)
+
 		分=tl.tm_hour*60+tl.tm_min
 		秒=分*60+tl.tm_sec
 
-		if not(0<s.暂停-秒<=3600):#到达设定的时间后才会更新
+		if not(天==s.天 and 0<s.暂停-秒<=3600):#到达设定的时间后才会更新
 			s.状态['当前课程']=''
 			一天课程=s.将上课程[t]
 			一天课程数=len(一天课程)
 			已上课数_,上课,s.倒计时_,s.暂停=dk(tl,一天课程,False)
+			s.天=天
 			已用课数=已上课数_
 			天数=0
 			天数_旧=0
@@ -1130,6 +1094,7 @@ class 日历组件(QWidget):
 			星期历=日期.星期历(d)#参数 d 在调用后会被改变
 			日期j['星期'].append(星期历)
 			for i2 in range(7):
+				单日期:单日期组件=i[i2]
 				日期_:日期.日期=星期历[i2]
 				年,月,日=日期_.公历_值
 				左上=(str(月)+'月') if 日==1 else ''
@@ -1138,14 +1103,14 @@ class 日历组件(QWidget):
 					
 				except KeyError:
 					右上=''
-				i[i2].设置内容(左上,右上,str(日),日期_.简日())
+				单日期.设置内容(左上,右上,str(日),日期_.简日())
 				if 今天==日期_.公历_数字:#当前的日期外加边框
-					i[i2].日期.setStyleSheet('border:2px solid #fff')
+					单日期.日期.setStyleSheet('border:2px solid #fff')
 				elif 今天>日期_.公历_数字:#之前的日期变灰
-					i[i2].setStyleSheet('color:#aaffffff')
+					单日期.setStyleSheet('color:#aaffffff')
 				else:
-					i[i2].日期.setStyleSheet('')
-					i[i2].setStyleSheet('')
+					单日期.日期.setStyleSheet('')
+					单日期.setStyleSheet('')
 
 		s.日期j=日期j
 		s.gxrq_signal.emit(日期j)

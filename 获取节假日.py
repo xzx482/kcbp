@@ -13,17 +13,18 @@ from flj import flj
 节假日信息=配置l.d['节假日']
 
 def 更新节假日_单天(lti:time.struct_time,n):
-    if lti.tm_year not in 节假日信息:
-        年=节假日信息[lti.tm_year]={}
+    t年,t月,t日=(str(i) for i in lti[0:3])
+    if t年 not in 节假日信息:
+        年=节假日信息[t年]={}
     else:
-        年=节假日信息[lti.tm_year]
+        年=节假日信息[t年]
 
-    if lti.tm_mon not in 年:
-        月=年[lti.tm_mon]={}
+    if t月 not in 年:
+        月=年[t月]={}
     else:
-        月=年[lti.tm_mon]
+        月=年[t月]
 
-    月[lti.tm_mday]=n
+    月[t日]=n
 
 class 未找到(Exception):
     pass
