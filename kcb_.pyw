@@ -1000,7 +1000,7 @@ class 天气组件(QWidget):
 
 			s.每天信息widget.setVisible(True)
 		else:
-			s.每天信息widget.setVisible()
+			s.每天信息widget.setVisible(True)
 				
 		#s.adjustSize()
 
