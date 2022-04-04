@@ -1,9 +1,9 @@
 import time
 
 from flj import flj
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import QAbstractAnimation, QEasingCurve, QParallelAnimationGroup, QPropertyAnimation, Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QGraphicsOpacityEffect, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 
 class 天气获取t(QThread):
@@ -80,11 +80,12 @@ class 天气组件(QWidget):
 	def __init__(s, parent=None):
 		super().__init__(parent)
 
+
 		s.天气j={}
 
 		s.预更新=False
 		s.显示状态=False
-		s.setVisible(False)
+		#s.setVisible(False)
 
 		s.获取t=天气获取t(s)
 		s.获取t.trigger.connect(s.gxtq)
@@ -95,9 +96,10 @@ class 天气组件(QWidget):
 		s.根纵.setSpacing(0)
 		s.setLayout(s.根纵)
 
-
-		s.当前信息=QHBoxLayout()
-		s.当前信息.setSpacing(5)
+		s.当前信息widget=QWidget()
+		s.当前信息hbox=QHBoxLayout()
+		s.当前信息widget.setLayout(s.当前信息hbox)
+		s.当前信息hbox.setSpacing(5)
 
 		s.每分钟信息widget=QWidget()
 		s.每分钟信息vbox=QVBoxLayout()
@@ -142,7 +144,7 @@ class 天气组件(QWidget):
 		s.每天信息l=[]
 
 		
-		s.根纵.addLayout(s.当前信息)
+		s.根纵.addWidget(s.当前信息widget)
 		s.根纵.addWidget(s.每天信息widget)
 		s.根纵.addWidget(s.每分钟信息widget)
 		s.根纵.addWidget(s.每小时信息widget)
@@ -175,49 +177,49 @@ class 天气组件(QWidget):
 
 		当前信息_更新时间0=QLabel()
 		当前信息_更新时间0.setText('更新时间:')
-		s.当前信息.addWidget(当前信息_更新时间0)
+		s.当前信息hbox.addWidget(当前信息_更新时间0)
 		s.当前信息_更新时间=QLabel()
-		s.当前信息.addWidget(s.当前信息_更新时间)
+		s.当前信息hbox.addWidget(s.当前信息_更新时间)
 		当前信息_更新时间1=QLabel()
 		当前信息_更新时间1.setText(' ')
-		s.当前信息.addWidget(当前信息_更新时间1)
+		s.当前信息hbox.addWidget(当前信息_更新时间1)
 		
 		当前信息_天气0=QLabel()
 		#当前信息_天气0.setText('天气:')
-		s.当前信息.addWidget(当前信息_天气0)
+		s.当前信息hbox.addWidget(当前信息_天气0)
 		s.当前信息_天气=QLabel()
-		s.当前信息.addWidget(s.当前信息_天气)
+		s.当前信息hbox.addWidget(s.当前信息_天气)
 		当前信息_天气1=QLabel()
 		当前信息_天气1.setText('')
-		s.当前信息.addWidget(当前信息_天气1)
+		s.当前信息hbox.addWidget(当前信息_天气1)
 
 		当前信息_温度0=QLabel()
 		#当前信息_温度0.setText('温度:')
-		s.当前信息.addWidget(当前信息_温度0)
+		s.当前信息hbox.addWidget(当前信息_温度0)
 		s.当前信息_温度=QLabel()
-		s.当前信息.addWidget(s.当前信息_温度)
+		s.当前信息hbox.addWidget(s.当前信息_温度)
 		当前信息_温度1=QLabel()
 		当前信息_温度1.setText('°C ')
 		#当前信息_温度1.setStyleSheet('letter-spacing:1px')
-		s.当前信息.addWidget(当前信息_温度1)
+		s.当前信息hbox.addWidget(当前信息_温度1)
 
 		当前信息_湿度0=QLabel()
 		当前信息_湿度0.setText(' 湿度')
-		s.当前信息.addWidget(当前信息_湿度0)
+		s.当前信息hbox.addWidget(当前信息_湿度0)
 		s.当前信息_湿度=QLabel()
-		s.当前信息.addWidget(s.当前信息_湿度)
+		s.当前信息hbox.addWidget(s.当前信息_湿度)
 		当前信息_湿度1=QLabel()
 		当前信息_湿度1.setText('% ')
-		s.当前信息.addWidget(当前信息_湿度1)
+		s.当前信息hbox.addWidget(当前信息_湿度1)
 		
 		当前信息_风速0=QLabel()
 		#当前信息_风速0.setText(' 风速:')
-		s.当前信息.addWidget(当前信息_风速0)
+		s.当前信息hbox.addWidget(当前信息_风速0)
 		s.当前信息_风速=QLabel()
-		s.当前信息.addWidget(s.当前信息_风速)
+		s.当前信息hbox.addWidget(s.当前信息_风速)
 		当前信息_风速1=QLabel()
 		当前信息_风速1.setText(' ')
-		s.当前信息.addWidget(当前信息_风速1)
+		s.当前信息hbox.addWidget(当前信息_风速1)
 		'''
 		当前信息_a3d0=QLabel()
 		当前信息_a3d0.setText('a3d:')
@@ -239,7 +241,7 @@ class 天气组件(QWidget):
 			i.setFont(QFont("黑体",18,QFont.Weight.Bold))
 			#'''
 
-		s.当前信息.addStretch(1)
+		s.当前信息hbox.addStretch(1)
 		s.每分钟信息hbox1.addStretch(1)
 		s.每分钟信息hbox2.addStretch(1)
 		s.每小时信息hbox1.addStretch(1)
@@ -247,20 +249,12 @@ class 天气组件(QWidget):
 		s.每小时信息hbox3.addStretch(1)
 		s.每天信息hbox.addStretch(1)
 
-		'''
-		s.小时_=[]
-		s.小时=[]
-		for i in range(2):
-			i1=QVBoxLayout()
-			s.小时_.append(i1)
-			s.根纵.addLayout(i1)
-			for i2 in range(6):
-				i2_=QWidget()
-				s.小时.append(i2_)
-				i1.addWidget(i2_)
 		
-		s.小时2=QVBoxLayout()
-		'''
+		s.淡化动画组=QParallelAnimationGroup()
+		s.添加淡化组件(s.当前信息widget)
+		s.添加淡化组件(s.每天信息widget,0.5)
+		s.添加淡化组件(s.每分钟信息widget)
+		s.添加淡化组件(s.每小时信息widget)
 	
 	def gxtq(s,*a):
 		s.更新天气(*a)
@@ -356,6 +350,17 @@ class 天气组件(QWidget):
 		s.xsztbh()
 		#s.adjustSize()
 
+	def 添加淡化组件(s,组件:QWidget,最淡值=0,最深值=1):
+		淡化属性=QGraphicsOpacityEffect()
+		#淡化属性.setOpacity()
+		组件.setGraphicsEffect(淡化属性)
+		淡化动画=QPropertyAnimation(淡化属性,b'opacity')
+		淡化动画.setDuration(1000)
+		淡化动画.setStartValue(最淡值)
+		淡化动画.setEndValue(最深值)
+		淡化动画.setEasingCurve(QEasingCurve.Type.Linear)
+		s.淡化动画组.addAnimation(淡化动画)
+
 	def xsztbh(s,显示状态=None):
 		if 显示状态 is None:
 			显示状态=s.显示状态
@@ -363,9 +368,13 @@ class 天气组件(QWidget):
 			s.显示状态=显示状态
 		if 显示状态:
 			if(s.当前信息_更新时间.text()):
-				s.setVisible(True)
+				#s.setVisible(True)
+				s.淡化动画组.setDirection(QAbstractAnimation.Direction.Forward)
 		else:
-			s.setVisible(False)
+			#s.setVisible(False)
+			s.淡化动画组.setDirection(QAbstractAnimation.Direction.Backward)
+
+		s.淡化动画组.start()
 
 	def ks(s):
 		if s.配置l['天气']['启用']:

@@ -61,7 +61,7 @@ class 日历组件(QWidget):
 	gxrq_signal=pyqtSignal(dict)
 	def __init__(s,*a):
 		super().__init__(*a)
-		s.setVisible(False)
+		#s.setVisible(False)
 		s.根网=QGridLayout()
 		s.根网.setVerticalSpacing(0)
 		s.根网.setHorizontalSpacing(10)
@@ -130,5 +130,6 @@ def 配置(p,配置l):
 	日历=日历组件()
 	p.日历=日历
 	p.根纵_上横_左纵.addWidget(日历)
+	p.添加淡化组件(日历,0.5)
 	p.线程.gxrq.connect(日历.gxrq)
-	p.zjxsztbh.connect(日历.xsztbh)
+	#p.zjxsztbh.connect(日历.xsztbh)

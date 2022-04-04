@@ -10,7 +10,7 @@ os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
 
 #防止多开
 from PyQt6.QtWidgets import QMessageBox,QApplication
-from PyQt6.QtCore import QSharedMemory
+from PyQt6.QtCore import QParallelAnimationGroup, QSharedMemory
 '''
 import tracemalloc
 tracemalloc.start()
@@ -108,11 +108,12 @@ t_6=1639756800-86400*7*6
 
 
 #'''
-t_f=1640908834.0-60*60*9
+#t_f=1640908834.0-60*60*9
+t_f=1640908234.0#-60*60*9
 
 def 获取时间():
 	global t_f
-	t_f+=60*4
+	t_f+=30
 	return t_f
 """
 #'''
@@ -1034,6 +1035,7 @@ class 主窗口_线程(QThread):
 
 
 
+上课状态_对应_刷新=[0,0,1]
 
 class 主窗口(QWidget):
 	kcztbh=pyqtSignal(int)#课程状态变化
@@ -1069,6 +1071,7 @@ class 主窗口(QWidget):
 		s.宽=0
 		s.高=0
 
+		s.刷新_上课状态=None#与 s.上课状态 不同, 预备与下课都将为0, 上课将为1.且它的更新会提前于 s.上课状态 .
 		s.上课状态=None
 		s.下课预更新=None
 
@@ -1079,6 +1082,7 @@ class 主窗口(QWidget):
 		s.状态检查定时器.setInterval(1000)
 
 		s.根纵=QVBoxLayout()
+		s.根纵.setSpacing(0)
 		s.setLayout(s.根纵)
 
 		s.根纵_上横=QHBoxLayout()
@@ -1110,7 +1114,11 @@ class 主窗口(QWidget):
 		s.根纵_上横_右纵.addLayout(s.右纵_网)
 
 
+		s.淡化动画组=QParallelAnimationGroup()
+
+
 		s.主消息=消息_主窗口()
+		#s.主消息.添加消息(1).设置('123','456',True,time.time(),time.time()+10)
 		s.根纵_下横_左纵.addWidget(s.主消息)
 
 		s.课程表=课程表类(s.右纵_网,(1,1))
@@ -1123,7 +1131,7 @@ class 主窗口(QWidget):
 		s.线程.kcsjm.connect(s.gxkc)
 		s.线程.xtsjm.connect(s.日期时间.gxsj)
 		s.线程.gxrq.connect(s.日期时间.gxrq)
-		s.kcztbh.connect(s.sx)
+		s.zjxsztbh.connect(s.dhdh)
 
 		扩展.配置(s,配置l)
 
@@ -1134,22 +1142,32 @@ class 主窗口(QWidget):
 		s.根纵_下横_左纵.addStretch(1)
 		s.根纵_下横_右纵.addStretch(1)
 
-		#s.主消息.添加消息(1).设置('123','456',True,time.time(),time.time()+10)
 
 
+		
+
+		s.添加淡化组件(s.主消息.普通消息widget)
 
 
+	def 添加淡化组件(s,组件:QWidget,最淡值=0,最深值=1):
+		淡化属性=QGraphicsOpacityEffect()
+		#淡化属性.setOpacity()
+		组件.setGraphicsEffect(淡化属性)
+		淡化动画=QPropertyAnimation(淡化属性,b'opacity')
+		淡化动画.setDuration(1000)
+		淡化动画.setStartValue(最淡值)
+		淡化动画.setEndValue(最深值)
+		淡化动画.setEasingCurve(QEasingCurve.Type.Linear)
+		s.淡化动画组.addAnimation(淡化动画)
 
-	def sx(s,*a):
-		s.刷新()
-	def 刷新(s):
-		if s.上课状态:
-			s.下课预更新=True
-			s.主消息.普通消息widget.setVisible(False)
-			s.zjxsztbh.emit(False)
+	def dhdh(s,*a):
+		s.淡化动画(*a)
+	def 淡化动画(s,方向):
+		if 方向:
+			s.淡化动画组.setDirection(QAbstractAnimation.Direction.Forward)
 		else:
-			s.主消息.普通消息widget.setVisible(True)
-			s.zjxsztbh.emit(True)
+			s.淡化动画组.setDirection(QAbstractAnimation.Direction.Backward)
+		s.淡化动画组.start()
 
 
 	def gxkc(s):
@@ -1158,12 +1176,29 @@ class 主窗口(QWidget):
 			倒计时_=s.课程表.更新课程()
 			
 			上课状态=s.课程表.状态['上课']
+
+			
+			刷新_上课状态=上课状态_对应_刷新[上课状态]
+			if 倒计时_ and 倒计时_<60:#取反
+				刷新_上课状态=(1,0)[刷新_上课状态]
+
+			if s.刷新_上课状态!=刷新_上课状态:
+				s.刷新_上课状态=刷新_上课状态
+				if 刷新_上课状态:
+					s.下课预更新=True
+					#s.主消息.普通消息widget.setVisible(False)
+					s.zjxsztbh.emit(False)
+				else:
+					#s.主消息.普通消息widget.setVisible(True)
+					s.zjxsztbh.emit(True)
+
+
 			if 上课状态!=s.上课状态:
 				s.上课状态=上课状态
 				#print(上课状态)
 				s.kcztbh.emit(上课状态)
 			
-			if 上课状态==2 and s.下课预更新 and 倒计时_ and 倒计时_<50:
+			if 上课状态==2 and s.下课预更新 and 倒计时_ and 倒计时_<80:
 				print('预更新',上课状态,s.下课预更新,倒计时_)
 				s.下课预更新=False
 				s.ygx.emit()
@@ -1287,6 +1322,7 @@ class 主窗口(QWidget):
 		#s.全屏.show()
 
 		#'''
+		s.主消息.普通消息widget.setVisible(True)
 		s.ks.emit()
 		#'''
 		#s.天气.更新天气()
