@@ -108,7 +108,7 @@ t_6=1639756800-86400*7*6
 
 
 #'''
-t_f=1640908834-60*60*9
+t_f=1640908834.0-60*60*9
 
 def 获取时间():
 	global t_f
@@ -525,12 +525,20 @@ class 日期时间组件(单课程组件):
 		s.labels[1].setFont(QFont("黑体",20))
 		s.labels[2].setFont(QFont("黑体",20))
 	
+	def gxsj(s,*a):
+		s.更新时间(*a)
+	def 更新时间(s,tl=None):
+		if not tl:
+			tl=time.localtime(获取时间())
+		s.labels[0].setText(time.strftime("%H:%M:%S",tl))
 	
-	def 更新时间(s):
-		tl=time.localtime(获取时间())
-		#time.strftime("%Y年%m月%d日",tl)
-		s.设置内容(time.strftime("%H:%M:%S",tl),time.strftime("%Y/%m/%d",tl),'星期'+星期_tm_wday[tl.tm_wday])
-		#s.时间.setText(time.strftime("%Y-%m-%d %H:%M:%S",))
+	def gxrq(s,*a):
+		s.更新日期(*a)
+	def 更新日期(s,tl=None):
+		if not tl:
+			tl=time.localtime(获取时间())
+		s.labels[1].setText(time.strftime("%Y/%m/%d",tl))
+		s.labels[2].setText('星期'+星期_tm_wday[tl.tm_wday])
 
 
 class 将上课程():
@@ -993,29 +1001,30 @@ class 消息_主窗口(QWidget):
 
 class 主窗口_线程(QThread):
 	#课程时间秒 和 系统时间秒 都 每整秒发送一次, 但 课程时间和系统时间的误差不为一整秒 时 将不同时发送
-	kcsjm=pyqtSignal()#课程时间秒
-	xtsjm=pyqtSignal()#系统时间秒
-	gxrq=pyqtSignal()#更新日期
+	kcsjm=pyqtSignal(float)#课程时间秒
+	xtsjm=pyqtSignal(time.struct_time)#系统时间秒
+	gxrq=pyqtSignal(time.struct_time)#更新日期
 	def __init__(s,parent):
 		super().__init__()
 		s.parent=parent
 		s.sm_t=0
 
 	def run(s):
-		计数_秒=0
 		日期_=None
 		while True:
-			tl=time.localtime()
+			t=获取时间()
+			tl=time.localtime(t)
 			日期=(tl.tm_year,tl.tm_mon,tl.tm_mday)
 			if 日期_!=日期:
 				日期_=日期
-				s.gxrq.emit()
+				print(t)
+				s.gxrq.emit(tl)
 
-			s.xtsjm.emit()
+			s.xtsjm.emit(tl)
 			if 多延迟:
 				time.sleep(1-(时差+time.time())%1)
 
-			s.kcsjm.emit()
+			s.kcsjm.emit(获取时间())
 
 			st=time.time()
 			if st-s.sm_t>20:
@@ -1024,10 +1033,6 @@ class 主窗口_线程(QThread):
 			#time.sleep(0.1)
 			s.sm_t=st
 
-			if 计数_秒>=59:
-				计数_秒=0
-			else:
-				计数_秒+=1
 
 
 
@@ -1116,8 +1121,9 @@ class 主窗口(QWidget):
 
 
 		s.线程=主窗口_线程(s)
-		s.线程.kcsjm.connect(lambda:s.更新课程())
-		s.线程.xtsjm.connect(lambda:s.日期时间.更新时间())
+		s.线程.kcsjm.connect(s.gxkc)
+		s.线程.xtsjm.connect(s.日期时间.gxsj)
+		s.线程.gxrq.connect(s.日期时间.gxrq)
 		s.kcztbh.connect(s.sx)
 
 		扩展.配置(s,配置l)
@@ -1147,6 +1153,8 @@ class 主窗口(QWidget):
 			s.zjxsztbh.emit(True)
 
 
+	def gxkc(s):
+		s.更新课程()
 	def 更新课程(s):
 			倒计时_=s.课程表.更新课程()
 			

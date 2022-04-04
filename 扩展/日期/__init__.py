@@ -3,7 +3,7 @@
 import time
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QGridLayout, QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QGridLayout, QHBoxLayout, QLabel, QStyle, QVBoxLayout, QWidget
 
 
 from .获取节假日 import 获取节假日,节假日_文本
@@ -81,14 +81,14 @@ class 日历组件(QWidget):
 				s.根网.addWidget(单日期,x,y)
 				日期_qws1.append(单日期)
 			s.日期_qws.append(日期_qws1)
-	def gxrq(s):
-		s.更新日期()
-	def 更新日期(s):
-		t=time.time()
-		tl=time.localtime(t)
+	def gxrq(s,*a):
+		s.更新日期(*a)
+	def 更新日期(s,tl=None):
+		if not tl:
+			tl=time.localtime()
 		d=日期.日期(tl=tl)
 		
-		日期j={'t':t,'今天':d.复制(),'星期':[]}
+		日期j={'tl':tl,'今天':d.复制(),'星期':[]}
 		#raise
 		今天=d.公历_数字
 		节假日=获取节假日()
@@ -107,12 +107,13 @@ class 日历组件(QWidget):
 					右上=''
 				单日期.设置内容(左上,右上,str(日),日期_.简日())
 				if 今天==日期_.公历_数字:#当前的日期外加边框
-					单日期.日期.setStyleSheet('border:2px solid #fff')
-				elif 今天>日期_.公历_数字:#之前的日期变灰
-					单日期.setStyleSheet('color:#aaffffff')
+					单日期.日期.setStyleSheet('border:2px solid #ffffffff')
 				else:
-					单日期.日期.setStyleSheet('')
-					单日期.setStyleSheet('')
+					单日期.日期.setStyleSheet('border:2px solid #00ffffff')
+					if 今天>日期_.公历_数字:#之前的日期变灰
+						单日期.setStyleSheet('color:#aaffffff')
+					else:
+						单日期.setStyleSheet('color:#ffffffff')
 
 		s.日期j=日期j
 		s.gxrq_signal.emit(日期j)
