@@ -1017,7 +1017,6 @@ class 主窗口_线程(QThread):
 			日期=(tl.tm_year,tl.tm_mon,tl.tm_mday)
 			if 日期_!=日期:
 				日期_=日期
-				print(t)
 				s.gxrq.emit(tl)
 
 			s.xtsjm.emit(tl)
