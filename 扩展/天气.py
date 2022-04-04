@@ -104,7 +104,7 @@ class 天气组件(QWidget):
 		s.每分钟信息widget=QWidget()
 		s.每分钟信息vbox=QVBoxLayout()
 		s.每分钟信息vbox.setSpacing(12)
-		s.每分钟信息vbox.addSpacing(24)
+		s.每分钟信息vbox.addSpacing(6)
 		s.每分钟信息hbox1=QHBoxLayout()
 		s.每分钟信息hbox2=QHBoxLayout()
 		s.每分钟信息vbox.addLayout(s.每分钟信息hbox1)
@@ -118,7 +118,7 @@ class 天气组件(QWidget):
 		s.每小时信息widget=QWidget()
 		s.每小时信息vbox=QVBoxLayout()
 		s.每小时信息vbox.setSpacing(12)
-		s.每小时信息vbox.addSpacing(24)
+		s.每小时信息vbox.addSpacing(6)
 		s.每小时信息hbox1=QHBoxLayout()
 		s.每小时信息hbox2=QHBoxLayout()
 		s.每小时信息hbox3=QHBoxLayout()
@@ -135,12 +135,12 @@ class 天气组件(QWidget):
 		
 		s.每天信息widget=QWidget()
 		s.每天信息vbox=QVBoxLayout()
-		s.每天信息vbox.setSpacing(12)
-		s.每天信息vbox.addSpacing(24)
+		s.每天信息vbox.setSpacing(0)
+		s.每天信息vbox.addSpacing(6)
 		s.每天信息hbox=QHBoxLayout()
 		s.每天信息vbox.addLayout(s.每天信息hbox)
 		s.每天信息widget.setLayout(s.每天信息vbox)
-		s.每天信息hbox.setSpacing(4)
+		s.每天信息hbox.setSpacing(0)
 		s.每天信息l=[]
 
 		

@@ -1108,6 +1108,7 @@ class 主窗口(QWidget):
 		s.根纵_下横.addLayout(s.根纵_下横_右纵)
 
 		s.根纵.addLayout(s.根纵_下横)
+		s.根纵.addStretch(1)
 
 
 		s.右纵_网=QGridLayout()
