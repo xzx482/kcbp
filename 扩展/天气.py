@@ -82,7 +82,6 @@ class 单天气组件(QVBoxLayout):
 
 class 天气组件(QWidget):
 	gxtq_signal=pyqtSignal(dict)
-	ccxs_signal=pyqtSignal()#初次显示
 	def __init__(s, parent=None):
 		super().__init__(parent)
 
@@ -92,7 +91,7 @@ class 天气组件(QWidget):
 		s.初始=True
 		s.预更新=False
 		s.显示状态=False
-		#s.setVisible(False)
+		s.setVisible(False)
 
 		s.获取t=天气获取t(s)
 		s.获取t.trigger.connect(s.gxtq)
@@ -259,24 +258,7 @@ class 天气组件(QWidget):
 
 		
 
-		淡化属性=QGraphicsOpacityEffect()
-		淡化属性.setOpacity(0.01)
-		s.setGraphicsEffect(淡化属性)
-		s.初入动画=QPropertyAnimation(淡化属性,b'opacity')
-		#s.setWindowOpacity(0)
-		#s.初入动画=QPropertyAnimation(s,b'windowOpacity')
-		s.初入动画.setDuration(1000)
-		s.初入动画.setStartValue(0.01)
-		s.初入动画.setEndValue(1)
-		s.初入动画.setEasingCurve(QEasingCurve.Type.Linear)
 
-		#以下问题使用下面的方法
-		#   QPainter::begin: A paint device can only be painted by one painter at a time.
-		#   QPainter::translate: Painter not active
-		#参考: https://forum.qt.io/topic/130718/qt-animation-a-paint-device-can-only-be-painted-by-one-painter-at-a-time/4
-		s.初入动画.finished.connect(lambda:(s.setGraphicsEffect(None),s.p.刷新淡化值()))
-
-		s.ccxs_signal.connect(s.ccxs)
 	
 	def gxtq(s,*a):
 		s.更新天气(*a)
@@ -370,17 +352,32 @@ class 天气组件(QWidget):
 			s.每天信息widget.setVisible(True)
 
 		s.adjustSize()
-		s.adjustSize()
-		s.ccxs_signal.emit()
+		s.ccxs()
 		#s.xsztbh()
 	def ccxs(s):
 		if s.初始:
 			s.初始=False
-			if s.p.淡化动画组.state()==QAbstractAnimation.State.Running:
-				s.p.淡化动画组.finished.connect(s.初入动画.start)
-				#s.初入动画.started.connect(lambda:s.p.淡化动画组.disconnect(s.初入动画.start))
-			else:
-				s.初入动画.start()
+
+
+			淡化属性=QGraphicsOpacityEffect()
+			淡化属性.setOpacity(0.01)
+			s.setGraphicsEffect(淡化属性)
+			s.setVisible(True)
+
+			s.初入动画=QPropertyAnimation(淡化属性,b'opacity')
+			s.初入动画.setDuration(1000)
+			s.初入动画.setStartValue(0.01)
+			s.初入动画.setEndValue(1)
+			s.初入动画.setEasingCurve(QEasingCurve.Type.Linear)
+
+			#以下问题使用下面的方法
+			#   QPainter::begin: A paint device can only be painted by one painter at a time.
+			#   QPainter::translate: Painter not active
+			#参考: https://forum.qt.io/topic/130718/qt-animation-a-paint-device-can-only-be-painted-by-one-painter-at-a-time/4
+			s.初入动画.finished.connect(lambda:(s.setGraphicsEffect(None),s.p.刷新淡化值()))
+
+
+			s.初入动画.start()
 			s.初入动画.finished.connect(s.初入动画.deleteLater)
 
 	def xsztbh(s,显示状态):
