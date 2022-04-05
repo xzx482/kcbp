@@ -1,7 +1,10 @@
+import json
 import time
 
+from urllib import request
+
 from flj import flj
-from PyQt6.QtCore import QAbstractAnimation, QEasingCurve, QParallelAnimationGroup, QPropertyAnimation, Qt, QThread, pyqtSignal
+from PyQt6.QtCore import QAbstractAnimation, QEasingCurve, QParallelAnimationGroup, QPropertyAnimation, QSequentialAnimationGroup, Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import QGraphicsOpacityEffect, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
@@ -15,8 +18,8 @@ class 天气获取t(QThread):
 	def 获取并发送(s):
 		print('获取天气'+time.strftime('%H:%M:%S'))
 		try:
-			'''
-			uo=request.urlopen('https://api.openweathermap.org/data/2.5/onecall?units=metric&lang=zh_cn&lat='+str(配置l['天气']['纬度'])+'&lon='+str(配置l['天气']['经度'])+'&appid='+配置l['天气']['key'],timeout=60)
+			#'''
+			uo=request.urlopen('https://api.openweathermap.org/data/2.5/onecall?units=metric&lang=zh_cn&lat='+str(s.配置l['天气']['纬度'])+'&lon='+str(s.配置l['天气']['经度'])+'&appid='+s.配置l['天气']['key'],timeout=60)
 			jl=json.load(uo)
 			"""
 			'''
@@ -28,14 +31,16 @@ class 天气获取t(QThread):
 			print('更新天气失败,'+str(e))
 			return False
 	def run(s):
+		s.配置l=s.parent.配置l
 		while 1:
 			if s.获取并发送():
 				break
 			else:
 				time.sleep(10)
+		time.sleep(60)
 		s.sxym.emit()
 		while 1:
-			if s.parent.预更新 or s.parent.isVisible():
+			if s.parent.预更新 or s.parent.显示状态:
 				if s.parent.预更新:
 					s.parent.预更新=False
 				s.获取并发送()
@@ -77,12 +82,14 @@ class 单天气组件(QVBoxLayout):
 
 class 天气组件(QWidget):
 	gxtq_signal=pyqtSignal(dict)
+	ccxs_signal=pyqtSignal()#初次显示
 	def __init__(s, parent=None):
 		super().__init__(parent)
 
 
 		s.天气j={}
 
+		s.初始=True
 		s.预更新=False
 		s.显示状态=False
 		#s.setVisible(False)
@@ -148,6 +155,7 @@ class 天气组件(QWidget):
 		s.根纵.addWidget(s.每天信息widget)
 		s.根纵.addWidget(s.每分钟信息widget)
 		s.根纵.addWidget(s.每小时信息widget)
+		s.根纵.addStretch(1)
 
 
 		#(s.每分钟信息hbox,s.每分钟信息l,25,2),
@@ -250,11 +258,25 @@ class 天气组件(QWidget):
 		s.每天信息hbox.addStretch(1)
 
 		
-		s.淡化动画组=QParallelAnimationGroup()
-		s.添加淡化组件(s.当前信息widget)
-		s.添加淡化组件(s.每天信息widget,0.5)
-		s.添加淡化组件(s.每分钟信息widget)
-		s.添加淡化组件(s.每小时信息widget)
+
+		淡化属性=QGraphicsOpacityEffect()
+		淡化属性.setOpacity(0.01)
+		s.setGraphicsEffect(淡化属性)
+		s.初入动画=QPropertyAnimation(淡化属性,b'opacity')
+		#s.setWindowOpacity(0)
+		#s.初入动画=QPropertyAnimation(s,b'windowOpacity')
+		s.初入动画.setDuration(1000)
+		s.初入动画.setStartValue(0.01)
+		s.初入动画.setEndValue(1)
+		s.初入动画.setEasingCurve(QEasingCurve.Type.Linear)
+
+		#以下问题使用下面的方法
+		#   QPainter::begin: A paint device can only be painted by one painter at a time.
+		#   QPainter::translate: Painter not active
+		#参考: https://forum.qt.io/topic/130718/qt-animation-a-paint-device-can-only-be-painted-by-one-painter-at-a-time/4
+		s.初入动画.finished.connect(lambda:(s.setGraphicsEffect(None),s.p.刷新淡化值()))
+
+		s.ccxs_signal.connect(s.ccxs)
 	
 	def gxtq(s,*a):
 		s.更新天气(*a)
@@ -346,35 +368,23 @@ class 天气组件(QWidget):
 			s.每天信息widget.setVisible(True)
 		else:
 			s.每天信息widget.setVisible(True)
-				
-		s.xsztbh()
-		#s.adjustSize()
 
-	def 添加淡化组件(s,组件:QWidget,最淡值=0,最深值=1):
-		淡化属性=QGraphicsOpacityEffect()
-		#淡化属性.setOpacity()
-		组件.setGraphicsEffect(淡化属性)
-		淡化动画=QPropertyAnimation(淡化属性,b'opacity')
-		淡化动画.setDuration(1000)
-		淡化动画.setStartValue(最淡值)
-		淡化动画.setEndValue(最深值)
-		淡化动画.setEasingCurve(QEasingCurve.Type.Linear)
-		s.淡化动画组.addAnimation(淡化动画)
+		s.adjustSize()
+		s.adjustSize()
+		s.ccxs_signal.emit()
+		#s.xsztbh()
+	def ccxs(s):
+		if s.初始:
+			s.初始=False
+			if s.p.淡化动画组.state()==QAbstractAnimation.State.Running:
+				s.p.淡化动画组.finished.connect(s.初入动画.start)
+				#s.初入动画.started.connect(lambda:s.p.淡化动画组.disconnect(s.初入动画.start))
+			else:
+				s.初入动画.start()
+			s.初入动画.finished.connect(s.初入动画.deleteLater)
 
-	def xsztbh(s,显示状态=None):
-		if 显示状态 is None:
-			显示状态=s.显示状态
-		else:
-			s.显示状态=显示状态
-		if 显示状态:
-			if(s.当前信息_更新时间.text()):
-				#s.setVisible(True)
-				s.淡化动画组.setDirection(QAbstractAnimation.Direction.Forward)
-		else:
-			#s.setVisible(False)
-			s.淡化动画组.setDirection(QAbstractAnimation.Direction.Backward)
-
-		s.淡化动画组.start()
+	def xsztbh(s,显示状态):
+		s.显示状态=显示状态
 
 	def ks(s):
 		if s.配置l['天气']['启用']:
@@ -392,8 +402,14 @@ def 配置(p,配置l):
 	天气=天气组件()
 	天气.配置l=配置l
 	p.天气=天气
+	天气.p=p
 	p.根纵_下横_右纵.addWidget(天气)
+	p.添加淡化组件(天气.当前信息widget)
+	p.添加淡化组件(天气.每天信息widget,0.5)
+	p.添加淡化组件(天气.每分钟信息widget)
+	p.添加淡化组件(天气.每小时信息widget)
 	p.zjxsztbh.connect(天气.xsztbh)
+	p.ygx.connect(天气.ygx)
 	p.ks.connect(天气.ks)
 
 

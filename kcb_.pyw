@@ -107,13 +107,14 @@ t_6=1639756800-86400*7*6
 
 
 
-#'''
-#t_f=1640908834.0-60*60*9
-t_f=1640908234.0#-60*60*9
+'''
+t_f=1640908834.0-60*60*9
+#t_f=1640908234.0+60*8#-60*60*9
 
 def 获取时间():
 	global t_f
 	t_f+=30
+	#t_f+=1
 	return t_f
 """
 #'''
@@ -589,12 +590,12 @@ class 课程表类():
 		#s.根横=QHBoxLayout()
 		#s.根横.setSpacing(20)
 
-		s.课程表qbox=[]
+		s.单课程l=[]
 
 
 		for i in range(6):
 			单课程=单课程组件(网格,(网格横坐标,网格纵坐标+i))
-			s.课程表qbox.append(单课程)
+			s.单课程l.append(单课程)
 		
 		
 		s.上课状态=QLabel()
@@ -634,7 +635,7 @@ class 课程表类():
 			已用课数=已上课数_
 			天数=0
 			天数_旧=0
-			for i in range(len(s.课程表qbox)):#遍历 单课程组件 ; 需要的课程数量 会小于或等于 单课程组件的数量, 因为每天都有一个日期占用一个单课程组件
+			for i in range(len(s.单课程l)):#遍历 单课程组件 ; 需要的课程数量 会小于或等于 单课程组件的数量, 因为每天都有一个日期占用一个单课程组件
 				while 1:
 					if 一天课程数<=已用课数:
 						已用课数=0
@@ -660,7 +661,7 @@ class 课程表类():
 							日期_s=str(年)+'年'+日期_s
 					
 					cki=[['',''],日期_s,'星期'+星期_tm_wday[星期]]
-				s.课程表qbox[i].设置内容(cki[0][1],cki[1],cki[2])
+				s.单课程l[i].设置内容(cki[0][1],cki[1],cki[2])
 			
 			s.状态['上课']=上课
 			s.上课状态.setText(上课_[上课])
@@ -1116,6 +1117,7 @@ class 主窗口(QWidget):
 
 
 		s.淡化动画组=QParallelAnimationGroup()
+		s.淡化动画值=[]
 
 
 		s.主消息=消息_主窗口()
@@ -1149,17 +1151,43 @@ class 主窗口(QWidget):
 
 		s.添加淡化组件(s.主消息.普通消息widget)
 
+		for i in range(len(s.课程表.单课程l)):
+			if i!=0:
+				i:单课程组件=s.课程表.单课程l[i]
+				for i2 in i.labels:
+					s.添加淡化组件(i2,0.5)
 
-	def 添加淡化组件(s,组件:QWidget,最淡值=0,最深值=1):
+
 		淡化属性=QGraphicsOpacityEffect()
-		#淡化属性.setOpacity()
+		淡化属性.setOpacity(0.01)
+		s.setGraphicsEffect(淡化属性)
+		s.初入动画=QPropertyAnimation(淡化属性,b'opacity')
+		s.初入动画.setDuration(1000)
+		s.初入动画.setStartValue(0.01)
+		s.初入动画.setEndValue(1)
+		s.初入动画.setEasingCurve(QEasingCurve.Type.Linear)
+		s.初入动画.finished.connect(lambda:(s.setGraphicsEffect(None),s.刷新淡化值()))
+
+
+
+	def 添加淡化组件(s,组件:QWidget,最淡值=0.01,最深值=1):
+		淡化属性=QGraphicsOpacityEffect()
+		淡化属性.setOpacity(0)
+		#淡化属性.setOpacity(淡化属性.opacity())
 		组件.setGraphicsEffect(淡化属性)
 		淡化动画=QPropertyAnimation(淡化属性,b'opacity')
 		淡化动画.setDuration(1000)
 		淡化动画.setStartValue(最淡值)
 		淡化动画.setEndValue(最深值)
 		淡化动画.setEasingCurve(QEasingCurve.Type.Linear)
+		s.淡化动画值.append(淡化属性)
 		s.淡化动画组.addAnimation(淡化动画)
+
+	def 刷新淡化值(s):#为了解决 setGraphicsEffect(None) 时显示异常的问题
+		for i in s.淡化动画值:
+			i:QGraphicsOpacityEffect
+			i.setOpacity(i.opacity()+0.01)
+			i.setOpacity(i.opacity()-0.01)
 
 	def dhdh(s,*a):
 		s.淡化动画(*a)
@@ -1312,8 +1340,11 @@ class 主窗口(QWidget):
 		
 		#_thread.start_new_thread(s.player.play,())
 		#'''
-		s.show()
 		s.课程表.开始()
+		s.show()
+		s.adjustSize()
+		s.adjustSize()
+		s.初入动画.start()
 		#import threading
 		#t=threading.Thread(target=s.sm)
 		#t.start()
