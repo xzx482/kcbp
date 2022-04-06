@@ -1084,7 +1084,7 @@ class 主窗口(QWidget):
 
 		s.根纵=QVBoxLayout()
 		s.根纵.setSpacing(0)
-		s.setLayout(s.根纵)
+		s.win.setLayout(s.根纵)
 
 		s.根纵_上横=QHBoxLayout()
 		s.根纵_上横.addStretch(1)
@@ -1100,7 +1100,7 @@ class 主窗口(QWidget):
 		
 
 		s.根纵_下横=QHBoxLayout()
-		s.根纵_下横.addStretch(1)
+		s.根纵_下横.addStretch(1000)
 
 		s.根纵_下横_左纵=QVBoxLayout()
 		s.根纵_下横.addLayout(s.根纵_下横_左纵)
@@ -1160,13 +1160,13 @@ class 主窗口(QWidget):
 
 		淡化属性=QGraphicsOpacityEffect()
 		淡化属性.setOpacity(0.01)
-		s.setGraphicsEffect(淡化属性)
+		s.win.setGraphicsEffect(淡化属性)
 		s.初入动画=QPropertyAnimation(淡化属性,b'opacity')
 		s.初入动画.setDuration(1000)
 		s.初入动画.setStartValue(0.01)
 		s.初入动画.setEndValue(1)
 		s.初入动画.setEasingCurve(QEasingCurve.Type.Linear)
-		s.初入动画.finished.connect(lambda:(s.setGraphicsEffect(None),s.刷新淡化值()))
+		s.初入动画.finished.connect(lambda:(s.win.setGraphicsEffect(None),s.刷新淡化值()))
 
 
 
@@ -1227,7 +1227,7 @@ class 主窗口(QWidget):
 				#print(上课状态)
 				s.kcztbh.emit(上课状态)
 			
-			if 上课状态==2 and s.下课预更新 and 倒计时_ and 倒计时_<80:
+			if 上课状态==2 and s.下课预更新 and 倒计时_ and 倒计时_<90:
 				print('预更新',上课状态,s.下课预更新,倒计时_)
 				s.下课预更新=False
 				s.ygx.emit()
