@@ -1091,6 +1091,7 @@ class 主窗口(QWidget):
 
 		s.根纵_上横_左纵=QVBoxLayout()
 		s.根纵_上横.addLayout(s.根纵_上横_左纵)
+		s.根纵_上横.addSpacing(40)
 
 		s.根纵_上横_右纵=QVBoxLayout()
 		s.根纵_上横.addLayout(s.根纵_上横_右纵)
@@ -1100,10 +1101,10 @@ class 主窗口(QWidget):
 		
 
 		s.根纵_下横=QHBoxLayout()
-		s.根纵_下横.addStretch(1000)
 
 		s.根纵_下横_左纵=QVBoxLayout()
 		s.根纵_下横.addLayout(s.根纵_下横_左纵)
+		s.根纵_下横.addStretch(1000)
 
 		s.根纵_下横_右纵=QVBoxLayout()
 		s.根纵_下横.addLayout(s.根纵_下横_右纵)
@@ -1124,9 +1125,10 @@ class 主窗口(QWidget):
 		#s.主消息.添加消息(1).设置('123','456',True,time.time(),time.time()+10)
 		s.根纵_下横_左纵.addWidget(s.主消息)
 
-		s.课程表=课程表类(s.右纵_网,(1,1))
+		s.右纵_网.addWidget(QLabel(' '*12),0,1)
+		s.课程表=课程表类(s.右纵_网,(1,2))
 		s.右纵_网.addWidget(s.课程表.上课状态,0,0)
-		s.右纵_网.addWidget(s.课程表.上课状态d,0,1,1,4)
+		s.右纵_网.addWidget(s.课程表.上课状态d,0,2,1,4)
 		s.日期时间=日期时间组件(s.右纵_网,(1,0))
 
 
@@ -1176,7 +1178,7 @@ class 主窗口(QWidget):
 		#淡化属性.setOpacity(淡化属性.opacity())
 		组件.setGraphicsEffect(淡化属性)
 		淡化动画=QPropertyAnimation(淡化属性,b'opacity')
-		淡化动画.setDuration(1000)
+		淡化动画.setDuration(5000)
 		淡化动画.setStartValue(最淡值)
 		淡化动画.setEndValue(最深值)
 		淡化动画.setEasingCurve(QEasingCurve.Type.Linear)
@@ -1340,6 +1342,7 @@ class 主窗口(QWidget):
 		
 		#_thread.start_new_thread(s.player.play,())
 		#'''
+		s.主消息.timer.start(1000)
 		s.课程表.开始()
 		s.show()
 		s.adjustSize()
@@ -1354,7 +1357,7 @@ class 主窗口(QWidget):
 		#s.全屏.show()
 
 		#'''
-		s.主消息.普通消息widget.setVisible(True)
+		#s.主消息.普通消息widget.setVisible(True)
 		s.ks.emit()
 		#'''
 		#s.天气.更新天气()
