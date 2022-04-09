@@ -102,7 +102,7 @@ if 时差%1==0:
 else:
 	多延迟=True
 
-t_6=1639756800-86400*7*6
+t_6=1639756800-86400*7*5
 
 
 
@@ -786,6 +786,7 @@ class 背景视频组件(QVideoWidget):
 		#'''
 		if not s.l:
 			s.获取_线程=视频获取(s.宽,s.高,(i,))
+			print(s.宽,s.高)		
 			s.获取_线程.trigger.connect(s.zbsp_q)
 			s.获取_线程.start()
 			return
