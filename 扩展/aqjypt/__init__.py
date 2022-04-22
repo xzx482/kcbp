@@ -46,5 +46,5 @@ class 主():
 
         
 
-def 配置(*a):
-    pass
+def 配置(p,配置l):
+    a=主(p)
