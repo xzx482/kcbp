@@ -1,6 +1,6 @@
 import importlib
 
-已启用扩展=['日期','天气']
+已启用扩展=['aqjypt','日期','天气']
 
 class 加载扩展():
     def __init__(s):
