@@ -919,8 +919,10 @@ class 单消息组件(QWidget):
 		
 		s.标题label=QLabel()
 		s.标题label.setFont(QFont("黑体",20))
+		s.标题label.setWordWrap(True)
 		s.正文label=QLabel()
 		s.正文label.setFont(QFont("黑体",16))
+		s.正文label.setWordWrap(True)
 		s.纵根=QVBoxLayout()
 		s.纵根.addWidget(s.标题label)
 		s.纵根.addWidget(s.正文label)
@@ -1437,12 +1439,6 @@ if __name__ == "__main__":
 			'启用':True,
 			'时差':0,
 			'周六时间':None
-		},
-		'天气':{
-			'启用':True,
-			'经度':0,
-			'纬度':0,
-			'key':''
 		}
 		
 	})

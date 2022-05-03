@@ -1,4 +1,5 @@
 import json,time,os,_thread
+import copy
 '''
 class 字典_(dict):
 	def __init__(s,*a1,**a2):
@@ -67,8 +68,14 @@ fn:文件名
 		del(s[k])
 		s.写()
 	
+	def 添加默认值(s,k,v):
+		s.默认值[k]=v
+		if k not in s.d:
+			s.d[k]=v
+		s.写()
+
 	def 设置默认值(s,d):
-		s.默认值=d
+		s.默认值=copy.deepcopy(d)
 		d.update(s.d)
 		s.d=d
 

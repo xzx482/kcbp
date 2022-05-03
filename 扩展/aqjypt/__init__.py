@@ -9,12 +9,13 @@ y=用户.用户()
 
 class 作业获取t(QThread):
     gx=pyqtSignal(list)
-    def __init__(s,parent):
+    def __init__(s,parent,UserID):
         super().__init__()
         s.parent=parent
+        s.UserID=UserID
 
     def run(s):
-        y.登录(UserID='B8BBC460CC8B3D49CFF03A5871AE99DD')
+        y.登录(UserID=s.UserID)
 
         while True:
             print('aqjypt.cxzy')
@@ -25,15 +26,16 @@ class 作业获取t(QThread):
                 作业i=作业[i]
                 if not 作业i[3]:
                     未完成.append((作业i[0],作业i[2]))
-
+            if 未完成:
+                print("有未完成")
             s.gx.emit(未完成)
             time.sleep(60*60)
 
 class 主():
-    def __init__(s,p):
+    def __init__(s,p,UserID):
         s.p=p
         s.消息=p.主消息.添加消息(1)
-        s.获取t=作业获取t(s)
+        s.获取t=作业获取t(s,UserID)
         s.获取t.gx.connect(s.gx)
         s.获取t.start()
         #s.获取t.run()
@@ -58,4 +60,13 @@ class 主():
         
 
 def 配置(p,配置l):
-    a=主(p)
+    配置l.添加默认值(
+        "aqjypt",
+        {
+		    "UserID":None
+        }
+    )
+    UserID=配置l['aqjypt']['UserID']
+    if UserID==None:
+        print("未配置aqjypt.UserID")
+    a=主(p,UserID)

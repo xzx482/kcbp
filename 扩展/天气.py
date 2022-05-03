@@ -18,7 +18,7 @@ class 天气获取t(QThread):
 	def 获取并发送(s):
 		print('获取天气'+time.strftime('%H:%M:%S'))
 		try:
-			#'''
+			'''
 			uo=request.urlopen('https://api.openweathermap.org/data/2.5/onecall?units=metric&lang=zh_cn&lat='+str(s.配置l['天气']['纬度'])+'&lon='+str(s.配置l['天气']['经度'])+'&appid='+s.配置l['天气']['key'],timeout=60)
 			jl=json.load(uo)
 			"""
@@ -283,6 +283,8 @@ class 天气组件(QWidget):
 
 		s.setVisible(False)
 
+		#s.gxtq_signal.connect(lambda:print('gxtq_signal'))
+
 		
 
 
@@ -406,6 +408,15 @@ class 天气组件(QWidget):
 
 
 def 配置(p,配置l):
+	配置l.添加默认值(
+		'天气',
+		{
+			'启用':True,
+			'经度':0,
+			'纬度':0,
+			'key':''
+		}
+	)
 	p.根纵_下横.addStretch(1)
 	天气=天气组件()
 	天气.配置l=配置l
