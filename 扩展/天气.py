@@ -18,7 +18,7 @@ class 天气获取t(QThread):
 	def 获取并发送(s):
 		print('获取天气'+time.strftime('%H:%M:%S'))
 		try:
-			'''
+			#'''
 			uo=request.urlopen('https://api.openweathermap.org/data/2.5/onecall?units=metric&lang=zh_cn&lat='+str(s.配置l['天气']['纬度'])+'&lon='+str(s.配置l['天气']['经度'])+'&appid='+s.配置l['天气']['key'],timeout=60)
 			jl=json.load(uo)
 			"""
@@ -38,14 +38,14 @@ class 天气获取t(QThread):
 				break
 			else:
 				time.sleep(10)
-		time.sleep(60)
+		time.sleep(120)
 		s.sxym.emit()
 		while 1:
 			if s.parent.预更新 or s.parent.显示状态:
 				if s.parent.预更新:
 					s.parent.预更新=False
 				s.获取并发送()
-				time.sleep(120)
+				time.sleep(180)
 			else:
 				time.sleep(30)
 

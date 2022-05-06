@@ -29,7 +29,7 @@ class 作业获取t(QThread):
             if 未完成:
                 print("有未完成")
             s.gx.emit(未完成)
-            time.sleep(60*60)
+            s.sleep(60*60*5)
 
 class 主():
     def __init__(s,p,UserID):
@@ -69,4 +69,5 @@ def 配置(p,配置l):
     UserID=配置l['aqjypt']['UserID']
     if UserID==None:
         print("未配置aqjypt.UserID")
+        return
     a=主(p,UserID)
