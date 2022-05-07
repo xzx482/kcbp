@@ -1118,7 +1118,7 @@ class 主窗口(QWidget):
 
 		s.右纵_网=QGridLayout()
 		s.根纵_上横_右纵.addLayout(s.右纵_网)
-
+	
 
 		s.淡化动画组=QParallelAnimationGroup()
 		s.淡化动画值=[]
