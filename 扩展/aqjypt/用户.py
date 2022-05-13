@@ -6,8 +6,10 @@ import random
 import time
 import _thread
 from typing import Tuple
+from collections import namedtuple
+from enum import Enum
 
-from .访问 import 访问,解码
+from .访问 import 访问
 
 from urllib import parse,request
 
@@ -45,7 +47,8 @@ def 获取文件(路径:str,类型:str=None):
 				r=request.Request(i+路径)
 				uo=request.urlopen(r,timeout=10)
 				if str(uo.code)[0]=='2':
-					数据=解码(uo.read())
+					ur=uo.read()
+					数据=ur.decode(json.detect_encoding(ur), 'surrogatepass')
 					获取文件缓存[路径]=[time.time(),数据,{}]
 					break
 			except:
@@ -68,7 +71,7 @@ def 获取文件(路径:str,类型:str=None):
 def 输出(内容):
 	print(内容)
 
-def 获取专题id(url:str,作业id:str,输出=输出)->str:
+def 获取专题id(url:str,输出=输出)->str:
 	'''
 获取专题活动的id
 获取时,会先检查变量,若没有,则从url对应的网页获取,并添加到变量中
@@ -84,18 +87,21 @@ def 获取专题id(url:str,作业id:str,输出=输出)->str:
 	专题id
 
 '''
-	作业id=str(作业id)
-	#global 专题id
+	#作业id=str(作业id)
+	#原先有 作业id， 但现在没有了，用url来代替
+	作业id=url
+	#缓存
 	while 1:
 		if 作业id in 专题id:
-			if 专题id[作业id]==-1:
+			该专题id=专题id[作业id]
+			if 该专题id==-1:
 				raise 完成_普通专题_错误("多次错误的专题,作业id:"+作业id)
-			elif isinstance(专题id[作业id],int)and 专题id[作业id]<-2:
-				a=超时时间-(time.time()+专题id[作业id])
+			elif isinstance(该专题id,int)and 该专题id<-2:
+				a=超时时间-(time.time()+该专题id)
 				超时=True
 				while a>0:
 					time.sleep(1)
-					if isinstance(专题id[作业id],str)or(isinstance(专题id[作业id],int)and 专题id[作业id]>-2):
+					if isinstance(该专题id,str)or(isinstance(该专题id,int)and 该专题id>-2):
 						超时=False
 						break
 					a-=1
@@ -103,7 +109,7 @@ def 获取专题id(url:str,作业id:str,输出=输出)->str:
 					continue
 				
 			else:
-				return str(专题id[作业id])
+				return str(该专题id)
 		break
 	
 	专题id[作业id]=-int(time.time())
@@ -139,27 +145,17 @@ def 获取专题id_网页(url:str,id:str="specialId",跳转:int=0,输出=输出)
 
 '''
 	if(跳转>10):
-		return 0
+		raise 完成_普通专题_错误("跳转次数过多")
 	访问结果=访问(url)
 	返回数据=访问结果[6]
-	if("window.location.href" in 返回数据 and "<title>跳转中...</title>" in 返回数据):
+	if("<title>跳转中...</title>" in 返回数据):
 		#部分专题需跳转
-		url2位置=返回数据.index("window.location.href")+21
+		url2位置=返回数据.index("location.replace('")+18
 		#res2 = request.Request("https:"+返回数据[url2位置:url2位置+70].split("'")[1],method="GET")
 		#response2 = request.url2open(res2)
 		#返回数据 = response2.read().decode("utf-8")
-		url2=返回数据[url2位置:url2位置+70].split("'")[1]
-		if(url2[0:2]=="//"):
-			url2="https:"+url2
-		elif(url2[0:4]=="http"):
-			''
-		else:
-			url2="https://"+url2
-		if(url2[-11:]=="/index.html"):
-			try:
-				return 获取专题id_网页(url2[0:-11]+"/video.html",id,跳转+1,输出)
-			except:
-				return 获取专题id_网页(url2[0:-11]+"/yitu.html",id,跳转+1,输出)
+		url2=返回数据[url2位置:url2位置+70].split("'")[0]
+		url2=parse.urljoin(url,url2)
 		输出("跳转到"+url2)
 		return 获取专题id_网页(url2,id,跳转+1)
 	#print(返回数据)
@@ -179,10 +175,10 @@ meiyouruanyong的东西,但是又有些用
 		s._={}
 		s.输出=输出
 
-	def 访问(s,url,请求头={},请求方法=None,数据=None,自动解码=True):
+	def 访问(s,url,请求头={},请求方法=None,数据=None,转换='json'):
 		请求头_=copy.deepcopy(s.默认请求头)
 		请求头_.update(请求头)
-		结果=访问(url,请求头=请求头_,请求方法=请求方法,数据=数据,cookie=s.cookie,自动解码=自动解码)
+		结果=访问(url,请求头=请求头_,请求方法=请求方法,数据=数据,cookie=s.cookie,转换=转换)
 		s.cookie.update(结果[5])
 		return 结果
 
@@ -240,23 +236,23 @@ class 假登录(会话):
 		s.重复_[id]=True
 		while s.重复_[id]:
 			time.sleep(6)
-			srd=json.loads(s.访问('https://appapi.xueanquan.com/usercenter/api/v5/wx/scan-result?encodeSceneId='+encodeSceneId,{},"POST","encodeSceneId="+encodeSceneId)[6])['data']
+			srd=s.访问('https://appapi.xueanquan.com/usercenter/api/v5/wx/scan-result?encodeSceneId='+encodeSceneId,{},"POST","encodeSceneId="+encodeSceneId)[6]['data']
 			if srd['status']!='Wait':
 				break
 		
 
 	def 假登录_前(s):
 		#变量以访问url的最后一个斜杠之后的首字母及取回的内容的首字母确定
-		wlqd=json.loads(s.访问('https://appapi.xueanquan.com/usercenter/api/v5/wx/wx-login-qrcode')[6])["data"]
+		wlqd=s.访问('https://appapi.xueanquan.com/usercenter/api/v5/wx/wx-login-qrcode')[6]["data"]
 		s._['encodeSceneId']=wlqd['encodeSceneId']
-		s.访问(wlqd['relativeUrl'],自动解码=False)
+		s.访问(wlqd['relativeUrl'],转换='raw')
 		_thread.start_new_thread(s.获取二维码状态_,(wlqd['encodeSceneId'],))
 
 	def 假登录_登录(s,用户名,密码,次数=0):
 		if 次数>1:
 			return [False,None]
 		s.结束所有重复()
-		l=json.loads(s.访问('https://appapi.xueanquan.com/usercenter/api/v3/wx/login?checkShowQrCode=true&tmp=false',{"Content-Type":"application/json;charset=UTF-8"},'POST','{"username":"'+用户名+'","password":"'+密码+'","loginOrigin":1}')[6])
+		l=s.访问('https://appapi.xueanquan.com/usercenter/api/v3/wx/login?checkShowQrCode=true&tmp=false',{"Content-Type":"application/json;charset=UTF-8"},'POST','{"username":"'+用户名+'","password":"'+密码+'","loginOrigin":1}')[6]
 		s.结束所有重复()
 		s._['dl_err_code']=l['err_code']
 		ld=l['data']
@@ -275,8 +271,33 @@ class 假登录(会话):
 			return [False,l['err_desc'] if'err_desc'in l else None]
 
 	def 假登录_修改密码(s,旧密码,新密码):
-		epbop=json.loads(s.访问('https://appapi.xueanquan.com/usercenter/api/users/edit-pwd-byoldpwd?api-version=2',{'Authorization':s._['token'],"Content-Type":"application/json;charset=UTF-8"},'POST','{"oldPwd":"'+旧密码+'","newPwd":"'+新密码+'"}')[6])
+		epbop=s.访问('https://appapi.xueanquan.com/usercenter/api/users/edit-pwd-byoldpwd?api-version=2',{'Authorization':s._['token'],"Content-Type":"application/json;charset=UTF-8"},'POST','{"oldPwd":"'+旧密码+'","newPwd":"'+新密码+'"}')[6]
 		return [epbop['result'],None if 'message' not in epbop else epbop['message']]
+
+
+'''
+作业元组:
+	作业标题
+	作业类型:0为安全学习,1为普通专题,2为假期专题
+	布置时间
+	完成时间:若未完成则为None
+	url:作业详情页面的url
+'''
+作业元组=namedtuple('作业元组',['标题','类型','布置时间','完成时间','url'])
+
+
+
+class 作业类型(Enum):
+	安全学习=0
+	普通专题=1
+	假期专题=2
+
+	def __repr__(s)->str:
+		return s.name
+		
+	def __str__(s)->str:
+		return s.__repr__()
+
 
 
 class 错误(Exception):
@@ -293,6 +314,10 @@ class 用户_错误(错误):
 
 class 登录_错误(错误):
 	pass
+
+class 查询_作业_错误(错误):
+	pass
+
 
 class 完成_作业_错误(错误):
 	pass
@@ -396,136 +421,49 @@ class 用户:
 	def 转列表(s)->list:
 		return [s.cookie,s.用户信息]
 	
-	def 查询已完成作业(s)->dict:
+	def 查询未完成作业数(s)->int:
 		'''
-"查询作业"会调用
-查询用户在 三明安全教育平台 中已的完成作业
+查询未完成作业数
 
-参数:
-	无
-
-返回值:
-	字典:
-		字符串的作业id:字符串类型的完成时间
-
-'''     
-		if not s.cookie:
-			raise 用户_错误("cookie为空,尝试 用户.登录(用户名,密码) 以获得cookie")
-		访问结果=访问("https://sanming.xueanquan.com/JiaTing/CommonHandler/MyHomeWork.ashx?method=myhomeworkinfo",cookie=s.cookie)
-		返回数据=json.loads(访问结果[6])
-		已完成作业={}
-		if(返回数据["WinterInfo"]["Status"]):
-			已完成作业[1]=返回数据["WinterInfo"]["FinishTime"]
-		if(返回数据["SummerInfo"]["Status"]):
-			已完成作业[2]=返回数据["SummerInfo"]["FinishTime"]
-		for index in 返回数据["FinishInfo"]:
-			已完成作业[index["WorkId"]]=index["FinishTime"]
-		已完成作业2={}
-		for index in 已完成作业:
-			已完成作业2[str(index)]=已完成作业[index].replace("T"," ")
-		return 已完成作业2
-
-	def 查询所有作业(s)->dict:
 		'''
-	"查询作业"会调用
-	查询用户在 三明安全教育平台 中所有的作业
+		return 访问('https://sanming.xueanquan.com/CommonHandler/SiteIndex.ashx?method=myhomecount',cookie=s.cookie,转换='json')[6]['MyHomeCount']
+
+
+	def 查询作业(s)->list[作业元组]:
+		'''
+	查询用户在 三明安全教育平台 中的作业
 
 	参数:
 		无
 
 	返回值:
-		字典:
-			字符串的作业id:
-				列表:
-					作业标题
-					作业类型
-					布置时间
-					完成时间: 暂时为None,在"查询作业"中会与"查询已完成作业"的结果合并为完成时间,若未完成则仍为None
-					作业showhdtcbox: 网页中作业的"showhdtcbox"的信息,在"完成安全学习"会用到
+		列表:
+			作业元组:
+				作业标题
+				作业类型:
+					Skill为安全学习,Special为普通专题,SummerWinterHoliday为假期专题
+					0为安全学习,1为普通专题,2为假期专题
+				布置时间
+				完成时间:若未完成则为None
+				url:作业详情页面的url
 
 	'''
-		访问结果=访问("https://file.xueanquan.com/webapi.fujian/jt/MyHomeWork.html?grade="+str(s.用户信息["Grade"])+"&classroom="+str(s.用户信息["ClassRoom"])+"&cityid="+str(s.用户信息["CityCode"]))
-		返回数据=访问结果[6].replace("');document.writeln('","").split('tr>')
-		作业={}
-		aa=0
-		for 一项作业_乱 in 返回数据:
-			aa+=1
-			if(一项作业_乱[-1]=="/"and "title"in 一项作业_乱):
-				if("专题活动"in 一项作业_乱):
-					类型=一项作业_乱.split("\\")[1][1:]
-				elif("安全学习"in 一项作业_乱):
-					类型=1
-				else:
-					类型=2			
-				#以双引号拆分字符串
-				一项作业_引号分割=一项作业_乱.split('"')
-				aaa=0
-				标题=""
-				for 作业信息_引号分割 in 一项作业_引号分割:
-					if(作业信息_引号分割[-6:]=="title="):
-						标题 = 一项作业_引号分割[aaa+1]
-					elif(作业信息_引号分割[-9:]=="<td name="):
-						作业id = 一项作业_引号分割[aaa+1][15:]
-					aaa+=1
-				布置时间=""
-				
-				一项作业_表格分割=一项作业_乱.split('td>')
-				#以表格标签拆分字符串
-				# for 作业信息_表格分割 in 一项作业_表格分割:
-				# 	#获取日期
-				# 	if(作业信息_表格分割[0:32]=="                                "and 作业信息_表格分割[36:37]=="-"and 作业信息_表格分割[39:40]=="-"):
-				# 		布置时间=作业信息_表格分割[32:42]
-				布置时间=一项作业_表格分割[7][44:54]
-				作业showhdtcbox位置=一项作业_乱.index('onclick=" showhdtcbox(')+22
-				作业showhdtcbox=json.loads("["+一项作业_乱[作业showhdtcbox位置:一项作业_乱.index(')',作业showhdtcbox位置)].replace("\\'",'"')+"]")
-				try:作业[作业id]=[标题,类型,布置时间,None,作业showhdtcbox]
-				except:pass
-		
-		try:
-		#if(1):
-			##假期专题链接插入
-			#假期专题信息插入
-			try:作业["1"][1]="寒假专题"
-			except KeyError:''
-			#else:
-				#寒假专题链接位置=返回数据[0].index('(sporttype == 1) {                    window.open("//huodong." + host.join(\\\'.\\\') + ')+84
-				#作业["1"][1]="https://huodong.xueanquan.com"+返回数据[0][寒假专题链接位置:寒假专题链接位置+80].split('"')[1]
-			try:作业["2"][1]="暑假专题"
-			except KeyError:''
-			#else:
-				#暑假专题链接位置=返回数据[0].index('(sporttype == 2) {                    window.open("//huodong." + host.join(\\\'.\\\') + ')+84
-				#作业["2"][1]="https://huodong.xueanquan.com"+返回数据[0][暑假专题链接位置:暑假专题链接位置+80].split('"')[1]
-		except:''#print("警告:假期专题链接获取失败")
-		return 作业
-	
-	def 查询作业(s)->dict:
-		'''
-	查询用户在 三明安全教育平台 中已完成和所有作业
-
-	参数:
-		无
-
-	返回值:
-		字典:
-			字符串的作业id:
-				列表:
-					作业标题
-					作业类型
-					布置时间
-					完成时间:若未完成则为None
-					作业showhdtcbox: 网页中作业的"showhdtcbox"的信息,在"完成安全学习"会用到
-
-	'''
-		所有作业=s.查询所有作业()
-		已完成作业=s.查询已完成作业()
-		for 作业id in 所有作业:
-			if(作业id in 已完成作业):
-				所有作业[作业id][3]=已完成作业[作业id]
+		所有作业=[]
+		作业信息=访问('https://yyapi.xueanquan.com/fujian/safeapph5/api/v1/homework/homeworklist',cookie=s.cookie,转换='json')[6]
+		for i in 作业信息:
+			类型=i['sort']
+			if 类型=='Skill':
+				类型=作业类型.安全学习
+			elif 类型=='Special':
+				类型=作业类型.普通专题
+			elif 类型=='SummerWinterHoliday':
+				类型=作业类型.假期专题
 			else:
-				所有作业[作业id][3]=0
+				raise 查询_作业_错误("未知的作业类型:'"+类型+"'")
+			所有作业.append(作业元组(i['title'],类型,i['publishDateTime'],  i['finishTime'] if i['workStatus']=='Finished' else None  ,i['url']))
 		return 所有作业
 
-	def 完成安全学习(s,workid,showhdtcbox):
+	def 完成安全学习(s,url):
 		'''
 	完成用户在 三明安全教育平台 中的一项作业
 
@@ -540,9 +478,12 @@ class 用户:
 		无
 
 	'''
+
+		raise 完成_安全学习_错误("接口已更改, 原方法不可用")
 		请求头={"cookie":s.cookie}
 
-		作业信息=访问("https://sanming.xueanquan.com/JiaTing/EscapeSkill/SeeVideo.aspx?gid="+str(showhdtcbox[3])+"&li="+str(showhdtcbox[0]),请求头)[6]
+		#作业信息=访问("https://sanming.xueanquan.com/JiaTing/EscapeSkill/SeeVideo.aspx?gid="+str(showhdtcbox[3])+"&li="+str(showhdtcbox[0]),请求头)[6]
+		作业信息=访问(url,请求头)[6]
 		
 		作业信息_有用部分_位置=作业信息.index("SeeVideo.TemplateIn2(")+21
 		作业信息_有用部分=作业信息[作业信息_有用部分_位置:作业信息.index(")",作业信息_有用部分_位置)].replace('"','').replace("'",'').replace(" ",'').split(",")
@@ -644,6 +585,8 @@ class 用户:
 					数据=json.loads(f.read())
 			#try:''
 			except FileNotFoundError:
+				raise 完成_普通专题_错误("未记录的专题id "+specialId+"")
+				'''
 				s.输出('专题未记录,尝试获取')
 				数据=获取文件("%E4%B8%93%E9%A2%98%E6%95%B0%E6%8D%AE/"+specialId+".json","json")
 				#input(type(数据))
@@ -653,6 +596,7 @@ class 用户:
 					with open(数据文件目录+specialId+".json","w",encoding="utf-8")as f:f.write(json.dumps(数据))
 				except:
 					s.输出("注意:\""+specialId+"\".json不能写入")
+				'''
 			专题数据[specialId]=数据
 		
 		请求头={
@@ -731,7 +675,7 @@ class 用户:
 			返回数据=访问(专题点击url,请求头,"POST","{specialId:"+specialId+", step:"+index+"}")[6]
 		if 检查完成:
 			time.sleep(完成延迟.完成专题活动_检查*s.延迟)
-			完成状态=json.loads(访问("https://huodongapi.xueanquan.com/p/fujian/Topic/topic/platformapi/api/v1/records/finish-status?specialId="+specialId,请求头)[6])
+			完成状态=访问("https://huodongapi.xueanquan.com/p/fujian/Topic/topic/platformapi/api/v1/records/finish-status?specialId="+specialId,请求头,转换='json')[6]
 			if not 完成状态["finishStatus"]:
 				raise 完成_普通专题_错误("尝试所有步骤后仍无法完成")
 
@@ -819,24 +763,24 @@ class 用户:
 					})
 				)[6]
 		time.sleep(完成延迟.完成专题活动_检查*s.延迟)
-		完成状态=json.loads(访问("https://huodongapi.xueanquan.com/p/fujian/Topic/topic/platformapi/api/v1/holiday/finish-status?schoolYear="+数据["schoolYear"]+"&semester="+数据["semester"],请求头)[6])
+		完成状态=访问("https://huodongapi.xueanquan.com/p/fujian/Topic/topic/platformapi/api/v1/holiday/finish-status?schoolYear="+数据["schoolYear"]+"&semester="+数据["semester"],请求头,转换='json')[6]
 		if not 完成状态["finishStatus"]:
 			raise 完成_普通专题_错误("尝试所有步骤后仍无法完成")
 
-	def 完成作业(s,作业id,作业):
+	def 完成作业(s,作业:作业元组):
 		if(s.用户信息["UserType"]!=0):
 			raise 完成_作业_错误("非学生账号不能完成作业")
-		if(作业[1]==1):#安全学习
+		if(作业.类型==作业类型.安全学习):
 			s.输出('尝试完成安全学习"'+作业[0]+'"')
-			s.完成安全学习(作业id,作业[4])
+			s.完成安全学习(作业[4])
 
-		elif(作业[1]=="寒假专题" or 作业[1]=="暑假专题"):#假期专题
+		elif(作业.类型==作业类型.假期专题):
 			s.输出('尝试完成假期专题活动"'+作业[0]+'"')
 			s.完成假期专题活动(作业[2])
 			
-		elif(作业[1]!=3):#普通专题
+		elif(作业.类型==作业类型.普通专题):
 			s.输出('尝试完成普通专题活动"'+作业[0]+'"')
-			s.完成专题活动(获取专题id(作业[1],作业id,s.输出))
+			s.完成专题活动(获取专题id(作业[4]))
 
 		s.输出('已完成"'+作业[0]+'"')
 
