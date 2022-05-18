@@ -1,3 +1,7 @@
+'''
+pip3 install pyqt6 pywin32 sxtwl -i https://mirrors.aliyun.com/pypi/simple/
+'''
+
 
 #使qt在没有环境变量时能使用
 import os
