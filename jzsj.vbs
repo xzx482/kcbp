@@ -1,0 +1,1 @@
+WScript.CreateObject("WScript.Shell").Run "w32tm /resync",0
