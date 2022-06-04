@@ -164,9 +164,9 @@ k2=[
 	(16*60+50,17*60+30),
 	(18*60+30,18*60+50),
 	(19*60+0,19*60+45),
-	(20*60+0,20*60+45),
-	(20*60+55,21*60+40),
-	(21*60+50,22*60+30)
+	(19*55+0,20*60+40),
+	(20*60+50,21*60+35),
+	(21*60+45,22*60+30)
 ]
 始末时间_6=[
 	(7*60+20,7*60+50),
@@ -181,9 +181,9 @@ k2=[
 	(16*60+50,17*60+30),
 	(18*60+30,18*60+50),
 	(19*60+0,19*60+45),
-	(20*60+0,20*60+45),
-	(20*60+55,21*60+40),
-	(21*60+50,22*60+30)
+	(19*55+0,20*60+40),
+	(20*60+50,21*60+35),
+	(21*60+45,22*60+30)
 ]
 
 始末时间_长假=[
@@ -1174,7 +1174,7 @@ class 主窗口(QWidget):
 		s.初入动画.setDuration(1000)
 		s.初入动画.setStartValue(0.01)
 		s.初入动画.setEndValue(1)
-		s.初入动画.setEasingCurve(QEasingCurve.Type.Linear)
+		s.初入动画.setEasingCurve(QEasingCurve.Type.InCubic)
 		s.初入动画.finished.connect(lambda:(s.win.setGraphicsEffect(None),s.刷新淡化值()))
 
 
@@ -1188,7 +1188,7 @@ class 主窗口(QWidget):
 		淡化动画.setDuration(5000)
 		淡化动画.setStartValue(最淡值)
 		淡化动画.setEndValue(最深值)
-		淡化动画.setEasingCurve(QEasingCurve.Type.Linear)
+		淡化动画.setEasingCurve(QEasingCurve.Type.InCubic)
 		s.淡化动画值.append(淡化属性)
 		s.淡化动画组.addAnimation(淡化动画)
 

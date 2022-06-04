@@ -101,7 +101,7 @@ class 天气组件(QWidget):
 		s.初入动画.setDuration(1000)
 		s.初入动画.setStartValue(0.01)
 		s.初入动画.setEndValue(1)
-		s.初入动画.setEasingCurve(QEasingCurve.Type.Linear)
+		s.初入动画.setEasingCurve(QEasingCurve.Type.InCubic)
 		#以下问题使用下面的方法
 		#   QPainter::begin: A paint device can only be painted by one painter at a time.
 		#   QPainter::translate: Painter not active
