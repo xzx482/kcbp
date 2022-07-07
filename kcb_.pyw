@@ -135,17 +135,18 @@ def 获取时间():
 #原始 开始
 
 k1=[# 早读    1      2      3      4     1      2     3    
-	["外语","语文","化学","通用技术","数学","物理","外语","班会"," ","语文","物理","生物","通用技术"],
-	["语文","生物","语文","化学","外语","数学","数学","物理"," ","外语","数学","外语","英语"],
-	["外语","外语","化学","语文","数学","生物","体育","物理"," ","语文","物理","语文","语文"],
-	["语文","外语","数学","外语","生物","美术/形体","语文","体育","  ","外语","生物","外语","化学"],
-	["外语","外语","物理","语文","生物","化学","数学","通用技术"," ","语文","数学","数学"," "],
+	["外语","语文","化学"," ","数学","物理","外语","班会","","语文","物理","生物"," "],
+	["语文","生物","语文","化学","外语","数学","数学","物理","","外语","数学","外语","英语"],
+	["外语","外语","化学","语文","数学","生物","体育","物理","","语文","物理","语文","语文"],
+	["语文","外语","数学","外语","生物","美术/形体","语文","体育","","外语","生物","外语","化学"],
+	["外语","外语","物理","语文","生物","化学","数学","通用技术","","语文","数学","数学"," "],
 	["","","","","","","","","","新闻周刊","化学","语文"," "]
 	#["","","","","","","","","","","","",""]
 ]
 k2=[
 	["语文","物理","语文","化学","语文","外语","数学","生物"],
 	["外语","外语","化学","外语","物理","生物","数学","语文"],
+	#["外语","外语","物理","生物","外语","化学","数学","语文"],
 	["语文","语文","数学","数学","化学","外语","物理","生物"]
 ]
 
@@ -155,8 +156,8 @@ k2=[
 	(7*60+20,7*60+50),
 	(8*60+0,8*60+45),
 	(8*60+55,9*60+40),
-	(10*60+10,10*60+55),
-	(11*60+5,11*60+50),
+	(9*60+55,10*60+40),
+	(10*60+50,11*60+35),
 	#(13*60+30,14*60+0),#   1111
 	(14*60+20,15*60+0),
 	(15*60+15,15*60+55),
@@ -1167,10 +1168,10 @@ class 主窗口(QWidget):
 					s.添加淡化组件(i2,0.5)
 
 
-		淡化属性=QGraphicsOpacityEffect()
-		淡化属性.setOpacity(0.01)
-		s.win.setGraphicsEffect(淡化属性)
-		s.初入动画=QPropertyAnimation(淡化属性,b'opacity')
+		s.淡化属性_初入=QGraphicsOpacityEffect()
+		s.淡化属性_初入.setOpacity(0.01)
+		s.win.setGraphicsEffect(s.淡化属性_初入)
+		s.初入动画=QPropertyAnimation(s.淡化属性_初入,b'opacity')
 		s.初入动画.setDuration(1000)
 		s.初入动画.setStartValue(0.01)
 		s.初入动画.setEndValue(1)
@@ -1448,19 +1449,27 @@ if __name__ == "__main__":
 	})
 
 	时差=配置l['课程表']['时差']
+		
+	if 时差%1==0:
+		多延迟=False
+	else:
+		多延迟=True
+
 	#t_6=配置l['周六时间']
 
 	w=主窗口()
 
 	#a1
 
-	#ti=QSystemTrayIcon(w)
+	ti=QSystemTrayIcon(w)
 
-	#'''
+	'''
 	'''
 
 	tim=QMenu()
-	tim.addAction(QAction('&退出(Exit)',ti,triggered=lambda:(ti.setVisible(False),w.背景视频.出(),新线程(4,app.quit))))
+	#tim.addAction(QAction('&退出(Exit)',ti,triggered=lambda:(ti.setVisible(False),w.背景视频.出(),新线程(4,app.quit))))
+	#tim.addAction(QAction('&退出(Exit)',ti,triggered=lambda:(w.win.setGraphicsEffect(w.淡化属性_初入),w.初入动画.setDirection(QAbstractAnimation.Direction.Backward),w.初入动画.finished.connect(app.quit),w.初入动画.start(),新线程(2,app.quit))))
+	tim.addAction(QAction('退出',ti,triggered=app.quit))
 	ti.setContextMenu(tim)
 	icon=QIcon('icon.png')
 	#icon.addPixmap(QPixmap.loadFromData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABhWlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV9TS0UqDnYQcchQnSyIFhFcpIpFsFDaCq06mFz6BU0akhQXR8G14ODHYtXBxVlXB1dBEPwAcXRyUnSREv+XFFrEeHDcj3f3HnfvAKFZZarZMwGommWkE3Exl18Vg68Q4EcAs4hJzNSTmcUsPMfXPXx8vYvyLO9zf45+pWAywCcSzzHdsIg3iKc3LZ3zPnGYlSWF+Jx43KALEj9yXXb5jXPJYYFnho1sep44TCyWuljuYlY2VOIYcURRNcoXci4rnLc4q9U6a9+TvzBU0FYyXKc5ggSWkEQKImTUUUEVFqK0aqSYSNN+3MM/7PhT5JLJVQEjxwJqUCE5fvA/+N2tWZyadJNCcSDwYtsfo0BwF2g1bPv72LZbJ4D/GbjSOv5aE5j5JL3R0SJHwMA2cHHd0eQ94HIHGHrSJUNyJD9NoVgE3s/om/LA4C3Qt+b21t7H6QOQpa6Wb4CDQ2CsRNnrHu/u7e7t3zPt/n4AvP9yxa0hWoIAAAAGYktHRAAAAAAAAPlDu38AAAAJcEhZcwAALiMAAC4jAXilP3YAAAAHdElNRQfmAgMGDzjPq3ZSAAAAGXRFWHRDb21tZW50AENyZWF0ZWQgd2l0aCBHSU1QV4EOFwAAAlZJREFUeNrtmj1rVFEQhp/R2GiUSPxIRC5qoUEETdIIBhEstLIOFloYO3+E+DfcSkHr7QKC1UIC4kastBFcgq4f0WhwBZvXZm44WXazIVrkcOeFZefOuffuzsPcmTnLQigUCoVCoVComrJ161FblYr81phtdFQJQBLrrtxjkTQradjtYUmzbk9JuilparPrh3ZYMAIwM+uyX7o9LWkOeNjj2tR+6mYHeANMZwHAzKyXDdxN/DWg1hX8XI971bbymUM5pLmZNQes17Z77+xrwL8qAASAimuntcEJ4Cqw7MWt7r5UZ5LiV5c0Dpwzs2eSJn2pAFpAYWb1nLpAC6gDv7t8qb70gXfH+z7AbmAEaGSVAWbWSYJY90ka7RP0KDAGfPXXhA8+BfDazFaymwOSND4J3AA+JMungcc9sqZU298bwIxnU3aD0FvgGnAbaAJPgG++NgN8Ai4Bz4Fyzt/rmVBCGAFO5ToJnvcvf98DPOv+Y8A94AXwA7gCvANOAJ+BV8Bqmg2SJs1sKSsAZrYg6QjQMrOlrud/wTPgT9oJknpQdoDCM6Kd617gKPBA0qIfHwS+A4e6zjvsu8D9wJr71oBF4FfyWGQHYB/wMTl+DxzwNE+1nMA57r6LwAXvCp2cd4N7gJ99ZoEy1S97oOPJOfP++Kz4bJAlgLKgtZJgu9XYQp9vDiqEOxXAqg81m6mQVAw457q/5wXAq///uNV8tjVgUP+O7XAACAABIAAEgAAQAAJAAAgAASAABIAAEAACQAAIANvSxt8Eq/Z32VAoFAqFQqFQhfUX3qDIplPG4R4AAAAASUVORK5CYII='))

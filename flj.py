@@ -45,7 +45,7 @@ fn:文件名
 		s.t=[time.time(),False]#写文件 时间 和 锁
 		s.需要写=False
 		s.默认值={}
-		s.fo=open(fn,"a+")
+		s.fo=open(fn,"a+",encoding="utf-8")
 
 		try:
 			s.读()
