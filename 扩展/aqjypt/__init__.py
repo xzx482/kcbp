@@ -67,11 +67,13 @@ def 配置(p,配置l):
     配置l.添加默认值(
         "aqjypt",
         {
-		    "UserID":None
+		    "UserID":None,
+            "启用":False
         }
     )
-    UserID=配置l['aqjypt']['UserID']
-    if UserID==None:
-        print("未配置aqjypt.UserID")
-        return
-    a=主(p,UserID)
+    if 配置l['aqjypt']['启用']:
+        UserID=配置l['aqjypt']['UserID']
+        if UserID==None:
+            print("未配置aqjypt.UserID")
+            return
+        a=主(p,UserID)

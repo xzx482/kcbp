@@ -120,6 +120,9 @@ def 获取时间():
 	t_f+=30
 	#t_f+=1
 	return t_f
+
+def 获取时间():
+	return time.time()+(1*60-23)*60
 """
 #'''
 
@@ -1010,7 +1013,7 @@ class 消息_主窗口(QWidget):
 
 
 class 主窗口_线程(QThread):
-	#课程时间秒 和 系统时间秒 都 每整秒发送一次, 但 课程时间和系统时间的误差不为一整秒 时 将不同时发送
+	#课程时间秒 和 系统时间秒 都 每整秒发送一次, 但 课程时间和系统时间的误差不为整秒 时 将不同时发送
 	kcsjm=pyqtSignal(float)#课程时间秒
 	xtsjm=pyqtSignal(time.struct_time)#系统时间秒
 	gxrq=pyqtSignal(time.struct_time)#更新日期
@@ -1049,7 +1052,7 @@ class 主窗口_线程(QThread):
 class 主窗口(QWidget):
 	kcztbh=pyqtSignal(int)#课程状态变化
 	zjxsztbh=pyqtSignal(bool)#组件显示状态变化
-	ygx=pyqtSignal()#预更新. 在显示前提前更新, 如网络请求等不能立即得到结果的操作. 需要在非主线程中更新.
+	ygx=pyqtSignal()#预更新. 在显示前 提前更新, 如网络请求等不能立即得到结果的操作. 需要在非主线程中更新.
 	ks=pyqtSignal()#开始
 
 	def __init__(s, parent=None):

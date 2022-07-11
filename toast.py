@@ -25,7 +25,7 @@ def 转换xml(s:str)->dom.XmlDocument:
     xDoc=dom.XmlDocument()
     xDoc.load_xml(s)
     #不加background并且使用其他的application_id会导致toast消失
-    xDoc.first_child.owner_document.document_element.set_attribute('activationType','background')
+    #xDoc.first_child.owner_document.document_element.set_attribute('activationType','background')
     return xDoc
 
 def 转换通知数据(values:dict,sequence_number:int):
@@ -101,6 +101,7 @@ class 通知器:
     def __init__(s,application_id):
         s.application_id=application_id
         s.notifier=notifications.ToastNotificationManager.create_toast_notifier(application_id)
+        s.history:notifications.ToastNotificationHistory=nManager.get_history()
 
     def 显示(s,通知_:通知):
         return s.notifier.show(通知_.通知)
@@ -115,7 +116,7 @@ class 通知器:
             return s.notifier.update(data,tag)
 
     def 清除通知(s):
-        return history.clear(s.application_id)
+        return s.history.clear(s.application_id)
 
 
 application_id=sys.executable
