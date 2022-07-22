@@ -25,7 +25,7 @@ def 转换xml(s:str)->dom.XmlDocument:
     xDoc=dom.XmlDocument()
     xDoc.load_xml(s)
     #不加background并且使用其他的application_id会导致toast消失
-    #xDoc.first_child.owner_document.document_element.set_attribute('activationType','background')
+    xDoc.first_child.owner_document.document_element.set_attribute('activationType','background')
     return xDoc
 
 def 转换通知数据(values:dict,sequence_number:int):
@@ -44,6 +44,12 @@ def 转换已激活回调(func):
         return func(event_args.arguments,获取输入)
     return f2
 
+
+def 转换已消除回调(func):
+    def f2(sender,event_args_d):
+        event_args=ToastDismissedEventArgs._from(event_args_d)
+        return func(event_args.reason)
+    return f2
 
 
 class 通知:
@@ -71,7 +77,7 @@ class 通知:
         return s
 
     def 添加已消除回调(s,回调):
-        s.通知.add_dismissed(回调)
+        s.通知.add_dismissed(转换已消除回调(回调))
         return s
 
     def 添加失败回调(s,回调):

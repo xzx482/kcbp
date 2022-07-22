@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QGridLayout, QHBoxLayout, QLabel, QStyle, QVBoxLayou
 
 from .获取节假日 import 获取节假日,节假日_文本
 from . import 日期
+from kcb_basic import 获取字体,缩放
 
 
 class 单日期组件(QWidget):
@@ -23,13 +24,13 @@ class 单日期组件(QWidget):
 
 		s.左上=QLabel()
 		#s.左上.setStyleSheet('line-height:0px')
-		s.左上.setFont(QFont("黑体",16))
+		s.左上.setFont(获取字体(16))
 		s.根纵_上.addWidget(s.左上)
 
-		s.根纵_上.addSpacing(2)
+		s.根纵_上.addSpacing(缩放(2))
 
 		s.右上=QLabel()
-		s.右上.setFont(QFont("黑体",16))
+		s.右上.setFont(获取字体(16))
 		s.根纵_上.addWidget(s.右上)
 		
 		s.根纵.addLayout(s.根纵_上)
@@ -37,15 +38,15 @@ class 单日期组件(QWidget):
 		s.根纵_中=QHBoxLayout()
 		s.根纵_中.addStretch(1)
 		s.日期=QLabel()
-		s.日期.setFont(QFont("黑体",22))
+		s.日期.setFont(获取字体(22))
 		s.根纵_中.addWidget(s.日期)
 		s.根纵_中.addStretch(1)
 		s.根纵.addLayout(s.根纵_中)
 
 		s.底部=QLabel()
-		s.底部.setMinimumWidth(50)
+		s.底部.setMinimumWidth(缩放(50))
 		s.底部.setAlignment(Qt.AlignmentFlag.AlignCenter)
-		s.底部.setFont(QFont("黑体",14))
+		s.底部.setFont(获取字体(14))
 		s.根纵.addWidget(s.底部)
 
 
@@ -64,7 +65,7 @@ class 日历组件(QWidget):
 		#s.setVisible(False)
 		s.根网=QGridLayout()
 		s.根网.setVerticalSpacing(0)
-		s.根网.setHorizontalSpacing(10)
+		s.根网.setHorizontalSpacing(缩放(10))
 		s.setLayout(s.根网)
 		s.日期j={}
 		s.日期_qws=[]
@@ -72,7 +73,7 @@ class 日历组件(QWidget):
 			星期_顶=QLabel()
 			星期_顶.setAlignment(Qt.AlignmentFlag.AlignCenter)
 			星期_顶.setText(日期.星期_文本[i])
-			星期_顶.setFont(QFont("黑体",16))
+			星期_顶.setFont(获取字体(16))
 			s.根网.addWidget(星期_顶,0,i)
 		for x in range(1,3):
 			日期_qws1=[]

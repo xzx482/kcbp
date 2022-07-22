@@ -22,8 +22,6 @@ tracemalloc.start()
 
 if __name__ == "__main__":
 	import sys
-	app=QApplication(sys.argv)
-	shmn='kechengbiao_12'
 
 	sed=QSharedMemory()
 	sed.setKey('kechengbiao_12')
@@ -57,6 +55,7 @@ if __name__ == "__main__":
 	#'''
 
 	if not 主:
+		app=QApplication(sys.argv)
 		msg_box=QMessageBox()
 		msg_box.setWindowTitle("已在运行")
 		msg_box.setText("已运行了一个实例, 不能运行多个")
@@ -67,7 +66,8 @@ if __name__ == "__main__":
 
 #'''
 
-
+#os.putenv("QT_SCALE_FACTOR",str(round(1366/1920,2)))
+app=QApplication(sys.argv)
 
 '''
 由于qt 不支持 utf-8编码标识符, 与qt有关的标识符使用拼音首字母.如 信号(signal) 槽(slot) 定时器(timer) 的名称
@@ -89,6 +89,7 @@ from flj import flj
 import 获取视频
 import os
 from 扩展 import 加载扩展
+from kcb_basic import 获取字体,缩放
 
 扩展=加载扩展()
 
@@ -499,9 +500,6 @@ def 时间转文字(t):
 
 
 
-
-
-
 class 单课程组件():
 	def __init__(s,网格:QGridLayout,坐标):
 		super().__init__()
@@ -513,10 +511,10 @@ class 单课程组件():
 		for i in s.labels:
 			#i.setFont(QFont("黑体",20,QFont.Weight.Bold))
 			i.setStyleSheet('color:#ffffff')
-		s.labels[0].setMinimumWidth(155)
-		s.labels[0].setFont(QFont("黑体",18))
-		s.labels[1].setFont(QFont("黑体",20))
-		s.labels[2].setFont(QFont("黑体",20))
+		s.labels[0].setMinimumWidth(缩放(155))
+		s.labels[0].setFont(获取字体(18))
+		s.labels[1].setFont(获取字体(20))
+		s.labels[2].setFont(获取字体(20))
 		for i in s.labels:
 			网格.addWidget(i,网格纵坐标,网格横坐标)
 			网格纵坐标+=1
@@ -531,9 +529,9 @@ class 单课程组件():
 class 日期时间组件(单课程组件):
 	def __init__(s,网格:QGridLayout,坐标):
 		super().__init__(网格,坐标)
-		s.labels[0].setFont(QFont("黑体",20))
-		s.labels[1].setFont(QFont("黑体",20))
-		s.labels[2].setFont(QFont("黑体",20))
+		s.labels[0].setFont(获取字体(20))
+		s.labels[1].setFont(获取字体(20))
+		s.labels[2].setFont(获取字体(20))
 	
 	def gxsj(s,*a):
 		s.更新时间(*a)
@@ -608,11 +606,11 @@ class 课程表类():
 		
 		s.上课状态=QLabel()
 		s.上课状态.setAlignment(Qt.AlignmentFlag.AlignCenter)
-		s.上课状态.setFont(QFont("黑体",28,QFont.Weight.Bold))
+		s.上课状态.setFont(获取字体(28,QFont.Weight.Bold))
 		
 
 		s.上课状态d=QLabel()
-		s.上课状态d.setFont(QFont("黑体",24,QFont.Weight.Bold))
+		s.上课状态d.setFont(获取字体(24,QFont.Weight.Bold))
 		s.上课状态d.setStyleSheet('color:#ffffff')
 
 
@@ -926,10 +924,10 @@ class 单消息组件(QWidget):
 		s.显示=None
 		
 		s.标题label=QLabel()
-		s.标题label.setFont(QFont("黑体",20))
+		s.标题label.setFont(获取字体(20))
 		s.标题label.setWordWrap(True)
 		s.正文label=QLabel()
-		s.正文label.setFont(QFont("黑体",16))
+		s.正文label.setFont(获取字体(16))
 		s.正文label.setWordWrap(True)
 		s.纵根=QVBoxLayout()
 		s.纵根.addWidget(s.标题label)
@@ -1065,7 +1063,7 @@ class 主窗口(QWidget):
 		s.time=0
 		s.setStyleSheet('*{color:#ffffff}')
 
-		s.setFont(QFont("黑体",18,QFont.Weight.Bold))
+		s.setFont(获取字体(18,QFont.Weight.Bold))
 
 		s.套背景=True
 		if s.套背景:
@@ -1102,7 +1100,7 @@ class 主窗口(QWidget):
 
 		s.根纵_上横_左纵=QVBoxLayout()
 		s.根纵_上横.addLayout(s.根纵_上横_左纵)
-		s.根纵_上横.addSpacing(40)
+		s.根纵_上横.addSpacing(缩放(40))
 
 		s.根纵_上横_右纵=QVBoxLayout()
 		s.根纵_上横.addLayout(s.根纵_上横_右纵)
@@ -1115,7 +1113,7 @@ class 主窗口(QWidget):
 
 		s.根纵_下横_左纵=QVBoxLayout()
 		s.根纵_下横.addLayout(s.根纵_下横_左纵)
-		s.根纵_下横.addStretch(1000)
+		s.根纵_下横.addStretch(缩放(1000))
 
 		s.根纵_下横_右纵=QVBoxLayout()
 		s.根纵_下横.addLayout(s.根纵_下横_右纵)
@@ -1135,8 +1133,9 @@ class 主窗口(QWidget):
 		s.主消息=消息_主窗口()
 		#s.主消息.添加消息(1).设置('123','456',True,time.time(),time.time()+10)
 		s.根纵_下横_左纵.addWidget(s.主消息)
-
-		s.右纵_网.addWidget(QLabel(' '*12),0,1)
+		填空l=QLabel(' '*6)
+		填空l.setFont(获取字体(6))
+		s.右纵_网.addWidget(填空l,0,1)
 		s.课程表=课程表类(s.右纵_网,(1,2))
 		s.右纵_网.addWidget(s.课程表.上课状态,0,0)
 		s.右纵_网.addWidget(s.课程表.上课状态d,0,2,1,4)
@@ -1461,7 +1460,7 @@ if __name__ == "__main__":
 	#t_6=配置l['周六时间']
 
 	w=主窗口()
-
+	w.setStyleSheet('border:1px solid #ffffff;')
 	#a1
 
 	ti=QSystemTrayIcon(w)

@@ -1,0 +1,6 @@
+pyqt6
+winsdk
+selenium
+vlc
+sxtwl
+pywin32
