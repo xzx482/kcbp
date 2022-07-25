@@ -25,12 +25,24 @@ class 单日期组件(QWidget):
 		s.左上=QLabel()
 		#s.左上.setStyleSheet('line-height:0px')
 		s.左上.setFont(获取字体(16))
+		s.左上.setMaximumWidth(缩放(24))
+		s.左上.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		s.根纵_上.addWidget(s.左上)
-
 		s.根纵_上.addSpacing(缩放(2))
+
+		#这个Label是不在布局中的; 它使用 setGeometry 在 resizeEvent 事件中调整位置
+		s.左上中=QLabel(s)
+		s.左上中.setText('月')
+		s.左上中.setAlignment(Qt.AlignmentFlag.AlignCenter)
+		s.左上中.setVisible(False)
+		s.左上中.setFont(获取字体(16))
+		s.左上中_宽高=(缩放(24),缩放(20),缩放(2)) # 最后一个是上移的高度
+
 
 		s.右上=QLabel()
 		s.右上.setFont(获取字体(16))
+		s.右上.setMaximumWidth(缩放(24))
+		s.右上.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		s.根纵_上.addWidget(s.右上)
 		
 		s.根纵.addLayout(s.根纵_上)
@@ -52,9 +64,19 @@ class 单日期组件(QWidget):
 
 	def 设置内容(s,左上,右上,日期,底部):
 		s.左上.setText(左上)
+		if 左上:
+			s.左上中.setVisible(True)
+		else:
+			s.左上中.setVisible(False)
 		s.右上.setText(右上)
 		s.日期.setText(日期)
 		s.底部.setText(底部)
+	
+	def resizeEvent(s,e):
+		#将 s.左上中 的位置设置在 s.左上 正下方
+		a0=s.左上.geometry()
+		s.左上中.setGeometry(a0.x(),a0.y()+a0.height()-s.左上中_宽高[2],s.左上中_宽高[0],s.左上中_宽高[1])
+
 
 
 
@@ -100,7 +122,7 @@ class 日历组件(QWidget):
 				单日期:单日期组件=i[i2]
 				日期_:日期.日期=星期历[i2]
 				年,月,日=日期_.公历_值
-				左上=(str(月)+'月') if 日==1 else ''
+				左上=(str(月)) if 日==1 else ''
 				try:
 					右上=节假日_文本[ 节假日[str(年)][str(月)][str(日)] ]
 					
@@ -181,5 +203,5 @@ def 配置(p,配置l):
 	p.日历=日历
 	p.根纵_上横_左纵.addWidget(日历)
 	p.添加淡化组件(日历,0.5)
-	p.线程.gxrq.connect(日历.gxrq)
+	p.线程.xtsjt.connect(日历.gxrq)
 	#p.zjxsztbh.connect(日历.xsztbh)

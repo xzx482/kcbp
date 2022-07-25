@@ -118,7 +118,6 @@ class 每分钟折线图表组件(QWidget):
 		坐标1=s.内坐标(1,1)
 		x1,y1=坐标1.x(),坐标1.y()
 
-		保宽=s.保留宽度
 		箭宽=s.箭头宽
 		y_=s.最大y
 	#获取数量级
@@ -330,6 +329,7 @@ class 天气组件(QWidget):
 		s.setFont(获取字体(18,QFont.Weight.Bold))
 
 		s.根纵=QVBoxLayout()
+		s.根纵.setContentsMargins(0,0,0,0)
 		s.根纵.setSpacing(0)
 		s.setLayout(s.根纵)
 
@@ -419,13 +419,13 @@ class 天气组件(QWidget):
 
 
 
-		s.当前信息hbox.addSpacing(缩放(80))
+		s.当前信息hbox.addSpacing(缩放(70))
 		s.当前信息=QLabel()
 		s.当前信息.setFont(获取字体(18,QFont.Weight.Bold))
 		s.当前信息hbox.addWidget(s.当前信息)
 
 		s.当前信息hbox.addSpacing(缩放(16))
-		当前信息_更新时间0=QLabel('更新于:')
+		当前信息_更新时间0=QLabel('更新于')
 		当前信息_更新时间0.setFont(获取字体(14))
 		s.当前信息hbox.addWidget(当前信息_更新时间0)
 		s.当前信息_更新时间=QLabel()
@@ -598,7 +598,7 @@ def 配置(p,配置l):
 	天气.配置l=配置l
 	p.天气=天气
 	天气.p=p
-	p.根纵_下横_右纵.addWidget(天气)
+	p.根纵_上横_右纵_横.addWidget(天气)
 	p.添加淡化组件(天气.当前信息widget)
 	p.添加淡化组件(天气.每天信息widget,0.5)
 	p.添加淡化组件(天气.每分钟信息widget)

@@ -25,6 +25,8 @@ class tl_:
     def 是否达到时间(s):
         return 获取天(time.time())>获取天(s.f['tl']['t'])
 
+    def 是否存在(s):
+        return 0<s.n<=18
 
     def 标题(s):
         return "高中英语听力宝典 提升训练下 模拟试题 "+str(s.n)+'\n第'+str(18+2*s.n)+'页'
@@ -36,5 +38,6 @@ class tl_:
         return "  高中英语听力宝典\n  提升训练下\n  模拟试题 "+str(s.n)
 
     def 文件名(s):
-        return r"D:\Desktop\英语\2022版听力宝典 提升训练下 成盘\2022版听力宝典 提升训练下 mp3 标准\0"+str(s.n+14)+" 2022版高中英语听力宝典 提升训练下  模拟试题 "+str(s.n)+".mp3"
+        #return r"D:\Desktop\英语\2022版听力宝典 提升训练下 成盘\2022版听力宝典 提升训练下 mp3 标准\0"+str(s.n+14)+" 2022版高中英语听力宝典 提升训练下  模拟试题 "+str(s.n)+".mp3"
+        return r"D:\Downloads\Paladin.mp3"
 

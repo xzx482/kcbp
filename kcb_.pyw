@@ -587,7 +587,7 @@ class 课程表类():
 		网格横坐标,网格纵坐标=开始坐标
 		#s.timer_id=0
 
-		s.状态={'上课':None,'当前课程':None,'已上课数':None}
+		s.状态={'上课':None,'当前课程':None,'已上课数':None,'一天课程':None}
 
 		s.时差_=0
 		s.将上课程=将上课程()
@@ -637,6 +637,9 @@ class 课程表类():
 			一天课程=s.将上课程[t]
 			一天课程数=len(一天课程)
 			已上课数_,上课,s.倒计时_,s.暂停=dk(tl,一天课程,False)
+			s.状态['已上课数']=已上课数_
+			s.状态['一天课程']=一天课程
+
 			s.天=天
 			已用课数=已上课数_
 			天数=0
@@ -682,236 +685,6 @@ class 课程表类():
 
 		return m
 
-
-
-
-
-
-class 倒计时组件(QLabel):
-	def __init__(s,parent=None,时间=0,文本_结束='',文本_前='',文本_后=''):
-		super().__init__(parent)
-		s.文本_前=文本_前
-		s.文本_后=文本_后
-		s.文本_结束=文本_结束
-		s.时间=时间
-		s.已隐藏=False
-
-		s.定时器=QTimer(s)
-		s.定时器.setTimerType(Qt.TimerType.PreciseTimer)
-		s.定时器.timeout.connect(s.gx)
-		s.定时器.setInterval(1000)
-	def 设置隐藏(s,v):
-		if s.已隐藏:
-			s.定时器.stop()
-			s.setText('')
-		else:
-			s.开始()
-
-	def gx(s):
-		s.更新()
-	def 更新(s,t=None):
-		if not t:
-			t=time.time()
-		t_=s.时间-t
-		if t_>0:
-			s.setText(s.文本_前+时间转文字(t_)+s.文本_后)
-		else:
-			s.setText(s.文本_结束)
-			s.定时器.stop()
-
-	def 开始(s):
-		time.sleep(1.001-(时差+time.time())%1)
-		s.定时器.start()
-
-class 视频获取(QThread):
-	trigger=pyqtSignal(tuple)
-	def __init__(s,宽,高,args,parent=None):
-		super().__init__(parent)
-		s.宽=宽
-		s.高=高
-		s.args=args
-	def run(s):
-		s.视频来源=获取视频.背景()
-		s.l=s.视频来源.整理(宽高=(s.宽,s.高))
-		s.trigger.emit((s.l,s.args))
-	def 整理(s,宽,高):
-		return s.视频来源.整理(宽高=(宽,高))
-
-
-class 背景视频组件(QVideoWidget):
-	def __init__(s,parent=None,启用背景动画=False):
-		super().__init__(parent)
-		s.setWindowFlags(Qt.WindowType.WindowStaysOnBottomHint|Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint)
-		#s.move(-999,-999)
-		#s.resize(1,1)
-		#s.show()
-		#s.resize(1,1)
-
-		s.宽=0
-		s.高=0
-
-		s.启用背景动画=启用背景动画
-
-		s.显示状态=False
-		s.背景_入=None
-		s.背景_出=None
-		s.初始=True
-		s.l=None
-		#s.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-		s.setAspectRatioMode(Qt.AspectRatioMode.KeepAspectRatioByExpanding)#将视频等比填满
-
-		s.player=QMediaPlayer()
-		s.player.setVideoOutput(s)
-		#循环播放
-		s.player.setLoops(QMediaPlayer.Loops.Infinite)
-		#尝试其他方法
-		
-		if s.启用背景动画:
-			s.setWindowOpacity(0.01)
-		else:
-			s.setVisible(False)
-		s.背景动画_时间=1000
-		s.背景动画_入=QPropertyAnimation(s,b'windowOpacity')
-		s.背景动画_入.setEasingCurve(QEasingCurve.Type.InCubic)#动画曲线
-		s.背景动画_入.finished.connect(s.bjdh_js)
-		s.背景动画_入.setDuration(s.背景动画_时间)
-		s.背景动画_入.setStartValue(0)
-		s.背景动画_入.setEndValue(1)
-		'''
-		s.背景动画_入.setStartValue(0.01)
-		s.背景动画_入.setEndValue(0.9999)
-		'''
-	
-	def zbsp_q(s,l_):
-		s.l=l_[0]
-		s.准备视频(*l_[1])
-		s.player.play()
-	
-	def 准备视频(s,i=None):
-		#新线程(0,s.player.play)
-		#'''
-		if not s.l:
-			s.获取_线程=视频获取(s.宽,s.高,(i,))
-			print(s.宽,s.高)		
-			s.获取_线程.trigger.connect(s.zbsp_q)
-			s.获取_线程.start()
-			return
-		重播=False
-		#l=s.视频来源.整理(2160)
-		#i=5
-		if not i:
-			i=配置l['视频背景']['项']
-		else:
-			i=i%len(s.l)
-			if 配置l['视频背景']['项']!=i:
-				配置l['视频背景']['项']=i
-				配置l.写()
-				if s.显示状态:
-					重播=True
-					s.出()
-					
-		qurl_=QUrl(s.l[i][3])
-		#qurl_=QUrl('file:///D:/Downloads/北京2022冬奥会开幕式_末尾_.mp4')
-		s.qurl_=qurl_
-		if 重播:
-			s.初始=True
-			s.背景_出=s.重设媒体
-		else:
-			s.player.setSource(qurl_)
-			s.背景_出=None
-
-	def 重设媒体(s):
-		s.背景_出=None
-		s.player.stop()
-		s.player.setSource(s.qurl_)
-		s.player.play()
-
-
-	def bjdh_js(s):#背景动画_结束
-		s.背景动画_入.stop()
-		if not s.显示状态:#出 之后
-			s.player.pause()
-			if callable(s.背景_出):
-				s.背景_出()
-		
-	def 入(s):
-		if not s.显示状态:
-			s.显示状态=True
-			s.player.play()
-			if s.启用背景动画:
-				s.背景动画_入.setDirection(QAbstractAnimation.Direction.Forward)
-				s.背景动画_入.start()
-				if callable(s.背景_入):
-					s.背景_入()
-			else:
-				s.setVisible(True)
-	def 出(s):
-		if s.显示状态:
-			s.显示状态=False
-			if s.启用背景动画:
-				s.背景动画_入.setDirection(QAbstractAnimation.Direction.Backward)
-				s.背景动画_入.start()
-				#s.背景动画_入.finished.connect()
-			else:
-				s.setVisible(False)
-				s.player.pause()
-
-
-	def 显示(s):
-		
-		#s.setVisible(False)
-		#s.背景动画_.start()
-		s.准备视频()
-		s.初始=True
-		s.player.play()
-
-		#s.入()
-		#if s.player.MediaStatus()!=6 and s.player.state()==0:
-		s.player.mediaStatusChanged.connect(s.mediaStatusChanged__)
-		
-	
-	def mediaStatusChanged__(s,状态):
-		if 状态==QMediaPlayer.MediaStatus.BufferedMedia:#qt6和qt5的状态不同
-			if s.初始:
-				s.初始=False
-				s.入()
-		
-class 背景组件():
-	#用于视频不能正常淡入时的魔改
-	#过程:
-	#在视频刚创建时就把它移到屏幕外.
-	#视频就绪后, 可以正常淡入淡出.
-	#视频就绪后, 调用 背景初入 将视频移入, 就能正常淡入.
-
-	#不要堵塞qt的线程, 会可能会使背景变黑, 影响淡入淡出和视频播放.
-	def __init__(s):
-		s.视频=背景视频组件(启用背景动画=True)
-		s.视频.setGeometry(-1,-1,1,1)
-		s.宽高=[0,0]
-		s.视频.lower()
-		s.视频.背景_入=s.背景初入
-
-	def 背景初入(s):
-		s.视频.背景_入=None
-		s.视频.setGeometry(0,0,*s.宽高)
-
-		
-
-
-class 全屏窗口(QWidget):
-	def __init__(s,par=None):
-		super().__init__()
-		#s.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint)
-
-		s.主窗口:主窗口=par
-		
-	#'''
-	def paintEvent(s,e):
-		painter=Painter(s)
-		painter.drawPixmap(0,0,QApplication.primaryScreen().grabWindow(s.主窗口.winid_桌面))
-		s.主窗口.render(painter)
-		painter.end()
-	#'''
 
 
 
@@ -1014,21 +787,35 @@ class 主窗口_线程(QThread):
 	#课程时间秒 和 系统时间秒 都 每整秒发送一次, 但 课程时间和系统时间的误差不为整秒 时 将不同时发送
 	kcsjm=pyqtSignal(float)#课程时间秒
 	xtsjm=pyqtSignal(time.struct_time)#系统时间秒
-	gxrq=pyqtSignal(time.struct_time)#更新日期
+	xtsjf=pyqtSignal(time.struct_time)#系统时间分
+	xtsjs=pyqtSignal(time.struct_time)#系统时间时
+	xtsjt=pyqtSignal(time.struct_time)#系统时间天
 	def __init__(s,parent):
 		super().__init__()
 		s.parent=parent
 		s.sm_t=0
 
 	def run(s):
-		日期_=None
+		旧时间=time.localtime()
+		s.xtsjt.connect(s.xtsjs.emit)
+		s.xtsjs.connect(s.xtsjf.emit)
+		#s.xtsjf.connect(s.xtsjm.emit)
+
+		s.xtsjt.emit(旧时间)
 		while True:
 			t=获取时间()
 			tl=time.localtime(t)
-			日期=(tl.tm_year,tl.tm_mon,tl.tm_mday)
-			if 日期_!=日期:
-				日期_=日期
-				s.gxrq.emit(tl)
+			
+			if 旧时间.tm_mday!=tl.tm_mday:
+				s.xtsjt.emit(tl)
+			elif 旧时间.tm_hour!=tl.tm_hour:
+				s.xtsjs.emit(tl)
+			elif 旧时间.tm_min!=tl.tm_min:
+				s.xtsjf.emit(tl)
+
+			旧时间=tl
+			
+
 
 			s.xtsjm.emit(tl)
 			if 多延迟:
@@ -1056,7 +843,6 @@ class 主窗口(QWidget):
 	def __init__(s, parent=None):
 		super().__init__(parent)
 		#s.托盘=托盘图标(s)
-		s.win=QWidget(s)
 		s.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)#透明背景
 		s.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint)
 		#s.setWindowFlags(Qt.WindowStaysOnBottomHint|Qt.FramelessWindowHint|Qt.MSWindowsFixedSizeDialogHint)
@@ -1065,18 +851,9 @@ class 主窗口(QWidget):
 
 		s.setFont(获取字体(18,QFont.Weight.Bold))
 
-		s.套背景=True
-		if s.套背景:
-			s.背景=背景组件()
-			s.背景视频=s.背景.视频
-		else:
-			s.背景视频=背景视频组件(启用背景动画=True)
 
 		s.winid_s=int(s.winId())
-		s.winid_win=int(s.win.winId())
-		s.winid_背景视频=int(s.背景视频.winId())
 
-		s.全屏=全屏窗口(s)
 
 		s.宽=0
 		s.高=0
@@ -1093,7 +870,7 @@ class 主窗口(QWidget):
 
 		s.根纵=QVBoxLayout()
 		s.根纵.setSpacing(0)
-		s.win.setLayout(s.根纵)
+		s.setLayout(s.根纵)
 
 		s.根纵_上横=QHBoxLayout()
 		s.根纵_上横.addStretch(1)
@@ -1124,7 +901,10 @@ class 主窗口(QWidget):
 
 		s.右纵_网=QGridLayout()
 		s.根纵_上横_右纵.addLayout(s.右纵_网)
+		s.根纵_上横_右纵.addSpacing(缩放(60))
 	
+		s.根纵_上横_右纵_横=QHBoxLayout()
+		s.根纵_上横_右纵.addLayout(s.根纵_上横_右纵_横)
 
 		s.淡化动画组=QParallelAnimationGroup()
 		s.淡化动画值=[]
@@ -1132,7 +912,6 @@ class 主窗口(QWidget):
 
 		s.主消息=消息_主窗口()
 		#s.主消息.添加消息(1).设置('123','456',True,time.time(),time.time()+10)
-		s.根纵_下横_左纵.addWidget(s.主消息)
 		填空l=QLabel(' '*6)
 		填空l.setFont(获取字体(6))
 		s.右纵_网.addWidget(填空l,0,1)
@@ -1145,14 +924,18 @@ class 主窗口(QWidget):
 		s.线程=主窗口_线程(s)
 		s.线程.kcsjm.connect(s.gxkc)
 		s.线程.xtsjm.connect(s.日期时间.gxsj)
-		s.线程.gxrq.connect(s.日期时间.gxrq)
+		s.线程.xtsjt.connect(s.日期时间.gxrq)
 		s.zjxsztbh.connect(s.dhdh)
 
 		扩展.配置(s,配置l)
 
 
+		s.根纵_上横_左纵.addWidget(s.主消息)
+		
+
 		s.根纵_上横_左纵.addStretch(1)
 		s.根纵_上横_右纵.addStretch(1)
+		s.根纵_上横_右纵_横.addStretch(1)
 
 		s.根纵_下横_左纵.addStretch(1)
 		s.根纵_下横_右纵.addStretch(1)
@@ -1172,13 +955,13 @@ class 主窗口(QWidget):
 
 		s.淡化属性_初入=QGraphicsOpacityEffect()
 		s.淡化属性_初入.setOpacity(0.01)
-		s.win.setGraphicsEffect(s.淡化属性_初入)
+		s.setGraphicsEffect(s.淡化属性_初入)
 		s.初入动画=QPropertyAnimation(s.淡化属性_初入,b'opacity')
 		s.初入动画.setDuration(1000)
 		s.初入动画.setStartValue(0.01)
 		s.初入动画.setEndValue(1)
 		s.初入动画.setEasingCurve(QEasingCurve.Type.InCubic)
-		s.初入动画.finished.connect(lambda:(s.win.setGraphicsEffect(None),s.刷新淡化值()))
+		s.初入动画.finished.connect(lambda:(s.setGraphicsEffect(None),s.刷新淡化值()))
 
 
 
@@ -1249,35 +1032,9 @@ class 主窗口(QWidget):
 		宽,高=d.width(),d.height()
 		if s.宽==宽 and s.高==高:
 			return
-		s.宽=s.背景视频.宽=宽 ; s.高=s.背景视频.高=高
-		#s.resize(宽,高)
-		#s.win.resize(宽,高)
-		#s.背景_图片.resize(宽,高)
-		#s.move(0,0)
 		s.setGeometry(0,0,宽,高)
-		s.win.setGeometry(0,0,宽,高)
-		#s.全屏.setGeometry(0,0,宽,高)
-		#s.背景.resize(宽,高)
-			
-		if (not s.套背景)or not s.背景视频.背景_入:
-			s.背景视频.setGeometry(0,0,宽,高)
-			if s.套背景:
-				s.背景.背景图片.setGeometry(0,0,宽,高)
-		else:
-			s.背景.宽高=[宽,高]
-		#s.背景.move(0,0)
 
 
-	'''
-	def co1(s,i):
-		s.嵌入_错误_提示_按钮点击(s,i)
-	def 嵌入_错误_提示_按钮点击(s,i):
-		if i==QMessageBox.Retry:
-			s.嵌入_继续=1
-		else:
-			print(i)
-			s.嵌入_继续=2
-'''
 	def 嵌入(s):
 		if s.嵌入_继续:
 			return
@@ -1289,23 +1046,13 @@ class 主窗口(QWidget):
 			except 桌面窗口错误 as e:
 				if not s.嵌入_继续>1:
 					s.嵌入_继续=2
-					s.托盘.showMessage('初始化错误','找不到桌面窗口, 尝试重启 explorer.exe 可能会解决问题',QSystemTrayIcon.MessageIcon.Information,10000)
-					#s.托盘.messageClicked.connect(
-					#	lambda:QMessageBox.information(
-					#		'错误','找不到桌面窗口',QMessageBox.Retry|QMessageBox.Abort,QMessageBox.Retry
-					#	).buttonClicked.connect(s.co1)
-					#)
+					print('主窗口:e;无法嵌入桌面窗口,'+str(e))
 				
 				time.sleep(1)
 
 
 		#将窗口设为桌面背景的子窗口
 		win32gui.SetParent(s.winid_s,s.winid_桌面)
-		#'''
-		win32gui.SetParent(s.winid_背景视频,s.winid_桌面)
-		#'''
-		#玄学,需要将内容再放到一个子窗口中, 再将子窗口设为窗口的将子窗口
-		win32gui.SetParent(s.winid_win,s.winid_s)
 
 		
 		s.嵌入_继续=0
@@ -1332,96 +1079,40 @@ class 主窗口(QWidget):
 			s.setVisible(True)
 
 
-
-	def 更新_(s):
-		s.全屏.update()
-
 	def 开始(s):
 		s.嵌入()
 		s.对齐桌面()
-		#s.设置背景()
 		s.状态检查定时器.start()
-		#import threading
-		#threading.Thread(target=lambda:()).start()
-		#新线程(0,lambda:(s.嵌入(),s.对齐桌面(),s.状态检查()))
-		
-		'''
-		s.背景视频.show()
-		s.背景视频.显示()
-		#'''
-		
-		#_thread.start_new_thread(s.player.play,())
-		#'''
 		s.主消息.timer.start(1000)
 		s.课程表.开始()
 		s.show()
 		s.adjustSize()
 		s.adjustSize()
 		s.初入动画.start()
-		#import threading
-		#t=threading.Thread(target=s.sm)
-		#t.start()
 
 		s.线程.start()
 
-		#s.全屏.show()
-
-		#'''
-		#s.主消息.普通消息widget.setVisible(True)
 		s.ks.emit()
-		#'''
-		#s.天气.更新天气()
 
 class 托盘图标(QSystemTrayIcon):
-	def __init__(s,parent=None):
+	def __init__(s,parent:主窗口=None):
 		super().__init__()
-		s.主窗口:主窗口=parent
+		s.主窗口=parent
 		s.setIcon(QIcon('icon.png'))
-		s.setToolTip('桌面背景')
-		#s.activated.connect(s.点击)
+		#s.setToolTip('桌面背景')
 		s.setVisible(True)
 		s.menu=QMenu()
 
-
-		s.menu.addAction('上一张').triggered.connect(s.sp_s)
-		s.menu.addAction('下一张').triggered.connect(s.sp_x)
 		s.menu.addAction('退出').triggered.connect(s.tc)
 		s.setContextMenu(s.menu)
-		s.show()
-		#s.setVisible(True)
-	def 点击(s):
-		pass
-	
-	def 视频_更换(s,项=None,变化=None):
-		if not 项:
-			if not 变化:
-				raise
-			else:
-				项=配置l['视频背景']['项']+变化
-		
-		s.主窗口.背景视频.准备视频(项)
 
-	def sp_s(s):
-		s.视频_更换(变化=-1)
-
-	def sp_x(s):
-		s.视频_更换(变化=1)
+		parent.ks.connect(s.show)
 
 	def tc(s):
 		s.退出()
 	def 退出(s):
 		s.setVisible(False)
-		#s.deleteLater()
-		s.主窗口.背景视频.出()
-		if s.主窗口.背景视频.启用背景动画:
-			新线程(s.主窗口.背景视频.背景动画_时间/1000+0.5,s.退出_)
-		else:
-			s.退出_()
-		#sys.exit()
-
-	def 退出_(s):
 		app.exit()
-		#sys.exit()
 
 			
 
@@ -1432,6 +1123,7 @@ if __name__ == "__main__":
 
 	if not 配置l.d:
 		配置l.关闭()
+		raise Exception('配置文件错误')
 		from 欢迎 import 欢迎窗口
 		欢迎窗口()
 		sys.exit()
@@ -1460,13 +1152,14 @@ if __name__ == "__main__":
 	#t_6=配置l['周六时间']
 
 	w=主窗口()
-	w.setStyleSheet('border:1px solid #ffffff;')
-	#a1
+	#w.setStyleSheet('border:1px solid #ffffff;')
 
+
+	#t=托盘图标(w)
+
+
+	'''
 	ti=QSystemTrayIcon(w)
-
-	'''
-	'''
 
 	tim=QMenu()
 	#tim.addAction(QAction('&退出(Exit)',ti,triggered=lambda:(ti.setVisible(False),w.背景视频.出(),新线程(4,app.quit))))

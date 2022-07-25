@@ -1,4 +1,5 @@
 
+import time
 from PyQt6.QtGui import QFont,QFontDatabase
 
 缩放值=1366/1920
@@ -19,3 +20,7 @@ def 获取字体(字号,*args,**kwargs)->QFont:
 	f.setPointSizeF(字号*缩放值)
 	#f.setFamily(font)
 	return f
+
+
+def 获取秒(tl:time.struct_time)->int:
+	return (tl.tm_hour*60+tl.tm_min)*60+tl.tm_sec

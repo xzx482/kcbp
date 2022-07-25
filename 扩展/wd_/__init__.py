@@ -8,10 +8,10 @@ import time,sys
 from . import 打开新闻周刊
 import vlc
 from .tl_ import tl_
-from ctypes import windll
+from isLocked import isLocked
+from kcb_basic import 获取秒
 
-def 已锁定电脑():
-		return windll.user32.GetForegroundWindow()% 10 == 0
+
 
 def 创建通知器():
 	global 通知器
@@ -26,16 +26,13 @@ def 时间转换(t)->str:
 	return f'{分钟:02}:{秒:02}'
 
 
-def 获取秒(tl:time.struct_time)->int:
-	return (tl.tm_hour*60+tl.tm_min)*60+tl.tm_sec
 
-
-通知0xml="""
+通知0xml_正常="""
 <toast scenario="reminder" launch="点击">
 	<visual>
 		<binding template="ToastGeneric">
 			__1__
-			<text>__0__</text>
+			<text hint-maxLines="10">__0__</text>
 			<progress
 				title="即将播放"
 				value="{progressValue}"
@@ -50,10 +47,31 @@ def 获取秒(tl:time.struct_time)->int:
 			activationType="background"/>
 
 		<action
-			content="取消"
+			content="关闭"
 			arguments="取消"
 			activationType="background"/>
 	
+	</actions>
+	<audio silent="true"/>
+</toast>
+"""
+
+通知0xml_锁屏="""
+<toast scenario="reminder" launch="点击">
+	<visual>
+		<binding template="ToastGeneric">
+			__1__
+			<text hint-maxLines="10">__0__</text>
+			<text>解锁电脑后__2__</text>
+			<progress
+				title="__3__"
+				value="{progressValue}"
+				valueStringOverride="{progressValueString}"
+				status="{progressStatus}"/>
+		</binding>
+	</visual>
+	<actions>
+		__4__
 	</actions>
 	<audio silent="true"/>
 </toast>
@@ -65,11 +83,11 @@ class 退出(Exception):
 
 
 
-通知1xml="""
+通知1xml_正常="""
 <toast scenario="reminder" launch="点击">
 	<visual>
 		<binding template="ToastGeneric">
-			<text hint-maxLines="10">__0__</text>
+			<text>__0__</text>
 			<progress
 				title="进度"
 				value="{progressValue}"
@@ -93,51 +111,137 @@ class 退出(Exception):
 </toast>
 """
 
+通知1xml_锁屏="""
+<toast scenario="reminder" launch="点击">
+	<visual>
+		<binding template="ToastGeneric">
+			<text>__0__</text>
+			<text>解锁电脑后查看更多\n若要关闭, 点击右上角的×</text>
+			<progress
+				title="进度"
+				value="{progressValue}"
+				valueStringOverride="{progressValueString}"
+				status="{progressStatus}"/>
+		</binding>
+	</visual>
+	<actions>
+	
+	</actions>
+	<audio silent="true"/>
+</toast>
+"""
 
 
 class 通知0_:
-	def __init__(s,__0__,__1__=''):
+	def __init__(s,__0__,__1__='',锁屏时可播放=True):
+		if 锁屏时可播放:
+			__2__='查看更多\n若要关闭, 点击右上角的×'
+			__3__='即将播放'
+			__4__=''
+		else:
+			__2__='才能播放'
+			__3__='请解锁电脑'
+			__4__='''
+				<action
+				content="播放"
+				arguments="确定"
+				activationType="background"/>
+				<action
+					content="关闭"
+					arguments="取消"
+					activationType="background"/>
+			'''
 		s.需退出=False
-		s.通知=toast.通知(
-			通知0xml
+		s.结束时锁屏则退出=not 锁屏时可播放
+		s.通知_正常_xml=(通知0xml_正常
 			.replace('__0__',__0__)
-			.replace('__1__',__1__),
-			s.激活回调,
-			s.关闭回调,
-			标签='通知0'
+			.replace('__1__',__1__)
+			#.replace('__2__',__2__)
+			.replace('__3__',__3__)
 		)
+			
+		s.通知_锁屏_xml=(
+			通知0xml_锁屏
+			.replace('__0__',__0__)
+			.replace('__1__',__1__)
+			.replace('__2__',__2__)
+			.replace('__3__',__3__)
+		)
+
 		s.状态=False
+		s.a=None
 	
 	def 激活回调(s,参数,获取输入):
 		s.状态=参数
 	
-	def 关闭回调(s,_,__):
-		s.状态=-1
+	def 关闭回调(s,原因):
+		if 原因==toast.通知消除原因.超时:
+			#在锁屏时点击通知或解锁,会触发此事件; 
+			#设置了scenario="reminder"的通知, 正常时应该不会触发此事件
+			#当用户解锁后, 会正常触发应触发的事件
+			s.状态='重显'
+		else:
+			s.状态=-1
 	
 	def 显示(s):
-		s.通知.设置数据({"progressValue":"0","progressValueString":"-","progressStatus":"-"},0)
-		通知器.显示(s.通知)
+		通知=toast.通知(
+			s.通知_锁屏_xml if isLocked() else s.通知_正常_xml
+			,
+			s.激活回调,
+			s.关闭回调,
+			标签='通知0'
+		)
+		通知.设置数据({"progressValue":"0","progressValueString":"-","progressStatus":"-"},0)
+		通知器.显示(通知)
+	
+	def 重显(s):
+		通知器.清除通知()
+		s.显示()
 
 	def 循环(s):
 		通知器.清除通知()
 		s.显示()
 		s.状态=False
+		已锁屏_旧=None
 		i=0
+		重显计数=0
 		计时=20
 		while i<计时:
 			if s.需退出:
 				raise 退出
+
 			if s.状态:
 				if s.状态=='取消' or s.状态==-1:
 					raise 退出
 				elif s.状态=='确定' or s.状态=='点击':
 					break
+				elif s.状态=='重显':#用户在锁屏页面准备解锁时, 会触发此事件
+					重显计数=1
+					#通知器.清除通知()
+					#s.显示()
+					i=0
+				s.状态=False
+			else:#若用户点击通知而解锁, 会正常触发应触发的事件.若没有触发,则用户没有理睬通知,需要再次显示
+				已锁屏=isLocked()
+				if 已锁屏_旧 is not None and 已锁屏==True and 已锁屏_旧==False:#锁定时
+					重显计数=0
+					s.重显()
+				已锁屏_旧=已锁屏
+				if 重显计数>0 and not 已锁屏:
+					重显计数+=1
+						
+					if 重显计数>=5:#等待几次循环, 以确保系统已经解锁
+						重显计数=0
+						s.重显()
+				
 			time.sleep(0.2)
 			i+=0.2
 
 			通知器.更新通知({"progressValue":str(i/计时),"progressValueString":str(int(计时-i+0.5))+"秒"},0,'通知0')
 		time.sleep(1)
 		通知器.清除通知()
+		if s.结束时锁屏则退出 and isLocked():
+			raise 退出
 
 
 class 通知1_:
@@ -147,13 +251,22 @@ class 通知1_:
 		s.player:vlc.MediaPlayer=player
 		s.audioMedia:vlc.Media=audioMedia
 		s.消息=消息
+		tl标题=tl.标题()
+		s.通知_正常_xml=通知1xml_正常.replace('__0__',tl标题)
+		s.通知_锁屏_xml=通知1xml_锁屏.replace('__0__',tl标题)
 		s.z1=0
 
 	def 激活回调(s,参数,获取输入):
 		s.状态=参数
 
-	def 关闭回调(s,_,__):
-		s.状态=-1
+	def 关闭回调(s,原因):
+		if 原因==toast.通知消除原因.超时:
+			#在锁屏时点击通知或解锁,会触发此事件; 
+			#设置了scenario="reminder"的通知, 正常时应该不会触发此事件
+			#当用户解锁后, 会正常触发应触发的事件
+			s.状态='重显'
+		else:
+			s.状态=-1
 
 	def 显示(s):
 		'''
@@ -163,16 +276,18 @@ class 通知1_:
 		'''
 		z1=s.z1
 		通知1=toast.通知(
-			通知1xml
-			.replace('__0__',tl.标题())
+			(s.通知_锁屏_xml if isLocked() else s.通知_正常_xml)
 			.replace('__暂停__','暂停' if z1 else '播放'),
 			s.激活回调,
 			s.关闭回调,
 			标签='通知1'
 		)
-		#通知1.设置数据({"progressValue":str(进度),"progressValueString":str(int(当前时间))+'/'+str(int(总时间))+"秒","progressStatus":"正在播放" if z1 else "已暂停"},0)
 		通知1.设置数据({"progressValue":str(s.进度),"progressValueString":时间转换(s.当前时间)+'/'+s.总时间_文本,"progressStatus":"正在播放" if z1 else "已暂停"},0)
 		通知器.显示(通知1)
+
+	def 重显(s):
+		通知器.清除通知()
+		s.显示()
 
 	def 循环(s):
 		通知器.清除通知()
@@ -180,9 +295,16 @@ class 通知1_:
 		s.player.play()
 
 		总时间=-1
-		while 总时间<0:
-			总时间=s.audioMedia.get_duration()/1000-20
-			time.sleep(0.2)
+		for i in range(6):#等待音频就绪
+			总时间=s.audioMedia.get_duration()
+			if 总时间>0:
+				break
+			time.sleep(0.4)
+		else:
+			print('wd_.tl:e;音频加载超时')
+			raise 退出('音频无法播放')
+
+		总时间=总时间/1000-20
 
 		s.总时间=总时间
 
@@ -194,7 +316,8 @@ class 通知1_:
 		s.状态=False
 		s.进度=0
 		s.当前时间=0
-
+		已锁屏_旧=None
+		重显计数=0
 		s.z1=1
 		s.显示()
 
@@ -216,12 +339,29 @@ class 通知1_:
 				elif s.状态==-1 or s.状态=='关闭':
 					s.player.stop()
 					raise 退出
+				elif s.状态=='重显':
+					重显计数=1
 				s.状态=False
+			else:
+				已锁屏=isLocked()
+				if 已锁屏_旧 is not None and 已锁屏==True and 已锁屏_旧==False:#锁定时
+					重显计数=0
+					s.重显()
+				已锁屏_旧=已锁屏
+				if 重显计数>0 and not 已锁屏:
+					重显计数+=1
+						
+					if 重显计数>=2:
+						重显计数=0
+						s.重显()
+
 			time.sleep(0.5)
 			s.当前时间=s.player.get_time()/1000
 			s.进度=s.当前时间/s.总时间
 			通知器.更新通知({"progressValue":str(s.进度),"progressValueString":时间转换(s.当前时间)+'/'+s.总时间_文本},0,'通知1')
-			
+		s.player.stop()
+		通知器.清除通知()
+		
 		
 def 获取新闻周刊():
 	t=time.time()
@@ -245,12 +385,15 @@ class 主(QThread):
 	def bftl(s):
 		if s.tl.是否达到时间():
 			s.tl.加()
+		if not s.tl.是否存在():
+			print('wd_.tl:w;不存在指定的目标')
+			return
 		文件名=s.tl.文件名()
-		print('wd_.tl:'+文件名)
+		print('wd_.tl:i;'+文件名)
 		player:vlc.MediaPlayer=vlc.MediaPlayer()
 		audioMedia:vlc.Media=vlc.Media(文件名)
 		player.set_media(audioMedia)
-		通知0=通知0_(s.tl.标题())
+		通知0=通知0_(s.tl.标题(),锁屏时可播放=True)
 		通知1=通知1_(player,audioMedia,s.消息)
 		s.消息.设置(s.tl.标题_消息(),s.tl.内容_消息(),True,time.time()-1,time.time()+20*60)
 		try:
@@ -270,36 +413,33 @@ class 主(QThread):
 		内容_=x['brief'].replace('\r\n','\n').split('\n')
 		内容='\n'.join(内容_[1:4])+'\n.....'
 
-		通知0=通知0_(内容,'<image placement="hero" src="'+图片路径+'"/><text>'+x['title']+'</text>')
+		通知0=通知0_(内容,'<image placement="hero" src="'+图片路径+'"/><text>'+x['title']+'</text>',False)
 		try:
 			通知0.循环()
 		except 退出:
+			print('wd_.xwzk:i;退出')
 			通知器.清除通知()
 		else:
 			try:
-				t=time.time()
-				while time.time()-t<60:
-					if not 已锁定电脑():
-						time.sleep(3)
-						打开新闻周刊.main(x['url'])
-						break
-					else:
-						print('已锁定电脑')
-					time.sleep(1)
-					
+				打开新闻周刊.main(x['url'])
 			except Exception as e:
-				print('打开新闻周刊失败:')
+				print('wd_.xwzk:e;打开新闻周刊失败:')
 				print(e)
 
 	def run(s):
 		创建通知器()
 		while True:
-			time.sleep(1)
+			#'''
 			课程表状态=s.主.课程表.状态
+			if 课程表状态['上课'] is None:#未就绪
+				time.sleep(1)
+				continue
+			#print('wd_:i;课程表状态:'+str(课程表状态))
+			#'''
 			t=time.time()
-			#t=time.time()+(1*60-23)*60
 			if t-s.配置l['wd_']['时间']>7200 and (18*60+28)*60<获取秒(time.localtime(t))<(18*60+34)*60 and 课程表状态['上课'] and 0<课程表状态['上课']<=2:#时间在18:28-18:34之间 且 预备或者已上课
 				s.配置l['wd_']['时间']=t
+				#当前课程='新闻周刊'
 				当前课程=课程表状态['当前课程']
 				if 当前课程=='新闻周刊':
 					s.bfxwzk()
