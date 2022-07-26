@@ -19,7 +19,7 @@ class 天气获取t(QThread):
 	def 获取并发送(s):
 		print('获取天气'+time.strftime('%H:%M:%S'))
 		try:
-			'''
+			#'''
 			uo=request.urlopen('https://api.openweathermap.org/data/2.5/onecall?units=metric&lang=zh_cn&lat='+str(s.配置l['天气']['纬度'])+'&lon='+str(s.配置l['天气']['经度'])+'&appid='+s.配置l['天气']['key'],timeout=60)
 			jl=json.load(uo)
 			"""
@@ -188,8 +188,6 @@ class 每分钟折线图表组件(QWidget):
 				painter.drawLine(点集[i],点集[i-1])
 
 
-
-
 		painter.setPen(白笔)
 		x轴尾=x1+箭宽*2
 		y轴尾=y1-箭宽*2#qt坐标系的y轴是反的
@@ -227,12 +225,14 @@ class 每分钟折线图表组件(QWidget):
 			文字=time.strftime('%H:%M',time.localtime(t))
 			文字宽度=字体度量.horizontalAdvance(文字)
 			painter.drawText(QPointF(x-文字宽度//2,y0+半字体高度*2),文字)
-		
+			
 		刻度宽_=x0+s.刻度宽
 		for i in range(1,等分y数量+1):#纵坐标,y
 			y=s.内坐标yf(i/等分y数量)
-			painter.drawLine(QPointF(x0,y),QPointF(刻度宽_,y))
+			painter.setPen(QPen(QColor(255,255,255,128),1))
+			painter.drawLine(QPointF(x0,y),QPointF(x1,y))
 
+			painter.setPen(白笔)
 			文字=str(round(i*等分最大y,1))
 			文字宽度=字体度量.horizontalAdvance(文字)
 			painter.drawText(QPointF(x0-文字宽度,y+半字体高度),文字)
@@ -290,37 +290,15 @@ class 单天气组件(QVBoxLayout):
 
 class 天气组件(QWidget):
 	gxtq_signal=pyqtSignal(dict)
-	def __init__(s, parent=None):
-		super().__init__(parent)
-
+	def __init__(s,p):
+		super().__init__()
+		s.p=p
 
 		s.天气j={}
 
 		s.初始=True
 		s.预更新=False
 		s.显示状态=False
-		s.淡化属性=QGraphicsOpacityEffect()
-		s.淡化属性.setOpacity(1)
-		s.setGraphicsEffect(s.淡化属性)
-
-		#'''
-		s.初入动画=QPropertyAnimation(s.淡化属性,b'opacity')
-		s.初入动画.setDuration(1000)
-		s.初入动画.setStartValue(0.01)
-		s.初入动画.setEndValue(1)
-		s.初入动画.setEasingCurve(QEasingCurve.Type.InCubic)
-		#以下问题使用下面的方法
-		#   QPainter::begin: A paint device can only be painted by one painter at a time.
-		#   QPainter::translate: Painter not active
-		#参考: https://forum.qt.io/topic/130718/qt-animation-a-paint-device-can-only-be-painted-by-one-painter-at-a-time/4
-		s.初入动画.finished.connect(lambda:(s.setGraphicsEffect(None),s.p.刷新淡化值()))
-
-
-		#s.初入动画.start()
-		s.初入动画.finished.connect(s.初入动画.deleteLater)
-		#'''
-
-
 
 
 		s.获取t=天气获取t(s)
@@ -446,10 +424,16 @@ class 天气组件(QWidget):
 
 		s.setVisible(False)
 
-		#s.gxtq_signal.connect(lambda:print('gxtq_signal'))
-
+		当前信息淡化=p.添加淡化组件(s.当前信息widget)
+		每天信息淡化=p.添加淡化组件(s.每天信息widget)
+		每分钟信息淡化=p.添加淡化组件(s.每分钟信息widget)
+		每小时信息淡化=p.添加淡化组件(s.每小时信息widget)
+		s.淡化动画=[当前信息淡化,每天信息淡化,每分钟信息淡化,每小时信息淡化]
+		s.设置淡化脱离(True)
 		
-
+	def 设置淡化脱离(s,b):
+		for i in s.淡化动画:
+			i.设置脱离主窗口并行(b)
 
 	
 	def gxtq(s,*a):
@@ -514,7 +498,7 @@ class 天气组件(QWidget):
 			
 			if 有信息:
 				s.每分钟信息widget.setVisible(True)
-				s.每分钟信息widget.update()
+				#s.每分钟信息widget.update()
 			else:
 				s.每分钟信息widget.setVisible(False)
 		else:
@@ -556,6 +540,7 @@ class 天气组件(QWidget):
 		else:
 			s.每天信息widget.setVisible(True)
 
+		s.update()
 		#s.adjustSize()
 		s.ccxs()
 		#s.xsztbh()
@@ -563,10 +548,10 @@ class 天气组件(QWidget):
 		if s.初始:
 			s.初始=False
 
-
+			每天信息淡化=s.淡化动画[1]
+			每天信息淡化.设置最淡值(0.5)
 			s.setVisible(True)
-			s.淡化属性.setOpacity(0.01)
-			s.初入动画.start()
+			s.设置淡化脱离(False)
 			
 
 	def xsztbh(s,显示状态):
@@ -594,15 +579,11 @@ def 配置(p,配置l):
 		}
 	)
 	p.根纵_下横.addStretch(1)
-	天气=天气组件()
+	天气=天气组件(p)
 	天气.配置l=配置l
 	p.天气=天气
-	天气.p=p
+	#天气.p=p
 	p.根纵_上横_右纵_横.addWidget(天气)
-	p.添加淡化组件(天气.当前信息widget)
-	p.添加淡化组件(天气.每天信息widget,0.5)
-	p.添加淡化组件(天气.每分钟信息widget)
-	p.添加淡化组件(天气.每小时信息widget)
 	p.zjxsztbh.connect(天气.xsztbh)
 	p.ygx.connect(天气.ygx)
 	p.ks.connect(天气.ks)

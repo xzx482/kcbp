@@ -3,18 +3,10 @@ pip3 install pyqt6 pywin32 sxtwl -i https://mirrors.aliyun.com/pypi/simple/
 '''
 
 
-#使qt在没有环境变量时能使用
-import os
-from PyQt6.QtWidgets import __file__ as qt6_file
-dirname = os.path.dirname(qt6_file)
-plugin_path = os.path.join(dirname, 'Qt6', 'plugins', 'platforms')
-os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
 
 
 
 #防止多开
-from PyQt6.QtWidgets import QMessageBox,QApplication
-from PyQt6.QtCore import QParallelAnimationGroup, QSharedMemory
 '''
 import tracemalloc
 tracemalloc.start()
@@ -22,74 +14,72 @@ tracemalloc.start()
 
 if __name__ == "__main__":
 	import sys
-
+	'''
 	sed=QSharedMemory()
 	sed.setKey('kechengbiao_12')
 	if sed.attach()or not sed.create(1):
 		主=False
 	else:
 		主=True
-	'''
+	#'''
+	共享内存名称='kcb_12kp'
 	from multiprocessing import shared_memory
 	import array
 	#shmm={'名称':('开始','结束')}
-	共享大小=1024 ; 块大小=32
-	#shtypes=
+	共享大小=1
 	try:
 		主=True
-		shm=shared_memory.SharedMemory(name=shmn,create=True,size=共享大小)
+		共享内存=shared_memory.SharedMemory(name=共享内存名称,create=True,size=共享大小)
 		#=memoryview()
 	except FileExistsError:
 		主=False
-		shm=shared_memory.SharedMemory(name=shmn)
+		共享内存=shared_memory.SharedMemory(name=共享内存名称)
 	
 
-	内存区域=[i for i in range(0,共享大小,块大小)]
-	内迭=iter(内存区域)
-
-	共享内存={}
-	for i in ['主窗口','课程表','天气','壁纸']:
-		迭=next(内迭)
-		共享内存[i]=shm.buf[迭:迭+块大小]
+	内存区域=共享内存.buf
 	
 	#'''
 
-	if not 主:
-		app=QApplication(sys.argv)
-		msg_box=QMessageBox()
-		msg_box.setWindowTitle("已在运行")
-		msg_box.setText("已运行了一个实例, 不能运行多个")
-		msg_box.setIcon(QMessageBox.Icon.Information)
-		msg_box.addButton("确定",QMessageBox.ButtonRole.YesRole)
-		msg_box.exec()
+	if 主:
+		内存区域[0]=0
+	else:
+		内存区域[0]=1 # 设置值使主进程知晓需要打开窗口
 		sys.exit(0)
 
 #'''
 
-#os.putenv("QT_SCALE_FACTOR",str(round(1366/1920,2)))
-app=QApplication(sys.argv)
+
 
 '''
 由于qt 不支持 utf-8编码标识符, 与qt有关的标识符使用拼音首字母.如 信号(signal) 槽(slot) 定时器(timer) 的名称
 '''
+from inspect import isbuiltin
 import threading
-import _thread
 import time
-from PyQt6.QtCore import Qt,QTimer,QPropertyAnimation,QUrl,QEasingCurve,QAbstractAnimation,QThread,pyqtSignal,QObject
-from PyQt6.QtWidgets import QWidget,QLabel,QHBoxLayout,QVBoxLayout,QGridLayout,QGraphicsOpacityEffect,QSystemTrayIcon,QMenu,QWidgetAction
-from PyQt6.QtGui import QPainter, QPalette, QBrush, QPixmap,QFont,QIcon,QAction
-from PyQt6.QtMultimedia import QMediaPlayer
-from PyQt6.QtMultimediaWidgets import QVideoWidget
+from PyQt6.QtCore import Qt,QTimer,QPropertyAnimation,QEasingCurve,QAbstractAnimation,QThread,pyqtSignal
+from PyQt6.QtWidgets import QApplication,QWidget,QLabel,QHBoxLayout,QVBoxLayout,QGridLayout,QGraphicsOpacityEffect,QSystemTrayIcon,QMenu,QCheckBox, QPushButton
+from PyQt6.QtGui import QColor, QPalette,QFont,QIcon
 import win32gui,win32con
-from urllib import request
 import json
 from d import 准备桌面窗口,桌面窗口错误
-from 线程q import 新线程
 from flj import flj
-import 获取视频
 import os
 from 扩展 import 加载扩展
-from kcb_basic import 获取字体,缩放
+import ctypes
+import atexit
+
+
+#使qt在没有环境变量时能使用
+import os
+from PyQt6.QtWidgets import __file__ as qt6_file
+dirname = os.path.dirname(qt6_file)
+plugin_path = os.path.join(dirname, 'Qt6', 'plugins', 'platforms')
+os.environ['QT_QPA_PLATFORM_PLUGIN_PATH']=plugin_path
+
+app=QApplication(sys.argv)
+
+from kcb_basic import 获取字体,缩放,时间转文字
+
 
 扩展=加载扩展()
 
@@ -434,6 +424,16 @@ def ck(t,tl=None):
 
 	return k_3
 
+白色调色板=QPalette()
+白色调色板.setColor(QPalette.ColorRole.WindowText,QColor(255,255,255))
+
+绿色调色板=QPalette()
+绿色调色板.setColor(QPalette.ColorRole.WindowText,QColor(0,255,0))
+红色调色板=QPalette()
+红色调色板.setColor(QPalette.ColorRole.WindowText,QColor(255,0,0))
+黄色调色板=QPalette()
+黄色调色板.setColor(QPalette.ColorRole.WindowText,QColor(255,255,0))
+上课_颜色=[绿色调色板,黄色调色板,红色调色板]
 上课_={0:'已下课',1:'预备',2:'已上课'}
 星期_tm_wday=['一','二','三','四','五','六','日']
 
@@ -479,24 +479,6 @@ def dk(x_,ck_rt,仅课数=True):
 
 
 #print(始末时间_文本,始末时间6_文本)
-
-
-def 时间转文字(t):
-	天,时=divmod(int(t),86400)
-	时,分=divmod(时,3600)
-	分,秒=divmod(分,60)
-	s=''
-	if 天:
-		s+=str(天)+'天'
-	if 时:
-		s+=str(时)+'时'
-	if 分:
-		s+=str(分)+'分'
-	if 秒:
-		s+=str(秒)+'秒'
-	elif s:
-		s+='整'
-	return s
 
 
 
@@ -675,6 +657,7 @@ class 课程表类():
 			s.状态['上课']=上课
 			s.上课状态.setText(上课_[上课])
 			s.上课状态.setStyleSheet('color:'+('#00ff00','#ffff00','#ff0000')[上课])
+			#s.上课状态.setPalette(上课_颜色[上课])
 
 		if s.倒计时_ is not None:
 			m=s.倒计时_-秒
@@ -783,6 +766,58 @@ class 消息_主窗口(QWidget):
 		return 消息
 
 
+
+class 淡化动画(QPropertyAnimation):
+	def __init__(s,组件:QWidget,最淡值=0.01,最深值=1):
+		s.脱离=False
+		s.脱离记录=None # None, 未记录; False, 有记录且为反向; True, 有记录且为正向
+		s.淡化属性=QGraphicsOpacityEffect()
+		s.淡化属性.setOpacity(0)
+		组件.setGraphicsEffect(s.淡化属性)
+		super().__init__(s.淡化属性,b'opacity')
+		s.设置时间(5000)
+		s.设置最淡值(最淡值)
+		s.设置最深值(最深值)
+		s.setEasingCurve(QEasingCurve.Type.InCubic)
+
+	def 设置最淡值(s,最淡值):
+		s.setStartValue(最淡值)
+
+	def 设置最深值(s,最深值):
+		s.setEndValue(最深值)
+
+	def 设置方向(s,方向):
+		if 方向:
+			s.setDirection(QAbstractAnimation.Direction.Forward)
+		else:
+			s.setDirection(QAbstractAnimation.Direction.Backward)
+		
+	def 设置时间(s,时间):
+		s.setDuration(时间)
+	
+	def 设置脱离主窗口并行(s,b):
+		s.脱离=b
+		if (not b) and (s.脱离记录 is not None):#恢复 主窗口控制
+			s.主窗口控制(s.脱离记录)#恢复主窗口现在的状态
+		s.脱离记录=None
+
+	def 主窗口控制(s,方向):
+		s.主窗口发出控制(方向)
+		if s.脱离:
+			s.脱离记录=方向
+		else:
+			s.设置方向(方向)
+			s.start()
+	
+	def 主窗口发出控制(s,方向):
+		pass
+
+	def 刷新淡化值(s):
+		d=s.淡化属性
+		d.setOpacity(d.opacity()+0.01)
+		d.setOpacity(d.opacity()-0.01)
+
+
 class 主窗口_线程(QThread):
 	#课程时间秒 和 系统时间秒 都 每整秒发送一次, 但 课程时间和系统时间的误差不为整秒 时 将不同时发送
 	kcsjm=pyqtSignal(float)#课程时间秒
@@ -831,12 +866,30 @@ class 主窗口_线程(QThread):
 			s.sm_t=st
 
 
+user32=ctypes.windll.user32
+hotKeyId=0x0A00
+hotKeyWinid=None
+def 注册快捷键(winid):
+	#Ctrl+Alt+1
+	if user32.RegisterHotKey(winid,hotKeyId,win32con.MOD_ALT|win32con.MOD_CONTROL,0x31):
+		hotKeyWinid=winid
+		atexit.register(注销快捷键)
+	else:
+		print('注册快捷键失败')
+
+def 注销快捷键():
+	if hotKeyWinid:
+		if not user32.UnregisterHotKey(hotKeyWinid,hotKeyId):
+			print('注销快捷键失败')
+
 
 上课状态_对应_刷新=[0,0,1]
 
 class 主窗口(QWidget):
 	kcztbh=pyqtSignal(int)#课程状态变化
 	zjxsztbh=pyqtSignal(bool)#组件显示状态变化
+	zjdrwc=pyqtSignal()#组件淡入完成
+	zjdcwc=pyqtSignal()#组件淡出完成
 	ygx=pyqtSignal()#预更新. 在显示前 提前更新, 如网络请求等不能立即得到结果的操作. 需要在非主线程中更新.
 	ks=pyqtSignal()#开始
 
@@ -847,7 +900,12 @@ class 主窗口(QWidget):
 		s.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint)
 		#s.setWindowFlags(Qt.WindowStaysOnBottomHint|Qt.FramelessWindowHint|Qt.MSWindowsFixedSizeDialogHint)
 		s.time=0
-		s.setStyleSheet('*{color:#ffffff}')
+		s.setStyleSheet('color:#ffffff')
+
+
+		
+		s.调试=调试器(s)
+
 
 		s.setFont(获取字体(18,QFont.Weight.Bold))
 
@@ -906,7 +964,7 @@ class 主窗口(QWidget):
 		s.根纵_上横_右纵_横=QHBoxLayout()
 		s.根纵_上横_右纵.addLayout(s.根纵_上横_右纵_横)
 
-		s.淡化动画组=QParallelAnimationGroup()
+		s.淡化动画组=[]
 		s.淡化动画值=[]
 
 
@@ -966,32 +1024,21 @@ class 主窗口(QWidget):
 
 
 	def 添加淡化组件(s,组件:QWidget,最淡值=0.01,最深值=1):
-		淡化属性=QGraphicsOpacityEffect()
-		淡化属性.setOpacity(0)
-		#淡化属性.setOpacity(淡化属性.opacity())
-		组件.setGraphicsEffect(淡化属性)
-		淡化动画=QPropertyAnimation(淡化属性,b'opacity')
-		淡化动画.setDuration(5000)
-		淡化动画.setStartValue(最淡值)
-		淡化动画.setEndValue(最深值)
-		淡化动画.setEasingCurve(QEasingCurve.Type.InCubic)
-		s.淡化动画值.append(淡化属性)
-		s.淡化动画组.addAnimation(淡化动画)
+		d=淡化动画(组件,最淡值,最深值)
+		s.淡化动画组.append(d)
+		return d
 
 	def 刷新淡化值(s):#为了解决 setGraphicsEffect(None) 时显示异常的问题
-		for i in s.淡化动画值:
-			i:QGraphicsOpacityEffect
-			i.setOpacity(i.opacity()+0.01)
-			i.setOpacity(i.opacity()-0.01)
+		for i in s.淡化动画组:
+			i:淡化动画
+			i.刷新淡化值()
 
 	def dhdh(s,*a):
 		s.淡化动画(*a)
 	def 淡化动画(s,方向):
-		if 方向:
-			s.淡化动画组.setDirection(QAbstractAnimation.Direction.Forward)
-		else:
-			s.淡化动画组.setDirection(QAbstractAnimation.Direction.Backward)
-		s.淡化动画组.start()
+		for i in s.淡化动画组:
+			i:淡化动画
+			i.主窗口控制(方向)
 
 
 	def gxkc(s):
@@ -1060,14 +1107,16 @@ class 主窗口(QWidget):
 	def ztjc(s):
 		s.状态检查()
 	def 状态检查(s):
-		'''
-		if s.time<20:
-			s.time+=1
-			if s.time==5:
-				s.背景视频.入()
-			if s.time==6:
-				s.背景视频.出()
-		'''
+		if 内存区域[0]==1:
+			if s.调试.isVisible():#窗口已显示, 但被最小化了, 将窗口激活
+				s.调试.activateWindow()
+				s.调试.setWindowState((s.调试.windowState() & ~Qt.WindowState.WindowMinimized) | Qt.WindowState.WindowActive)
+				s.调试.raise_()
+			else:#窗口未显示, 将窗口显示
+				s.调试.show()
+			内存区域[0]=0
+
+
 		s.对齐桌面()
 		a=[]
 		win32gui.EnumChildWindows(s.winid_桌面,lambda hwnd,param:param.append(hwnd),a)
@@ -1078,6 +1127,19 @@ class 主窗口(QWidget):
 			s.setVisible(False)
 			s.setVisible(True)
 
+	def nativeEvent(s,eventType,msg_):
+		if str(eventType,encoding='utf-8')=='windows_generic_MSG':
+			#将 sip.voidptr 转为 ctypes.wintypes.MSG
+			msg=ctypes.wintypes.MSG.from_address(msg_.__int__())
+			if msg.message==win32con.WM_HOTKEY:
+				if msg.hWnd==s.winid_s:
+					if msg.wParam==hotKeyId:
+						app.quit()
+						return True,0
+
+		return False,0
+			
+
 
 	def 开始(s):
 		s.嵌入()
@@ -1086,10 +1148,8 @@ class 主窗口(QWidget):
 		s.主消息.timer.start(1000)
 		s.课程表.开始()
 		s.show()
-		s.adjustSize()
-		s.adjustSize()
 		s.初入动画.start()
-
+		注册快捷键(s.winid_s)
 		s.线程.start()
 
 		s.ks.emit()
@@ -1114,7 +1174,90 @@ class 托盘图标(QSystemTrayIcon):
 		s.setVisible(False)
 		app.exit()
 
-			
+
+class 调试器(QWidget):
+	def __init__(s,p:主窗口=None):
+		super().__init__()
+		s.p=p
+		s.p_oldStyle=s.p.styleSheet()
+		s.setWindowTitle('kcb_调试')
+		s.根纵=QVBoxLayout()
+		s.setLayout(s.根纵)
+
+
+		标题1=QLabel('信号')
+		s.根纵.addWidget(标题1)
+		横1=QHBoxLayout()
+		s.根纵.addLayout(横1)
+
+		显示状态=QCheckBox('显示状态')
+		s.p.zjxsztbh.connect(显示状态.setChecked)
+		显示状态.stateChanged.connect(s.p.zjxsztbh.emit)
+		横1.addWidget(显示状态)
+
+		预更新=QPushButton('预更新')
+		预更新.clicked.connect(s.p.ygx.emit)
+		横1.addWidget(预更新)
+
+
+		标题2=QLabel('课程状态')
+		s.根纵.addWidget(标题2)
+		横2=QHBoxLayout()
+		s.根纵.addLayout(横2)
+
+		下课=QPushButton('下课')
+		下课.clicked.connect(lambda:s.p.kcztbh.emit(0))
+		横2.addWidget(下课)
+
+		预备=QPushButton('预备')
+		预备.clicked.connect(lambda:s.p.kcztbh.emit(1))
+		横2.addWidget(预备)
+
+		上课=QPushButton('上课')
+		上课.clicked.connect(lambda:s.p.kcztbh.emit(2))
+		横2.addWidget(上课)
+
+
+		标题3=QLabel('定时器')
+		s.根纵.addWidget(标题3)
+		横3=QHBoxLayout()
+		s.根纵.addLayout(横3)
+
+		分=QPushButton('分')
+		分.clicked.connect(lambda:s.cfdsq(s.p.线程.xtsjf.emit))
+		横3.addWidget(分)
+
+		时=QPushButton('时')
+		时.clicked.connect(lambda:s.cfdsq(s.p.线程.xtsjs.emit))
+		横3.addWidget(时)
+
+		天=QPushButton('天')
+		天.clicked.connect(lambda:s.cfdsq(s.p.线程.xtsjt.emit))
+		横3.addWidget(天)
+
+		标题4=QLabel('样式')
+		s.根纵.addWidget(标题4)
+		横4=QHBoxLayout()
+		s.根纵.addLayout(横4)
+
+		显示边界=QCheckBox('显示边界')
+		显示边界.clicked.connect(s.setBorder)
+		横4.addWidget(显示边界)
+
+		退出=QPushButton('退出')
+		退出.clicked.connect(app.quit)
+		s.根纵.addWidget(退出)
+
+	def cfdsq(s,emit):#触发定时器
+		tl=time.localtime()
+		emit(tl)
+
+	def setBorder(s,b):
+		if b:
+			s.p.setStyleSheet('border:1px solid #ffffff;'+s.p_oldStyle)
+		else:
+			s.p.setStyleSheet(s.p_oldStyle)
+	
 
 if __name__ == "__main__":
 
@@ -1152,25 +1295,9 @@ if __name__ == "__main__":
 	#t_6=配置l['周六时间']
 
 	w=主窗口()
-	#w.setStyleSheet('border:1px solid #ffffff;')
 
 
 	#t=托盘图标(w)
-
-
-	'''
-	ti=QSystemTrayIcon(w)
-
-	tim=QMenu()
-	#tim.addAction(QAction('&退出(Exit)',ti,triggered=lambda:(ti.setVisible(False),w.背景视频.出(),新线程(4,app.quit))))
-	#tim.addAction(QAction('&退出(Exit)',ti,triggered=lambda:(w.win.setGraphicsEffect(w.淡化属性_初入),w.初入动画.setDirection(QAbstractAnimation.Direction.Backward),w.初入动画.finished.connect(app.quit),w.初入动画.start(),新线程(2,app.quit))))
-	tim.addAction(QAction('退出',ti,triggered=app.quit))
-	ti.setContextMenu(tim)
-	icon=QIcon('icon.png')
-	#icon.addPixmap(QPixmap.loadFromData('iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABhWlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV9TS0UqDnYQcchQnSyIFhFcpIpFsFDaCq06mFz6BU0akhQXR8G14ODHYtXBxVlXB1dBEPwAcXRyUnSREv+XFFrEeHDcj3f3HnfvAKFZZarZMwGommWkE3Exl18Vg68Q4EcAs4hJzNSTmcUsPMfXPXx8vYvyLO9zf45+pWAywCcSzzHdsIg3iKc3LZ3zPnGYlSWF+Jx43KALEj9yXXb5jXPJYYFnho1sep44TCyWuljuYlY2VOIYcURRNcoXci4rnLc4q9U6a9+TvzBU0FYyXKc5ggSWkEQKImTUUUEVFqK0aqSYSNN+3MM/7PhT5JLJVQEjxwJqUCE5fvA/+N2tWZyadJNCcSDwYtsfo0BwF2g1bPv72LZbJ4D/GbjSOv5aE5j5JL3R0SJHwMA2cHHd0eQ94HIHGHrSJUNyJD9NoVgE3s/om/LA4C3Qt+b21t7H6QOQpa6Wb4CDQ2CsRNnrHu/u7e7t3zPt/n4AvP9yxa0hWoIAAAAGYktHRAAAAAAAAPlDu38AAAAJcEhZcwAALiMAAC4jAXilP3YAAAAHdElNRQfmAgMGDzjPq3ZSAAAAGXRFWHRDb21tZW50AENyZWF0ZWQgd2l0aCBHSU1QV4EOFwAAAlZJREFUeNrtmj1rVFEQhp/R2GiUSPxIRC5qoUEETdIIBhEstLIOFloYO3+E+DfcSkHr7QKC1UIC4kastBFcgq4f0WhwBZvXZm44WXazIVrkcOeFZefOuffuzsPcmTnLQigUCoVCoVComrJ161FblYr81phtdFQJQBLrrtxjkTQradjtYUmzbk9JuilparPrh3ZYMAIwM+uyX7o9LWkOeNjj2tR+6mYHeANMZwHAzKyXDdxN/DWg1hX8XI971bbymUM5pLmZNQes17Z77+xrwL8qAASAimuntcEJ4Cqw7MWt7r5UZ5LiV5c0Dpwzs2eSJn2pAFpAYWb1nLpAC6gDv7t8qb70gXfH+z7AbmAEaGSVAWbWSYJY90ka7RP0KDAGfPXXhA8+BfDazFaymwOSND4J3AA+JMungcc9sqZU298bwIxnU3aD0FvgGnAbaAJPgG++NgN8Ai4Bz4Fyzt/rmVBCGAFO5ToJnvcvf98DPOv+Y8A94AXwA7gCvANOAJ+BV8Bqmg2SJs1sKSsAZrYg6QjQMrOlrud/wTPgT9oJknpQdoDCM6Kd617gKPBA0qIfHwS+A4e6zjvsu8D9wJr71oBF4FfyWGQHYB/wMTl+DxzwNE+1nMA57r6LwAXvCp2cd4N7gJ99ZoEy1S97oOPJOfP++Kz4bJAlgLKgtZJgu9XYQp9vDiqEOxXAqg81m6mQVAw457q/5wXAq///uNV8tjVgUP+O7XAACAABIAAEgAAQAAJAAAgAASAABIAAEAACQAAIANvSxt8Eq/Z32VAoFAqFQqFQhfUX3qDIplPG4R4AAAAASUVORK5CYII='))
-	ti.setIcon(icon)
-	ti.show()
-	#'''
 
 	w.开始()
 	sys.exit(app.exec())
