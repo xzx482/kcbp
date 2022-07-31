@@ -2,10 +2,10 @@
 import time
 from PyQt6.QtGui import QFont,QFontDatabase
 
-缩放值=1366/1920
+缩放值=1#1366/1920
 
-fontId=QFontDatabase.addApplicationFont("./HarmonyOS_Sans_Medium.ttf")
-font=QFontDatabase.applicationFontFamilies(fontId)[0]
+#fontId=QFontDatabase.addApplicationFont("./HarmonyOS_Sans_Medium.ttf")
+#font=QFontDatabase.applicationFontFamilies(fontId)[0]
 
 def 缩放f(值):
 	return 值*缩放值

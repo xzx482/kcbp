@@ -125,6 +125,7 @@ class 单实时公交组件(单发车时间组件):
 		s.信息ls:list[QLabel]=[]
 		for i in range(单实时公交_列数):
 			i_=QLabel()
+			i_.setFont(获取字体(16))
 			i_.setTextFormat(Qt.TextFormat.PlainText)
 			s.下横.addWidget(i_)
 			s.信息ls.append(i_)
@@ -240,9 +241,10 @@ class 实时公交组件(QWidget):
 		s.上横.setContentsMargins(0,0,0,0)
 		s.上横.setSpacing(0)
 		q1=QLabel('公交  更新于')
-		q1.setFont(获取字体(14))
+		q1.setFont(获取字体(13))
 		s.上横.addWidget(q1)
 		s.更新时间=QLabel()
+		s.更新时间.setFont(获取字体(15))
 		s.更新时间.setText('很久很久以前')
 		s.更新时间_文本=''
 		s.上横.addWidget(s.更新时间)
