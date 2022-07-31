@@ -38,6 +38,6 @@ class tl_:
         return "  高中英语听力宝典\n  提升训练下\n  模拟试题 "+str(s.n)
 
     def 文件名(s):
-        #return r"D:\Desktop\英语\2022版听力宝典 提升训练下 成盘\2022版听力宝典 提升训练下 mp3 标准\0"+str(s.n+14)+" 2022版高中英语听力宝典 提升训练下  模拟试题 "+str(s.n)+".mp3"
-        return r"D:\Downloads\Paladin.mp3"
+        return r"D:\Desktop\英语\2022版听力宝典 提升训练下 成盘\2022版听力宝典 提升训练下 mp3 标准\0"+str(s.n+14)+" 2022版高中英语听力宝典 提升训练下  模拟试题 "+str(s.n)+".mp3"
+        #return r"D:\Downloads\Paladin.mp3"
 
