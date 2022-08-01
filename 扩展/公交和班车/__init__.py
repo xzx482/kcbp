@@ -47,13 +47,14 @@ class 公交查询_线程(QThread):
 
 	def 获取并发送(s):
 		更新时间_文本=time.strftime('%H:%M:%S')
-		print('获取公交'+更新时间_文本)
+		print('gj:i;获取公交'+更新时间_文本)
 		s.p.更新时间_文本=更新时间_文本
 		车辆信息=s.正常查询器.获取车辆信息()
 		s.gxxx.emit(车辆信息)
 
 	def run(s):
 		s.获取线路信息()
+		print('gj:i;公交已就绪')
 		s.循环()
 		print('gj:e;线程已终止')
 	

@@ -131,6 +131,7 @@ class 日历组件(QWidget):
 				单日期.设置内容(左上,右上,str(日),日期_.简日())
 				if 今天==日期_.公历_数字:#当前的日期外加边框
 					单日期.日期.setStyleSheet('border:2px solid #ffffffff')
+					单日期.左上中.setVisible(False)
 				else:
 					单日期.日期.setStyleSheet('border:2px solid #00ffffff')
 					if 今天>日期_.公历_数字:#之前的日期变灰
