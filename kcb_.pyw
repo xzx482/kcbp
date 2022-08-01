@@ -1,5 +1,5 @@
 '''
-pip3 install pyqt6 pywin32 sxtwl -i https://mirrors.aliyun.com/pypi/simple/
+pip3 install pyqt6 pywin32 selenium vlc winsdk sxtwl -i https://pypi.tuna.tsinghua.edu.cn/simple
 '''
 
 
@@ -65,7 +65,7 @@ from d import 准备桌面窗口,桌面窗口错误
 from flj import flj
 import os
 from 扩展 import 加载扩展
-import ctypes
+from ctypes import windll,wintypes
 import atexit
 
 
@@ -890,7 +890,7 @@ class 主窗口_线程(QThread):
 			s.sm_t=st
 
 
-user32=ctypes.windll.user32
+user32=windll.user32
 hotKeyId=0x0A00
 hotKeyWinid=None
 def 注册快捷键(winid):
@@ -1154,7 +1154,7 @@ class 主窗口(QWidget):
 	def nativeEvent(s,eventType,msg_):
 		if str(eventType,encoding='utf-8')=='windows_generic_MSG':
 			#将 sip.voidptr 转为 ctypes.wintypes.MSG
-			msg=ctypes.wintypes.MSG.from_address(msg_.__int__())
+			msg=wintypes.MSG.from_address(msg_.__int__())
 			if msg.message==win32con.WM_HOTKEY:
 				if msg.hWnd==s.winid_s:
 					if msg.wParam==hotKeyId:
