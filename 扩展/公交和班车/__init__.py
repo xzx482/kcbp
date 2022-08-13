@@ -122,7 +122,7 @@ class 单实时公交组件(单发车时间组件):
 		s.下横=QHBoxLayout()
 		s.下横.setSpacing(缩放(10))
 		s.根纵.addLayout(s.下横)
-		#s.下横.addSpacing(缩放(20))
+		s.下横.addSpacing(缩放(20))
 		s.信息ls:list[QLabel]=[]
 		for i in range(单实时公交_列数):
 			i_=QLabel()
@@ -372,6 +372,8 @@ class 实时公交组件(QWidget):
 		if s.配置l['公交和班车']['公交']['启用']:
 			s.获取t.start()
 			s.预更新=False
+		else:
+			s.setVisible(False)
 
 
 #

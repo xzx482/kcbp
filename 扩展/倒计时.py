@@ -14,12 +14,12 @@ class 单倒计时组件(QWidget):
         s.根横.setContentsMargins(0,0,0,0)
         s.根横.addSpacing(缩放(10))
         s.名称l=QLabel()
-        s.名称l.setFont(获取字体(16))
+        s.名称l.setFont(获取字体(20))
         s.名称l.setText(s.名称)
         s.根横.addWidget(s.名称l)
 
         s.倒计时l=QLabel()
-        s.倒计时l.setFont(获取字体(16))
+        s.倒计时l.setFont(获取字体(20))
         s.倒计时l.setText('好多天+∞时+∞分+∞秒')
         s.根横.addWidget(s.倒计时l)
         
