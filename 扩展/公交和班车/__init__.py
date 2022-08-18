@@ -31,6 +31,7 @@ class 公交查询_线程(QThread):
 		super().__init__()
 
 	def 获取线路信息(s):
+		print('gj:i;获取线路信息')
 		i=None # 先声明, 否则可能for循环后i被清理
 		for i in s.正常查询器.获取线路信息():
 			pass
@@ -44,6 +45,7 @@ class 公交查询_线程(QThread):
 			return
 		s.jfcxl.emit(i)
 		s.jx.emit()
+		s.需获取线路=False
 
 	def 获取并发送(s):
 		更新时间_文本=time.strftime('%H:%M:%S')
@@ -65,13 +67,13 @@ class 公交查询_线程(QThread):
 
 			if s.需获取线路: # 一般在新的一天时触发
 				s.获取线路信息()
-				s.需获取线路=False
 
 			if s.p.预更新 or s.p.显示状态:
 				if s.p.预更新:
+					print('gj:i;预更新')
 					s.p.预更新=False
 				s.获取并发送()
-				time.sleep(20)
+				time.sleep(15)
 			else:
 				time.sleep(10)
 
