@@ -24,6 +24,7 @@ option.add_experimental_option("excludeSwitches",['enable-automation'])
 def main(url):
     driver=webdriver.Chrome(chrome_options=option,desired_capabilities=None)
     driver.implicitly_wait(20)
+    driver.set_window_size(1280,700)
     driver.get(url)
     vpl=None
     while not vpl:
@@ -43,9 +44,9 @@ def main(url):
 
     var e=document.createEvent("MouseEvents");
     e.initEvent("click",true,true);
-    document.getElementById('myFlash_player').childNodes[10].childNodes[7].childNodes[2].childNodes[0].childNodes[0].dispatchEvent(e);//超清 画质 按钮
+    document.getElementsByClassName('vjs-playback-quality')[0].childNodes[2].childNodes[0].childNodes[0].dispatchEvent(e);//超清 画质 按钮
     await sleep(100);
-    va=document.getElementById("myFlash_player_html5_api");
+    va=document.getElementById("_video_player_html5_api");
     var d=va;
 
     d.onended=()=>{
@@ -68,7 +69,7 @@ def main(url):
         va.oncanplaythrough=null;
         va.playbackRate=1.6;
         await sleep(2000);
-        va.currentTime=24;
+        va.currentTime=18;
     }
     aex=false;
     window.onbeforeunload=(e)=>{let m='?';e.returnValue=m;aex=true;return m;}

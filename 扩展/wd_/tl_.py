@@ -26,7 +26,7 @@ class tl_:
         return 获取天(time.time())>获取天(s.f['tl']['t'])
 
     def 是否存在(s):
-        return 0<s.n<=18
+        return 0<s.n<=44
 
     def 标题(s):
         return "高中英语听力宝典 提升训练下 模拟试题 "+str(s.n)+'\n第'+str(18+2*s.n)+'页'
