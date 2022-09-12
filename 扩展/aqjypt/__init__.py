@@ -38,9 +38,13 @@ class 作业获取t(QThread):
 class 主():
     def __init__(s,p,UserID):
         s.p=p
+        p.aqjypt=s
         s.消息=p.主消息.添加消息(1)
         s.获取t=作业获取t(s,UserID)
         s.获取t.gx.connect(s.gx)
+        p.ks.connect(s.ks)
+    
+    def ks(s):
         s.获取t.start()
         #s.获取t.run()
 
