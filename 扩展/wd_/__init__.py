@@ -198,14 +198,14 @@ class 通知0_:
 		通知器.清除通知()
 		s.显示()
 
-	def 循环(s):
+	def 循环(s,计时=20):
 		通知器.清除通知()
 		s.显示()
 		s.状态=False
 		已锁屏_旧=None
 		i=0
 		重显计数=0
-		计时=20
+		#计时=20
 		while i<计时:
 			if s.需退出:
 				raise 退出
@@ -395,11 +395,16 @@ class 主(QThread):
 		player.set_media(audioMedia)
 		通知0=通知0_(s.tl.标题(),锁屏时可播放=True)
 		通知1=通知1_(player,audioMedia,s.消息)
-		s.消息.设置(s.tl.标题_消息(),s.tl.内容_消息(),True,time.time()-1,time.time()+20*60)
+		当前时间=time.time()
+		s.消息.设置(s.tl.标题_消息(),s.tl.内容_消息(),True,当前时间-1,当前时间+20*60)
+		当前秒=获取秒(time.localtime())
+		计时=(18*60+30)*60-当前秒
+		if 计时<20:
+			计时=20
 		try:
-			通知0.循环()
+			通知0.循环(计时)
 			通知1.循环()
-		except 退出:
+		finally:
 			s.消息.设置(显示=False,结束时间=1)
 			通知器.清除通知()
 	
@@ -407,6 +412,7 @@ class 主(QThread):
 	def bfxwzk(s):
 		x=获取新闻周刊()
 		if time.time()-x['focus_date']/1000>60*60*24*7:
+			print('wd_.xwzk:i;没有新的新闻周刊')
 			return
 		图片路径=os.getenv('temp')+'\\'+'xwzk.jpg'
 		request.urlretrieve(x['image'],图片路径)
