@@ -14,7 +14,7 @@ class 作业获取t(QThread):
         s.parent=parent
         s.UserID=UserID
 
-    def run(s):
+    def run_(s):
         y.登录(UserID=s.UserID)
 
         while True:
@@ -33,7 +33,13 @@ class 作业获取t(QThread):
             else:
                 print("aqjypt.无未完成")
                 s.gx.emit([])
-            s.sleep(60*60*5)
+            s.sleep(60*60)
+
+    def run(s):
+        try:
+            s.run_()
+        except Exception as e:
+            print("aqjypt.线程已中止: "+str(e))
 
 class 主():
     def __init__(s,p,UserID):
