@@ -285,7 +285,8 @@ class 实时公交组件(QWidget):
 		if 上课状态==2:#已上课, 视为这节课已下课
 			已上课数=已上课数+1
 		
-		当前秒=获取秒(time.localtime())
+		时差=s.配置l['课程表']['时差']
+		当前秒=获取秒(time.localtime(time.time()+时差))
 		if 已上课数>=len(一天课程):#课程已经全部结束
 			if 当前秒<(18*60)*60:
 				return True
