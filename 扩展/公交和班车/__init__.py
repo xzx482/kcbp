@@ -150,6 +150,12 @@ class 单实时公交组件(单发车时间组件):
 
 	def 设置内容(s,车辆信息_:list[gj.gj_basic.车辆信息]):
 		
+		if not 车辆信息_:
+			s.信息ls[0].setText('')
+			s.信息ls[1].setText('')
+			s.信息ls[2].setText('获取数据失败')
+			return
+
 		车辆信息_.sort(key=lambda x:x.站点索引,reverse=True)
 
 		站点信息=s.目标站点信息 # (经度,纬度,索引)
