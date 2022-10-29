@@ -1163,9 +1163,19 @@ class 调试器(QWidget):
 		显示边界.clicked.connect(s.setBorder)
 		横4.addWidget(显示边界)
 
+		横5=QHBoxLayout()
+		s.根纵.addLayout(横5)
+
 		退出=QPushButton('退出')
 		退出.clicked.connect(app.quit)
-		s.根纵.addWidget(退出)
+		横5.addWidget(退出)
+
+		关闭=QPushButton('关闭')
+		关闭.clicked.connect(s.hide)
+		横5.addWidget(关闭)
+
+
+		
 
 	def cfdsq(s,emit):#触发定时器
 		tl=time.localtime()
