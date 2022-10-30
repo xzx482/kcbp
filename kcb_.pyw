@@ -56,9 +56,10 @@ if __name__ == "__main__":
 from inspect import isbuiltin
 import threading
 import time
+from PyQt6 import QtGui
 from PyQt6.QtCore import Qt,QTimer,QPropertyAnimation,QEasingCurve,QAbstractAnimation,QThread,pyqtSignal
 from PyQt6.QtWidgets import QApplication,QWidget,QLabel,QHBoxLayout,QVBoxLayout,QGridLayout,QGraphicsOpacityEffect,QSystemTrayIcon,QMenu,QCheckBox, QPushButton
-from PyQt6.QtGui import QColor, QPalette,QFont,QIcon
+from PyQt6.QtGui import QColor, QPainter, QPalette,QFont,QIcon
 import win32gui,win32con
 import json
 from d import 准备桌面窗口,桌面窗口错误
@@ -822,9 +823,15 @@ class 主窗口(QWidget):
 		s.setStyleSheet('color:#ffffff')
 
 
+		s.背景色=QColor(0,0,0,0)
+		s.刷新背景色_f=None
+		s.在桌面中=True
+
 		
 		s.调试=调试器(s)
 
+		s.顶窗口=顶窗口(s)
+		s.底窗口=底窗口(s)
 
 		s.setFont(获取字体(18,QFont.Weight.Bold))
 
@@ -839,11 +846,12 @@ class 主窗口(QWidget):
 		s.上课状态=None
 		s.下课预更新=None
 
-		s.嵌入_继续=None
+		s.ks.connect(s.ks_end)
 
 		s.状态检查定时器=QTimer(s)
-		s.状态检查定时器.timeout.connect(s.ztjc)
+		s.状态检查定时器.timeout.connect(s.底窗口.ztjc)
 		s.状态检查定时器.setInterval(1000)
+
 
 		s.根纵=QVBoxLayout()
 		s.根纵.setSpacing(0)
@@ -940,7 +948,14 @@ class 主窗口(QWidget):
 		s.初入动画.setEasingCurve(QEasingCurve.Type.InCubic)
 		s.初入动画.finished.connect(lambda:(s.setGraphicsEffect(None),s.刷新淡化值()))
 
-
+	def paintEvent(s,e:QtGui.QPaintEvent)->None:
+		if s.刷新背景色_f is not None:
+			p=QPainter(s)
+			p.setPen(Qt.PenStyle.NoPen)
+			p.setBrush(s.背景色)
+			p.drawRect(0,0,s.宽,s.高)
+			s.刷新背景色_f()
+		return super().paintEvent(e)
 
 	def 添加淡化组件(s,组件:QWidget,最淡值=0.01,最深值=1):
 		d=淡化动画(组件,最淡值,最深值)
@@ -993,12 +1008,86 @@ class 主窗口(QWidget):
 				s.下课预更新=False
 				s.ygx.emit()
 
+
+	def 嵌入后刷新(s):
+			s.update()
+			s.setVisible(False)
+			s.setVisible(True)
+
+
+	def 开始(s):
+		#s.move(0,0)
+		s.底窗口.嵌入()
+		#s.底窗口.move(0,0)
+		#win32gui.SetParent(s.winid_s,s.底窗口.winid_s)
+		
+		s.底窗口.对齐桌面()
+		
+		s.状态检查定时器.start()
+		s.主消息.timer.start(1000)
+		s.课程表.开始()
+		s.底窗口.show()
+		s.初入动画.start()
+		注册快捷键(s.底窗口.winid_s)
+		s.线程.start()
+		#s.setGeometry(0,0,s.宽,s.高)
+		s.ks.emit()
+
+
+
+	def ks_end(s):
+		win32gui.SetParent(s.winid_s,s.底窗口.winid_s)
+		s.show()
+		#s.嵌入后刷新()
+		#s.setGeometry(0,0,s.宽,s.高)
+		...
+
+
+class 底窗口(QWidget):
+	'''
+	底窗口在壁纸和桌面图标之间
+	其功能为容纳主窗口、维持其位置和检查桌面大小并设置其他窗口大小
+	'''
+	def __init__(s,主窗口:主窗口):
+		s.主窗口=主窗口
+		s.调试=s.主窗口.调试
+
+		s.宽=0
+		s.高=0
+
+
+		s.复制画面=False
+		
+		s.嵌入_继续=None
+		super().__init__()
+		s.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)#透明背景
+		s.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint)
+		#s.setWindowFlags(Qt.WindowStaysOnBottomHint|Qt.FramelessWindowHint|Qt.MSWindowsFixedSizeDialogHint)
+		s.winid_s=int(s.winId())
+		s.move(0,0)
+		s.主窗口.move(0,0)
+	
+	def paintEvent(s,e:QtGui.QPaintEvent)->None:
+		if s.复制画面:
+			painter=QPainter(s)
+			painter.drawPixmap(0,0,s.主窗口.grab())
+		
 	def 对齐桌面(s):
 		d=QApplication.primaryScreen().geometry()
 		宽,高=d.width(),d.height()
-		if s.宽==宽 and s.高==高:
-			return
-		s.setGeometry(0,0,宽,高)
+		if not (s.宽==宽 and s.高==高):
+			s.setGeometry(0,0,宽,高)
+			s.主窗口.顶窗口.setGeometry(0,0,宽,高)
+			s.主窗口.setGeometry(0,0,宽,高)
+			s.宽=宽
+			s.高=高
+
+			
+			s.主窗口.宽=宽
+			s.主窗口.高=高
+		s.move(0,0)
+		s.主窗口.move(0,0)
+			
 
 
 	def 嵌入(s):
@@ -1042,9 +1131,7 @@ class 主窗口(QWidget):
 		if not s.winid_s in a:
 			print('重新嵌入')
 			s.嵌入()
-			s.update()
-			s.setVisible(False)
-			s.setVisible(True)
+			s.主窗口.嵌入后刷新()
 
 	def nativeEvent(s,eventType,msg_):
 		if str(eventType,encoding='utf-8')=='windows_generic_MSG':
@@ -1059,19 +1146,102 @@ class 主窗口(QWidget):
 		return False,0
 			
 
+class 顶窗口(QWidget):
+	def __init__(s,主窗口:主窗口):
+		super().__init__()
+		#s.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)#透明背景
+		s.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint)
 
-	def 开始(s):
-		s.嵌入()
-		s.对齐桌面()
-		s.状态检查定时器.start()
-		s.主消息.timer.start(1000)
-		s.课程表.开始()
+		s.调色板=QPalette()
+		s.调色板.setColor(QPalette.ColorRole.Window,QColor(0,0,0,255))
+		s.setPalette(s.调色板)
+		s.setWindowOpacity(0.01)
+		s.复制画面=False
+
+		s.动画开始时间=0
+		s.动画持续时间=2
+
+		s.主窗口=主窗口
+
+	def 缓动(s,p):
+		p*=2
+		if p<1:
+			return 0.5 * p ** 3
+		else:
+			return 0.5 * ((p - 2)** 3 + 2)
+
+	def 移到顶层_动画(s):
+		背景色=s.主窗口.背景色
+		#a=背景色.alpha()
+		t=time.time()
+		t_=(t-s.动画开始时间)/s.动画持续时间
+		if t_<=1:
+			b=s.缓动(t_)
+			s.setWindowOpacity(b)
+			背景色.setAlpha(int(b*255))
+			s.主窗口.update()
+			s.update()
+			
+		else:
+			s.主窗口.刷新背景色_f=None
+			背景色.setAlpha(255)
+			s.setWindowOpacity(1)
+			win32gui.SetParent(s.主窗口.winid_s,int(s.winId()))
+			s.主窗口.嵌入后刷新()
+			s.复制画面=False
+			s.主窗口.底窗口.复制画面=False
+
+			
+
+	def 移到顶层(s):
 		s.show()
-		s.初入动画.start()
-		注册快捷键(s.winid_s)
-		s.线程.start()
+		s.setGeometry(0,0,s.主窗口.宽,s.主窗口.高)
+		s.动画开始时间=time.time()
+		s.主窗口.刷新背景色_f=s.移到顶层_动画
+		s.复制画面=True
+		s.移到顶层_动画()
+	
 
-		s.ks.emit()
+	def 移到底层_动画(s):
+		背景色=s.主窗口.背景色
+		#a=背景色.alpha()
+		t=time.time()
+		t_=(t-s.动画开始时间)/s.动画持续时间
+		if t_<=1:
+			b=1-s.缓动(t_)
+			s.setWindowOpacity(b)
+			背景色.setAlpha(int(b*255))
+			s.主窗口.update()
+			s.主窗口.底窗口.update()
+			
+		else:
+			s.主窗口.刷新背景色_f=None
+			背景色.setAlpha(0)
+			s.setWindowOpacity(0.01)
+			win32gui.SetParent(s.主窗口.winid_s,s.主窗口.底窗口.winid_s)
+			s.主窗口.嵌入后刷新()
+			s.复制画面=False
+			s.主窗口.底窗口.复制画面=False
+			s.主窗口.底窗口.update()
+			s.close()
+
+
+	def 移到底层(s):
+		s.动画开始时间=time.time()
+		s.主窗口.刷新背景色_f=s.移到底层_动画
+		s.主窗口.底窗口.复制画面=True
+		s.update()
+		#s.主窗口.嵌入()
+		s.主窗口.嵌入后刷新()
+		s.移到底层_动画()
+
+
+	def paintEvent(s,e:QtGui.QPaintEvent)->None:
+		if s.复制画面:
+			painter=QPainter(s)
+			painter.drawPixmap(0,0,s.主窗口.grab())
+		#return super().paintEvent(e)
+
 
 class 托盘图标(QSystemTrayIcon):
 	def __init__(s,parent:主窗口=None):
@@ -1166,14 +1336,26 @@ class 调试器(QWidget):
 		横5=QHBoxLayout()
 		s.根纵.addLayout(横5)
 
+		置顶=QPushButton('置顶')
+		置顶.clicked.connect(lambda:s.p.顶窗口.移到顶层())
+		横5.addWidget(置顶)
+
+		置底=QPushButton('置底')
+		置底.clicked.connect(lambda:s.p.顶窗口.移到底层())
+		横5.addWidget(置底)
+
+		横0=QHBoxLayout()
+		s.根纵.addLayout(横0)
+
 		退出=QPushButton('退出')
 		退出.clicked.connect(app.quit)
-		横5.addWidget(退出)
+		横0.addWidget(退出)
 
 		关闭=QPushButton('关闭')
 		关闭.clicked.connect(s.hide)
-		横5.addWidget(关闭)
+		横0.addWidget(关闭)
 
+		#s.show()
 
 		
 
