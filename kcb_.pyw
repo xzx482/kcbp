@@ -824,7 +824,6 @@ class 主窗口(QWidget):
 
 
 		s.背景色=QColor(0,0,0,0)
-		s.刷新背景色_f=None
 		s.在桌面中=True
 
 		
@@ -948,14 +947,6 @@ class 主窗口(QWidget):
 		s.初入动画.setEasingCurve(QEasingCurve.Type.InCubic)
 		s.初入动画.finished.connect(lambda:(s.setGraphicsEffect(None),s.刷新淡化值()))
 
-	def paintEvent(s,e:QtGui.QPaintEvent)->None:
-		if s.刷新背景色_f is not None:
-			p=QPainter(s)
-			p.setPen(Qt.PenStyle.NoPen)
-			p.setBrush(s.背景色)
-			p.drawRect(0,0,s.宽,s.高)
-			s.刷新背景色_f()
-		return super().paintEvent(e)
 
 	def 添加淡化组件(s,组件:QWidget,最淡值=0.01,最深值=1):
 		d=淡化动画(组件,最淡值,最深值)
@@ -1170,53 +1161,50 @@ class 顶窗口(QWidget):
 		else:
 			return 0.5 * ((p - 2)** 3 + 2)
 
-	def 移到顶层_动画(s):
-		背景色=s.主窗口.背景色
-		#a=背景色.alpha()
-		t=time.time()
-		t_=(t-s.动画开始时间)/s.动画持续时间
-		if t_<=1:
-			b=s.缓动(t_)
-			s.setWindowOpacity(b)
-			背景色.setAlpha(int(b*255))
-			s.主窗口.update()
-			s.update()
-			
-		else:
-			s.主窗口.刷新背景色_f=None
-			背景色.setAlpha(255)
-			s.setWindowOpacity(1)
-			win32gui.SetParent(s.主窗口.winid_s,int(s.winId()))
-			s.主窗口.嵌入后刷新()
-			s.复制画面=False
-			s.主窗口.底窗口.复制画面=False
-
-			
 
 	def 移到顶层(s):
 		s.show()
 		s.setGeometry(0,0,s.主窗口.宽,s.主窗口.高)
 		s.动画开始时间=time.time()
-		s.主窗口.刷新背景色_f=s.移到顶层_动画
+		s.刷新_f=s.移到顶层_动画
 		s.复制画面=True
 		s.移到顶层_动画()
-	
 
+	def 移到顶层_动画(s):
+		t=time.time()
+		t_=(t-s.动画开始时间)/s.动画持续时间
+		if t_<=1:
+			b=s.缓动(t_)
+			s.setWindowOpacity(b)
+			s.update()
+		else:
+			s.刷新_f=None
+			s.setWindowOpacity(1)
+			#s.主窗口.update()
+			win32gui.SetParent(s.主窗口.winid_s,int(s.winId()))
+			s.主窗口.嵌入后刷新()
+			s.复制画面=False
+			s.主窗口.底窗口.复制画面=False
+			s.update()
+
+	
+	def 移到底层(s):
+		s.动画开始时间=time.time()
+		s.刷新_f=s.移到底层_动画
+		s.主窗口.底窗口.复制画面=True
+		s.主窗口.嵌入后刷新()
+		s.移到底层_动画()
+	
 	def 移到底层_动画(s):
-		背景色=s.主窗口.背景色
-		#a=背景色.alpha()
 		t=time.time()
 		t_=(t-s.动画开始时间)/s.动画持续时间
 		if t_<=1:
 			b=1-s.缓动(t_)
 			s.setWindowOpacity(b)
-			背景色.setAlpha(int(b*255))
-			s.主窗口.update()
 			s.主窗口.底窗口.update()
-			
+			s.update()
 		else:
-			s.主窗口.刷新背景色_f=None
-			背景色.setAlpha(0)
+			s.刷新_f=None
 			s.setWindowOpacity(0.01)
 			win32gui.SetParent(s.主窗口.winid_s,s.主窗口.底窗口.winid_s)
 			s.主窗口.嵌入后刷新()
@@ -1226,20 +1214,13 @@ class 顶窗口(QWidget):
 			s.close()
 
 
-	def 移到底层(s):
-		s.动画开始时间=time.time()
-		s.主窗口.刷新背景色_f=s.移到底层_动画
-		s.主窗口.底窗口.复制画面=True
-		s.update()
-		#s.主窗口.嵌入()
-		s.主窗口.嵌入后刷新()
-		s.移到底层_动画()
-
-
 	def paintEvent(s,e:QtGui.QPaintEvent)->None:
 		if s.复制画面:
 			painter=QPainter(s)
 			painter.drawPixmap(0,0,s.主窗口.grab())
+
+		if s.刷新_f is not None:
+			s.刷新_f()
 		#return super().paintEvent(e)
 
 

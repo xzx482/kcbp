@@ -32,6 +32,13 @@ class 单倒计时组件(QWidget):
         else:
             s.倒计时l.setText(时间转文字(t))
 
+class 单天倒计时组件(单倒计时组件):
+    def 更新(s,时间:int):
+        t=s.时间-时间
+        if t<0:
+            s.setVisible(False)
+        else:
+            s.倒计时l.setText(str(int(t/86400)+1)+"天")
 
 class 倒计时组件(QWidget):
     def __init__(s,配置l):
@@ -45,15 +52,31 @@ class 倒计时组件(QWidget):
 
         倒计时l=配置l['倒计时']['时间']
 
-        s.单倒计时l:单倒计时组件=[]
+        s.单倒计时天l:list[单天倒计时组件]=[]
+        s.单倒计时秒l:list[单倒计时组件]=[]
         for i in 倒计时l:
-            单倒=单倒计时组件(i,倒计时l[i])
-            s.单倒计时l.append(单倒)
+            名称=i[0]
+            目标时间=i[1]
+            类型=i[2] if len(i)>2 else 0
+            if 类型==0:
+                #秒 倒计时
+                单倒=单倒计时组件(名称,目标时间)
+                s.单倒计时秒l.append(单倒)
+            elif 类型==1:
+                #天 倒计时
+                单倒=单天倒计时组件(名称,time.mktime(time.strptime(目标时间,"%Y%m%d")))
+                s.单倒计时天l.append(单倒)
             s.根纵.addWidget(单倒)
 
     def gx(s,tl):
         t=time.time()
-        for i in s.单倒计时l:
+        for i in s.单倒计时秒l:
+            i.更新(t)
+
+
+    def gxt(s,tl):
+        t=time.time()
+        for i in s.单倒计时天l:
             i.更新(t)
 
 
@@ -72,6 +95,7 @@ def 配置(p,配置l):
         p.根纵_上横_左纵.addWidget(倒计时)
         p.添加淡化组件(倒计时,0.5)
         p.线程.xtsjm.connect(倒计时.gx)
+        p.线程.xtsjt.connect(倒计时.gxt)
 
 
 
