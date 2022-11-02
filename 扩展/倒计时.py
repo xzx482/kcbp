@@ -38,7 +38,7 @@ class 单天倒计时组件(单倒计时组件):
         if t<0:
             s.setVisible(False)
         else:
-            s.倒计时l.setText(str(int(t/86400)+1)+"天")
+            s.倒计时l.setText(str(int((t-1)/86400)+1)+"天")
 
 class 倒计时组件(QWidget):
     def __init__(s,配置l):

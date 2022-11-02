@@ -148,7 +148,7 @@ class 每分钟折线图表组件(QWidget):
 			数量级=0
 
 		painter=QPainter(s)
-		#painter.setRenderHint(QPainter.RenderHint.Antialiasing,True)
+		painter.setRenderHint(QPainter.RenderHint.Antialiasing,True)
 		红色=QColor(200,0,0)
 		绿色=QColor(0,255,0)
 		白色=QColor(255,255,255)
