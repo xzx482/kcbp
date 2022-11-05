@@ -787,17 +787,25 @@ class 主窗口_线程(QThread):
 
 
 user32=windll.user32
-hotKeyId=0x0A00
+#hotKeyId=0x0A00
+hotKeys={
+	0x0A01:0x31,#1
+	0x0A02:0x32,#2
+	0x0A03:0x33,#3
+}
 hotKeyWinid=None
 def 注册快捷键(winid):
-	#Ctrl+Alt+1
-	if user32.RegisterHotKey(winid,hotKeyId,win32con.MOD_ALT|win32con.MOD_CONTROL,0x31):
-		hotKeyWinid=winid
-		atexit.register(注销快捷键)
-	else:
-		print('注册快捷键失败')
+	#Ctrl+Alt+<hotKeys[]>
+	for i in hotKeys:
+		if user32.RegisterHotKey(winid,i,win32con.MOD_ALT|win32con.MOD_CONTROL,hotKeys[i]):
+			pass
+		else:
+			print('注册快捷键'+hex(i)+'失败')
+
+	atexit.register(注销快捷键)
 
 def 注销快捷键():
+	return
 	if hotKeyWinid:
 		if not user32.UnregisterHotKey(hotKeyWinid,hotKeyId):
 			print('注销快捷键失败')
@@ -1130,7 +1138,7 @@ class 底窗口(QWidget):
 			msg=wintypes.MSG.from_address(msg_.__int__())
 			if msg.message==win32con.WM_HOTKEY:
 				if msg.hWnd==s.winid_s:
-					if msg.wParam==hotKeyId:
+					if msg.wParam in hotKeys:
 						sys.exit()
 						return True,0
 
@@ -1178,15 +1186,18 @@ class 顶窗口(QWidget):
 			s.setWindowOpacity(b)
 			s.update()
 		else:
-			s.刷新_f=None
+			s.刷新_f=s.移到顶层_末
 			s.setWindowOpacity(1)
+			s.主窗口.setWindowOpacity(0.5)
 			#s.主窗口.update()
-			win32gui.SetParent(s.主窗口.winid_s,int(s.winId()))
-			s.主窗口.嵌入后刷新()
 			s.复制画面=False
 			s.主窗口.底窗口.复制画面=False
 			s.update()
 
+	def 移到顶层_末(s):
+		s.刷新_f=None
+		win32gui.SetParent(s.主窗口.winid_s,int(s.winId()))
+		s.主窗口.嵌入后刷新()
 	
 	def 移到底层(s):
 		s.动画开始时间=time.time()
@@ -1204,19 +1215,25 @@ class 顶窗口(QWidget):
 			s.主窗口.底窗口.update()
 			s.update()
 		else:
-			s.刷新_f=None
+			s.刷新_f=s.移到底层_末
 			s.setWindowOpacity(0.01)
+			s.主窗口.setWindowOpacity(1)
 			win32gui.SetParent(s.主窗口.winid_s,s.主窗口.底窗口.winid_s)
 			s.主窗口.嵌入后刷新()
 			s.复制画面=False
 			s.主窗口.底窗口.复制画面=False
 			s.主窗口.底窗口.update()
-			s.close()
+			s.update()
+
+	def 移到底层_末(s):
+		s.刷新_f=None
+		s.close()
 
 
 	def paintEvent(s,e:QtGui.QPaintEvent)->None:
 		if s.复制画面:
 			painter=QPainter(s)
+			painter.setOpacity(0.5)
 			painter.drawPixmap(0,0,s.主窗口.grab())
 
 		if s.刷新_f is not None:
