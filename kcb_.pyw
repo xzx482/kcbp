@@ -57,9 +57,9 @@ from inspect import isbuiltin
 import threading
 import time
 from PyQt6 import QtGui
-from PyQt6.QtCore import Qt,QTimer,QPropertyAnimation,QEasingCurve,QAbstractAnimation,QThread,pyqtSignal
+from PyQt6.QtCore import Qt,QTimer,QPropertyAnimation,QEasingCurve,QAbstractAnimation,QThread,pyqtSignal,QObject,QEvent
 from PyQt6.QtWidgets import QApplication,QWidget,QLabel,QHBoxLayout,QVBoxLayout,QGridLayout,QGraphicsOpacityEffect,QSystemTrayIcon,QMenu,QCheckBox, QPushButton
-from PyQt6.QtGui import QColor, QPainter, QPalette,QFont,QIcon
+from PyQt6.QtGui import QColor, QPainter, QPalette,QFont,QIcon,QPen
 import win32gui,win32con
 import json
 from d import 准备桌面窗口,桌面窗口错误
@@ -1144,6 +1144,81 @@ class 底窗口(QWidget):
 
 		return False,0
 			
+class 提示箭头:
+	def __init__(s,x,y,点集):
+		s.x=x
+		s.y=y
+		s.点集=点集
+		s.阶段=0
+		s.时间=0
+
+
+class 箭头绘制器:
+	def __init__(s):
+		s.箭头=[]
+		s.缩放=270 # 1080/4
+		s.点集=None
+
+	def 加到点集(s,x,y):
+		s.点集.append( map(( lambda a:int(s.缩放*a) ),(x,y)) )
+
+	def 计算点集(s):
+		s.点集=[]
+		for i in ((0,0),(0,6),(-1/3**0.5,5),(1/3**0.5),5):
+			s.加到点集(*i)
+		b=s.点集[1]
+		s.加到点集(b[0],b[1]*1.01)
+
+	def 转换点集(s,x,y):
+		return [(i[0]+x,i[1]+y) for i in s.点集]
+
+	def 绘制箭头(s,箭头:提示箭头,绘制器:QPainter):
+		t1=time.time()
+		进度=(t1-箭头.时间)/1
+		点集=箭头.点集
+		if 箭头.阶段>=1:
+			if 箭头.阶段==1:
+				绘制器.setOpacity(1)
+			else:
+				绘制器.setOpacity(进度)
+				绘制器.drawLine(*点集[0],*点集[1])
+				绘制器.drawLine(*点集[1],*点集[2])
+				绘制器.drawLine(*点集[1],*点集[2])
+			
+		else:
+			绘制器.setOpacity(1)
+			if 进度<0.6:
+				j=进度/0.6
+				m=点集[0]
+				n=点集[4]
+				p=m[0]+(n[0]-m[0])*j
+				q=m[1]+(n[1]-m[1])*j
+
+				绘制器.drawLine(*m,p,q)
+
+			elif 进度<1:
+				j=(进度-0.6)/(1-0.6)
+				m=点集[4]
+				n=点集[1]
+				p1=点集[2]
+				p2=点集[3]
+
+				bx=m[0]+(n[0]-m[0])*j
+				by=m[1]+(n[1]-m[1])*j
+
+				e1x=n[0]+(p1[0]-n[0])*j
+				e1y=n[1]+(p1[1]-n[1])*j
+				e2x=n[0]+(p2[0]-n[0])*j
+				e2y=n[1]+(p2[1]-n[1])*j
+
+				绘制器.drawLine(bx,by,e1x,e1y)
+				绘制器.drawLine(bx,by,e2x,e2y)
+
+			else:
+				箭头.阶段=1
+
+
+
 
 class 顶窗口(QWidget):
 	def __init__(s,主窗口:主窗口):
@@ -1151,11 +1226,15 @@ class 顶窗口(QWidget):
 		#s.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)#透明背景
 		s.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint)
 
+		s.setAttribute(Qt.WidgetAttribute.WA_AcceptTouchEvents)
+
 		s.调色板=QPalette()
 		s.调色板.setColor(QPalette.ColorRole.Window,QColor(0,0,0,255))
 		s.setPalette(s.调色板)
 		s.setWindowOpacity(0.01)
 		s.复制画面=False
+
+		s.不透明度=0.5
 
 		s.动画开始时间=0
 		s.动画持续时间=2
@@ -1188,7 +1267,7 @@ class 顶窗口(QWidget):
 		else:
 			s.刷新_f=s.移到顶层_末
 			s.setWindowOpacity(1)
-			s.主窗口.setWindowOpacity(0.5)
+			s.主窗口.setWindowOpacity(s.不透明度)
 			#s.主窗口.update()
 			s.复制画面=False
 			s.主窗口.底窗口.复制画面=False
@@ -1230,10 +1309,27 @@ class 顶窗口(QWidget):
 		s.close()
 
 
+	def event(s,e:QEvent) -> bool:
+			t=e.type()
+			if t==QEvent.Type.TouchBegin:
+				print('b')
+				return True
+				...
+			elif t==QEvent.Type.TouchUpdate:
+				print('u')
+				return True
+				...
+			elif t==QEvent.Type.TouchEnd:
+				print('e')
+				return True
+				...
+			
+			return super().event(e)
+
 	def paintEvent(s,e:QtGui.QPaintEvent)->None:
 		if s.复制画面:
 			painter=QPainter(s)
-			painter.setOpacity(0.5)
+			painter.setOpacity(s.不透明度)
 			painter.drawPixmap(0,0,s.主窗口.grab())
 
 		if s.刷新_f is not None:
