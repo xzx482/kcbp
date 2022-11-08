@@ -307,7 +307,7 @@ class 通知1_:
 			print('wd_.tl:e;音频加载超时')
 			raise 退出('音频无法播放')
 
-		总时间=总时间/1000-20
+		总时间=总时间/1000-10
 
 		s.总时间=总时间
 
@@ -391,25 +391,37 @@ class 主(QThread):
 		if not s.tl.是否存在():
 			print('wd_.tl:w;不存在指定的目标')
 			return
-		文件名=s.tl.文件名()
-		print('wd_.tl:i;'+文件名)
-		player:vlc.MediaPlayer=vlc.MediaPlayer()
-		audioMedia:vlc.Media=vlc.Media(文件名)
-		player.set_media(audioMedia)
+		
 		通知0=通知0_(s.tl.标题(),锁屏时可播放=True)
-		通知1=通知1_(player,audioMedia,s.消息)
 		当前时间=time.time()
 		时差=s.配置l['课程表']['时差']
 		s.消息.设置(s.tl.标题_消息(),s.tl.内容_消息(),True,当前时间-1,当前时间+20*60)
 		当前秒=获取秒(time.localtime(time.time()+时差))
 		计时=(18*60+28)*60+55-当前秒
-		
-		#计时=0
+		计时=0
+
 		try:
 			if 计时>0:
 				time.sleep(计时)
 			通知0.循环()
-			通知1.循环()
+			
+			for i in range(s.tl.数量,0,-1):
+				if not s.tl.是否存在():
+					print('wd_.tl:w;不存在指定的目标')
+					return
+				文件名=s.tl.文件名()
+				print('wd_.tl:i;'+文件名)
+				player:vlc.MediaPlayer=vlc.MediaPlayer()
+				audioMedia:vlc.Media=vlc.Media(文件名)
+				player.set_media(audioMedia)
+				通知1=通知1_(player,audioMedia,s.消息)
+
+				通知1.循环()
+				if i>1:
+					s.tl.加()
+				
+		except 退出:
+			print('wd_.tl:i;退出')
 		finally:
 			s.消息.设置(显示=False,结束时间=1)
 			通知器.清除通知()
