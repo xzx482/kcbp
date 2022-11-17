@@ -132,7 +132,7 @@ k2=[
 
 k1=[# 早读    1      2      3      4     1      2     3    
 	["外语","数学","化学","生物","体育","外语","语文","班会"," ","语文","生物","生物"," "],
-	["语文","数学","语文"," 化学","外语","物理","生物","物理"," ","外语听力","数学","外语","数学"],
+	["语文","数学","语文","化学","外语","物理","生物","物理"," ","外语听力","数学","外语","数学"],
 	["外语","外语","语文","语文","物理","数学","化学","生物"," ","语文","化学","语文"," "],
 	["语文","数学","外语","语文","外语","化学","体育","物理"," ","外语听力","外语"," "," "],
 	["外语","外语","语文","化学","物理","生物","数学","数学"," ","语文","物理","生物"," "],
@@ -738,6 +738,13 @@ class 淡化动画(QPropertyAnimation):
 		d.setOpacity(d.opacity()-0.01)
 
 
+class 主窗口_置顶部件_时间(QWidget):
+	def __init__(s,p):
+		super().__init__()
+		s.p=p
+
+
+
 class 主窗口_线程(QThread):
 	#课程时间秒 和 系统时间秒 都 每整秒发送一次, 但 课程时间和系统时间的误差不为整秒 时 将不同时发送
 	kcsjm=pyqtSignal(float)#课程时间秒
@@ -1143,12 +1150,35 @@ class 底窗口(QWidget):
 						return True,0
 
 		return False,0
-			
+
+
+class d:
+	def __init__(s,x,y):
+		s.x=x
+		s.y=y
+	
+	def __neg__(s):
+		return __class__(-s.x,-s.y)
+
+	def __add__(s,o):
+		return __class__(s.x+o.x,s.y+o.y)
+
+	def __sub__(s,o):
+		return __class__(s.x-o.x,s.y-o.y)
+
+	def __mul__(s,o):
+		return __class__(s.x*o,s.y*o)
+
+	def 画线(s,o,绘制器:QPainter):
+		绘制器.drawLine(QPointF(s.x,s.y),QPointF(o.x,o.y))
+
+
+
 class 提示箭头:
 	def __init__(s,x,y,id,点集):
 		s.x=x
 		s.y=y
-		s.点集=点集
+		s.点集:list[d]=点集
 		s.阶段=0
 		s.时间=0
 		s.id=id
@@ -1159,92 +1189,82 @@ class 箭头绘制器:
 		s.箭头:list[提示箭头]=[]
 		s.活动箭头=None
 		s.进度=0
-		s.缩放=100 # 1080/4
-		s.点集=None
+		s.缩放=10 # 1080/4
+		s.点集:list[d]=None
 		s.计算点集()
 
 	def 加到点集(s,x,y):
-		s.点集.append(list( map(( lambda a:int(s.缩放*a) ),(x,y)) ))
+		s.点集.append( d( *list( map(( lambda a:int(s.缩放*a) ),(x,y)) ) ))
 
 	def 计算点集(s):
 		s.点集=[]
-		for i in ((0,0),(0,6),(-1/3**0.5,5),(1/3**0.5,5)):
+		for i in ((0,0),(0,-6),(-1/3**0.5,-5),(1/3**0.5,-5)):
 			s.加到点集(*i)
 		b=s.点集[1]
-		s.加到点集(b[0],b[1]*1.01)
+		s.点集.append( d( b.x,b.y*1.01 ) )
 
 	def 转换点集(s,x,y):
-		return [(i[0]+x,i[1]+y) for i in s.点集]
+		return [d(i.x+x,i.y+y) for i in s.点集]
 
 	def 添加箭头(s,x,y,id):
-		m=(s.点集[1][1]-s.点集[0][1])*s.进度
+		m=(s.点集[1].x-s.点集[0].y)*s.进度
 		b=提示箭头(x,y-m,id,s.转换点集(x,y))
 		b.时间=time.time()
 		s.箭头.append(b)
 
-	def 绘制箭头(s,箭头:提示箭头,绘制器:QPainter):
+	def 绘制箭头(s,箭头:提示箭头,绘制器:QPainter,活动箭头):
 		t1=time.time()
-		进度=(t1-箭头.时间)/1
+		进度=(t1-箭头.时间)/0.5
 		点集=箭头.点集
-		活动箭头=False if s.活动箭头 is None else (箭头 is s.箭头[s.活动箭头])
+		#活动箭头=False if s.活动箭头 is None else (箭头 is s.箭头[s.活动箭头])
+
+		A=点集[0];B=点集[1];C=点集[2];D=点集[3];E=点集[4]
+		AB=B-A
+		AE=E-A
+		BC=C-B
+		BD=D-B
+		EB=B-E
+
+
+		if 活动箭头:
+			P1=A+AB*s.进度
+		else:
+			P1=A
+
+
+		if 箭头.阶段==0:
+			绘制器.setOpacity(1)
+			if 进度<0.6:
+				进=进度/0.6
+				
+				P1.画线(A+AE*进,绘制器)
+
+			elif 进度<1:
+				进=(进度-0.6)/(1-0.6)
+				P2=E+EB*进
+				P2.画线(P1,绘制器)
+				P2.画线(B+BC*进,绘制器)
+				P2.画线(B+BD*进,绘制器)
+
+			else:
+				箭头.时间=time.time()
+				箭头.阶段=1
+			
 		if 箭头.阶段>=1:
 			if 箭头.阶段==1:
 				绘制器.setOpacity(1)
-				mx,my=点集[0]
-				nx,ny=点集[1]
-				
-				if 活动箭头:
-					y0=my+(ny-my)*s.进度
-				else:
-					y0=mx
+
+				if not 活动箭头:
+					箭头.时间=time.time()
 					箭头.阶段=2
-				绘制器.drawLine(QPointF(mx,y0),QPointF(nx,ny))
 			else:
+				if 进度>1:
+					return False
 				绘制器.setOpacity(进度)
-				绘制器.drawLine(QPointF(*点集[0]),QPointF(*点集[1]))
-
-			绘制器.drawLine(QPointF(*点集[1]),QPointF(*点集[2]))
-			绘制器.drawLine(QPointF(*点集[1]),QPointF(*点集[3]))
 			
-		else:
-			绘制器.setOpacity(1)
-			if 进度<0.6:
-				j=进度/0.6
-				m=点集[0]
-				n=点集[4]
-				p=m[0]+(n[0]-m[0])*j
-				q=m[1]+(n[1]-m[1])*j
-
-				if 活动箭头:
-					绘制器.drawLine(QPointF(m[0],m[1]+(n[1]-m[1])*s.进度),QPointF(p,q))
-				else:
-					绘制器.drawLine(QPointF(*m),QPointF(p,q))
-
-			elif 进度<1:
-				j=(进度-0.6)/(1-0.6)
-				l=点集[0]
-				m=点集[4]
-				n=点集[1]
-				p1=点集[2]
-				p2=点集[3]
-
-				bx=m[0]+(n[0]-m[0])*j
-				by=m[1]+(n[1]-m[1])*j
-
-				e1x=n[0]+(p1[0]-n[0])*j
-				e1y=n[1]+(p1[1]-n[1])*j
-				e2x=n[0]+(p2[0]-n[0])*j
-				e2y=n[1]+(p2[1]-n[1])*j
-
-				if 活动箭头:
-					绘制器.drawLine(QPointF(l[0],l[1]+(n[1]-l[1])*s.进度),QPointF(bx,by))
-				else:
-					绘制器.drawLine(QPointF(*l),QPointF(bx,by))
-				绘制器.drawLine(QPointF(bx,by),QPointF(e1x,e1y))
-				绘制器.drawLine(QPointF(bx,by),QPointF(e2x,e2y))
-
-			else:
-				箭头.阶段=1
+			P1.画线(B,绘制器)
+			B.画线(C,绘制器)
+			B.画线(D,绘制器)
 
 
 
@@ -1257,6 +1277,8 @@ class 顶窗口(QWidget):
 		s.setWindowFlags(Qt.WindowType.FramelessWindowHint|Qt.WindowType.MSWindowsFixedSizeDialogHint|Qt.WindowType.Tool)
 
 		s.setAttribute(Qt.WidgetAttribute.WA_AcceptTouchEvents)
+
+		#s.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents,True)
 
 		s.调色板=QPalette()
 		s.调色板.setColor(QPalette.ColorRole.Window,QColor(0,0,0,255))
@@ -1361,6 +1383,9 @@ class 顶窗口(QWidget):
 			
 				s.jf.添加箭头(x,y,点.id())
 				s.jf.活动箭头=len(s.jf.箭头)-1
+
+				s.update()
+
 				return True
 				
 			elif t==QEvent.Type.TouchUpdate:
@@ -1369,9 +1394,13 @@ class 顶窗口(QWidget):
 				t=time.time()
 				if j.阶段==1:
 					j.时间=t
-				k=(y-j.点集[0][1])/(j.点集[1][1]-j.点集[0][1])
+				k=(y-j.点集[0].y)/(j.点集[1].y-j.点集[0].y)
 				l=k if 0<=k<=1 else 0
+				s.jf.进度=l
 				#s.jf.进度=l
+
+				s.update()
+
 				return True
 				
 			elif t==QEvent.Type.TouchEnd:
@@ -1388,6 +1417,9 @@ class 顶窗口(QWidget):
 
 	def paintEvent(s,e:QtGui.QPaintEvent)->None:
 		painter=QPainter(s)
+		painter.setOpacity(1)
+		painter.setPen(QColor(255,255,255,255))
+		#painter.drawLine(10,10,100,100)
 		if s.复制画面:
 			painter.setOpacity(s.不透明度)
 			painter.drawPixmap(0,0,s.主窗口.grab())
@@ -1402,7 +1434,9 @@ class 顶窗口(QWidget):
 					break
 				jt=jts[i]
 
-				if t-jt.时间>5:
+				
+
+				if t-jt.时间>5 or s.jf.绘制箭头(jt,painter,(i==s.jf.活动箭头)) is False:
 					if s.jf.活动箭头 is not None:
 						if s.jf.活动箭头>i:
 							s.jf.活动箭头-=1
@@ -1411,9 +1445,7 @@ class 顶窗口(QWidget):
 					jts.pop(i)
 					continue
 
-				s.jf.绘制箭头(jt,painter)
 				i+=1
-
 			s.update()
 
 
